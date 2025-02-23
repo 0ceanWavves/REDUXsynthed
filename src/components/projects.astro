@@ -1,0 +1,47 @@
+import ContentSection from "~/components/content-section.astro";
+import { Icon } from "astro-icon";
+
+const projects = [
+  {
+    title: "Web Applications",
+    description: "Modern, responsive web applications built with cutting-edge technologies",
+    icon: "mdi:web",
+  },
+  {
+    title: "Mobile Apps",
+    description: "Native and cross-platform mobile applications for iOS and Android",
+    icon: "mdi:cellphone",
+  },
+  {
+    title: "Custom Solutions",
+    description: "Tailored software solutions to meet your specific business needs",
+    icon: "mdi:cog",
+  },
+  {
+    title: "Digital Transformation",
+    description: "Helping businesses evolve in the digital age with innovative solutions",
+    icon: "mdi:trending-up",
+  },
+];
+
+<ContentSection title="Our Projects" id="projects">
+  <Fragment slot="lead">
+    Delivering <span class="text-primary">innovative solutions</span> that drive{" "}
+    <span class="text-primary">business success</span>.
+  </Fragment>
+  <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+    {
+      projects.map(({ title, description, icon }) => (
+        <div class="flex flex-col items-center gap-4 rounded-lg border border-default bg-offset p-6 text-center">
+          <div class="h-16 w-16 rounded-full border-2 border-current p-3">
+            <Icon name={icon} />
+          </div>
+          <div class="flex flex-col gap-2">
+            <h3 class="text-xl font-bold">{title}</h3>
+            <p class="text-sm text-offset">{description}</p>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</ContentSection> 

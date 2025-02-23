@@ -1,18 +1,17 @@
 ---
 import "@fontsource-variable/inter";
-import Compatibility from "~/components/compatibility.astro";
 import Features from "~/components/features.astro";
 import Footer from "~/components/footer.astro";
 import Header from "~/components/header.astro";
 import Intro from "~/components/intro.astro";
-import Showcase from "~/components/showcase.astro";
+import Projects from "~/components/projects.astro";
 import Splash from "~/components/splash.astro";
 import "~/styles/index.css";
 
 const { generator, site } = Astro;
 const image = new URL("social.jpg", site);
 const description =
-  "Build fast websites, faster. Astro is a new kind of site builder for the modern web. Lightning-fast performance meets powerful developer experience.";
+  "Transform your ideas into reality with Synthed. We specialize in modern web development, app creation, and innovative project solutions for the digital age.";
 ---
 
 <!doctype html>
@@ -23,11 +22,11 @@ const description =
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="generator" content={generator} />
 
-    <title>Astro Landing Page</title>
+    <title>Synthed - Modern Web & App Development</title>
     <meta name="description" content={description} />
 
     <!-- social media -->
-    <meta property="og:title" content="Astro" />
+    <meta property="og:title" content="Synthed" />
     <meta property="og:type" content="website" />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={image} />
@@ -66,8 +65,7 @@ const description =
     <div class="space-y-24 px-8 py-32">
       <Intro />
       <Features />
-      <Compatibility />
-      <Showcase />
+      <Projects />
     </div>
     <Footer />
   </body>

@@ -4,9 +4,9 @@ import ThemeSwitcher from "~/components/theme-switcher.astro";
 import type { NavItem } from "~/types";
 
 const navItems: Array<NavItem> = [
-  { title: "Features", url: "#features" },
-  { title: "Compatibility", url: "#compatibility" },
-  { title: "Showcase", url: "#showcase" },
+  { title: "Services", url: "#features" },
+  { title: "Projects", url: "#projects" },
+  { title: "Contact", url: "#contact" },
 ];
 ---
 
@@ -15,9 +15,9 @@ const navItems: Array<NavItem> = [
   class="absolute bottom-0 z-20 flex w-full items-center justify-between border-b border-transparent px-8 py-4 text-white"
 >
   <a class="flex items-center gap-3 hover:!text-default" href="#">
-    <h1 class="sr-only">Astro</h1>
-    <Icon name="logomark" class="size-10" />
-    <Icon name="wordmark" class="hidden h-4 sm:block" />
+    <h1 class="sr-only">Synthed</h1>
+    <Icon name="mdi:code-braces" class="h-10 w-10" />
+    <span class="hidden text-xl font-bold sm:block">Synthed</span>
   </a>
   <div>
     <div class="flex items-center gap-6">
@@ -40,7 +40,7 @@ const navItems: Array<NavItem> = [
         class="btn sm:hidden"
         aria-label="Navigation"
       >
-        <Icon name="mdi:menu" class="size-8" />
+        <Icon name="mdi:menu" class="h-8 w-8" />
       </button>
       <ThemeSwitcher />
     </div>
@@ -54,11 +54,11 @@ const navItems: Array<NavItem> = [
               class="btn"
               aria-label="Close navigation"
             >
-              <Icon name="mdi:close" class="size-8" />
+              <Icon name="mdi:close" class="h-8 w-8" />
             </button>
           </header>
           <div class="flex justify-center">
-            <Icon name="logomark" class="size-16" />
+            <Icon name="mdi:code-braces" class="h-16 w-16" />
           </div>
           <nav>
             <ul class="flex flex-col">
