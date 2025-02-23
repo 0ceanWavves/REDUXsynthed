@@ -1,46 +1,54 @@
+---
 import ContentSection from "~/components/content-section.astro";
-import { Icon } from "astro-icon";
+import { Icon } from "astro-icon/components";
 
 const projects = [
   {
-    title: "Web Applications",
-    description: "Modern, responsive web applications built with cutting-edge technologies",
-    icon: "mdi:web",
+    title: "MRO Connect",
+    description: "A HIPAA-compliant platform built for Medical Review Officers, streamlining review processes with secure, efficient solutions.",
+    icon: "mdi:medical-bag",
+    link: "https://mroconnect.net",
   },
   {
-    title: "Mobile Apps",
-    description: "Native and cross-platform mobile applications for iOS and Android",
-    icon: "mdi:cellphone",
+    title: "AgriWeather Pro",
+    description: "Advanced weather analytics platform helping farmers optimize crop yields through AI-powered climate trend analysis and predictions.",
+    icon: "mdi:weather-cloudy",
+    link: "#",
   },
   {
-    title: "Custom Solutions",
-    description: "Tailored software solutions to meet your specific business needs",
-    icon: "mdi:cog",
+    title: "FleetMaster Dashboard",
+    description: "Custom enterprise dashboard for a logistics company, managing fleet operations, maintenance schedules, and performance metrics.",
+    icon: "mdi:view-dashboard-outline",
+    link: "#",
   },
   {
-    title: "Digital Transformation",
-    description: "Helping businesses evolve in the digital age with innovative solutions",
-    icon: "mdi:trending-up",
+    title: "Digital Solutions",
+    description: "Transforming businesses through custom software development and strategic digital implementation.",
+    icon: "mdi:graph",
+    link: "#",
   },
 ];
+---
 
 <ContentSection title="Our Projects" id="projects">
   <Fragment slot="lead">
-    Delivering <span class="text-primary">innovative solutions</span> that drive{" "}
+    Delivering <span class="text-primary">impactful solutions</span> that drive{" "}
     <span class="text-primary">business success</span>.
   </Fragment>
-  <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
+  <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-2">
     {
-      projects.map(({ title, description, icon }) => (
-        <div class="flex flex-col items-center gap-4 rounded-lg border border-default bg-offset p-6 text-center">
-          <div class="h-16 w-16 rounded-full border-2 border-current p-3">
-            <Icon name={icon} />
+      projects.map(({ title, description, icon, link }) => (
+        <a href={link} class="group">
+          <div class="flex flex-col items-center gap-4 rounded-lg border border-default bg-offset p-6 text-center transition-all duration-300 hover:border-primary hover:shadow-lg">
+            <div class="h-16 w-16 rounded-full border-2 border-current p-3 transition-colors group-hover:border-primary">
+              <Icon name={icon} />
+            </div>
+            <div class="flex flex-col gap-2">
+              <h3 class="text-xl font-bold">{title}</h3>
+              <p class="text-sm text-offset">{description}</p>
+            </div>
           </div>
-          <div class="flex flex-col gap-2">
-            <h3 class="text-xl font-bold">{title}</h3>
-            <p class="text-sm text-offset">{description}</p>
-          </div>
-        </div>
+        </a>
       ))
     }
   </div>

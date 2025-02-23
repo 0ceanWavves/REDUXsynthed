@@ -1,6 +1,5 @@
 ---
 import { Icon } from "astro-icon/components";
-import HeroImage from "~/components/hero-image.astro";
 import type { FooterLink } from "~/types";
 
 const links: Array<FooterLink> = [
@@ -10,17 +9,7 @@ const links: Array<FooterLink> = [
     icon: "fa-brands:github-alt",
   },
   {
-    url: "https://twitter.com/syntheddev",
-    description: "Synthed on Twitter",
-    icon: "fa-brands:twitter",
-  },
-  {
-    url: "https://linkedin.com/company/synthed",
-    description: "Synthed on LinkedIn",
-    icon: "fa-brands:linkedin",
-  },
-  {
-    url: "mailto:contact@synthed.dev",
+    url: "mailto:sales@synthed.xyz",
     description: "Email Synthed",
     icon: "mdi:email",
   },
@@ -28,20 +17,17 @@ const links: Array<FooterLink> = [
 ---
 
 <footer class="relative flex h-64 items-center justify-center" id="contact">
-  <div class="absolute inset-0 overflow-hidden opacity-40">
-    <HeroImage />
-  </div>
   <div class="relative flex flex-col items-center gap-8">
     <div class="text-center">
       <h2 class="text-2xl font-bold mb-2">Get in Touch</h2>
       <p class="text-offset">Let's discuss your next project</p>
     </div>
-    <ul class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <ul class="grid grid-cols-2 gap-4">
       {
         links.map((link) => (
           <li>
             <a
-              class="flex h-16 w-16 items-center justify-center rounded-full border-2 border-current p-4"
+              class="flex h-16 w-16 items-center justify-center rounded-full border-2 border-current p-4 transition-colors duration-200 hover:border-primary"
               href={link.url}
             >
               <span class="sr-only">{link.description}</span>
@@ -56,3 +42,74 @@ const links: Array<FooterLink> = [
     </p>
   </div>
 </footer>
+
+<script>
+  class Wave {
+    constructor(
+      private readonly canvas: HTMLCanvasElement,
+      private readonly ctx: CanvasRenderingContext2D,
+      private readonly width: number,
+      private readonly height: number,
+      private readonly frequency: number = 0.01,
+      private readonly amplitude: number = 20,
+      private readonly speed: number = 0.02,
+      private phase: number = 0
+    ) {}
+
+    draw() {
+      this.ctx.beginPath();
+      this.ctx.moveTo(0, this.height / 2);
+
+      for (let x = 0; x < this.width; x++) {
+        const y =
+          this.height / 2 +
+          Math.sin(x * this.frequency + this.phase) * this.amplitude;
+        this.ctx.lineTo(x, y);
+      }
+
+      this.ctx.lineTo(this.width, this.height);
+      this.ctx.lineTo(0, this.height);
+      this.ctx.closePath();
+
+      const gradient = this.ctx.createLinearGradient(
+        0,
+        0,
+        this.width,
+        this.height
+      );
+      gradient.addColorStop(0, "rgba(96, 165, 250, 0.4)"); // blue-400
+      gradient.addColorStop(1, "rgba(74, 222, 128, 0.4)"); // green-400
+
+      this.ctx.fillStyle = gradient;
+      this.ctx.fill();
+    }
+
+    update() {
+      this.phase += this.speed;
+      this.ctx.clearRect(0, 0, this.width, this.height);
+      this.draw();
+    }
+  }
+
+  const canvas = document.getElementById("wave-canvas") as HTMLCanvasElement;
+  const ctx = canvas.getContext("2d");
+
+  if (canvas && ctx) {
+    const resizeCanvas = () => {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    };
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const wave = new Wave(canvas, ctx, canvas.width, canvas.height);
+    
+    const animate = () => {
+      wave.update();
+      requestAnimationFrame(animate);
+    };
+
+    animate();
+  }
+</script>

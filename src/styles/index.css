@@ -1,2 +1,33 @@
 @import "global.css";
 @import "theme.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --gradient-stop-1: theme("colors.blue.400");
+    --gradient-stop-2: theme("colors.sky.300");
+  }
+}
+
+@layer components {
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(
+      to right,
+      var(--gradient-stop-1),
+      var(--gradient-stop-2)
+    );
+  }
+}
+
+.btn {
+  @apply transition-colors duration-200;
+  @apply hover:text-secondary;
+}
+
+.modal {
+  background-color: theme("colors.gray.900" / 0.8);
+}

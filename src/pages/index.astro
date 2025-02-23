@@ -62,11 +62,98 @@ const description =
   >
     <Header />
     <Splash />
-    <div class="space-y-24 px-8 py-32">
-      <Intro />
-      <Features />
-      <Projects />
+    <div class="relative">
+      <canvas id="wave-canvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-20"></canvas>
+      <div class="relative space-y-24 px-8 py-32">
+        <Intro />
+        <Features />
+        <Projects />
+      </div>
+      <Footer />
     </div>
-    <Footer />
   </body>
 </html>
+
+<script>
+  class Wave {
+    constructor(
+      private readonly canvas: HTMLCanvasElement,
+      private readonly ctx: CanvasRenderingContext2D,
+      private readonly width: number,
+      private readonly height: number,
+      private readonly frequency: number = 0.005,
+      private readonly amplitude: number = 30,
+      private readonly speed: number = 0.01,
+      private phase: number = 0
+    ) {}
+
+    draw() {
+      this.ctx.beginPath();
+      
+      // Create multiple waves
+      for (let i = 0; i < 3; i++) {
+        this.ctx.moveTo(0, this.height / 2);
+        
+        for (let x = 0; x < this.width; x++) {
+          const y =
+            this.height / 2 +
+            Math.sin(x * this.frequency + this.phase + i * Math.PI * 0.5) * 
+            this.amplitude * (1 - i * 0.2);
+          
+          if (i === 0) {
+            this.ctx.moveTo(x, y);
+          } else {
+            this.ctx.lineTo(x, y);
+          }
+        }
+      }
+
+      this.ctx.lineTo(this.width, this.height);
+      this.ctx.lineTo(0, this.height);
+      this.ctx.closePath();
+
+      const gradient = this.ctx.createLinearGradient(
+        0,
+        0,
+        this.width,
+        this.height
+      );
+      gradient.addColorStop(0, "rgba(96, 165, 250, 0.1)"); // blue-400
+      gradient.addColorStop(1, "rgba(74, 222, 128, 0.1)"); // green-400
+
+      this.ctx.fillStyle = gradient;
+      this.ctx.fill();
+    }
+
+    update() {
+      this.phase += this.speed;
+      this.ctx.clearRect(0, 0, this.width, this.height);
+      this.draw();
+    }
+  }
+
+  const canvas = document.getElementById("wave-canvas") as HTMLCanvasElement;
+  const ctx = canvas.getContext("2d");
+
+  if (canvas && ctx) {
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = Math.max(
+        window.innerHeight,
+        document.documentElement.scrollHeight
+      );
+    };
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const wave = new Wave(canvas, ctx, canvas.width, canvas.height);
+    
+    const animate = () => {
+      wave.update();
+      requestAnimationFrame(animate);
+    };
+
+    animate();
+  }
+</script>

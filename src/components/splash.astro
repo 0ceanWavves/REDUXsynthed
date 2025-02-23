@@ -1,33 +1,36 @@
 ---
-import { Image } from "astro:assets";
 import { Icon } from "astro-icon/components";
-import HeroImage from "~/components/hero-image.astro";
-import Starfield from "~/components/starfield.astro";
 
 const widths = [450, 800];
 const sizes = "(min-width: 640px) 42vw, 67vw";
 ---
 
 <section class="relative h-full bg-black">
-  <Starfield />
-  <div id="splash-bg-fallback" class="absolute inset-0 hidden opacity-40">
-    <HeroImage />
-  </div>
-  <div class="relative grid h-full place-items-center sm:grid-cols-2">
-    <h2
-      class="flex flex-col items-center gap-2 self-end sm:gap-4 sm:self-auto sm:justify-self-end"
+  <div class="absolute inset-0 overflow-hidden">
+    <video 
+      class="absolute min-h-full min-w-full object-cover opacity-40"
+      autoplay 
+      loop 
+      muted 
+      playsinline
     >
-      <Icon name="mdi:code-braces" class="h-20 w-20 text-white md:h-32 md:w-32" />
+      <source src="/landing_page_video.mp4" type="video/mp4" />
+    </video>
+  </div>
+  <div class="relative grid h-full place-items-center sm:grid-cols-2 gap-16 sm:gap-8 pt-16 sm:pt-0">
+    <h2
+      class="flex flex-col items-center gap-2 self-center sm:gap-4 sm:self-auto sm:justify-self-end"
+    >
       <div
         class="gradient-text text-center font-extrabold tracking-tighter text-6xl md:text-8xl"
       >
-        Innovate
+        Create
         <br /> Design
         <br /> Build
       </div>
     </h2>
     <div
-      class="w-2/3 max-w-3xl self-start sm:w-10/12 sm:self-auto sm:justify-self-start"
+      class="w-2/3 max-w-3xl self-center sm:w-10/12 sm:self-auto sm:justify-self-start"
     >
       <div class="text-white text-xl md:text-2xl leading-relaxed">
         <p class="mb-4">Transforming ideas into</p>
@@ -39,22 +42,10 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
   </div>
 </section>
 
-<noscript>
-  <style>
-    #splash-bg-fallback {
-      display: block;
-    }
-  </style>
-</noscript>
-
 <style>
   @media (prefers-reduced-motion: reduce) {
-    :global(#starfield) {
+    video {
       @apply hidden;
-    }
-
-    #splash-bg-fallback {
-      @apply block;
     }
   }
 </style>
