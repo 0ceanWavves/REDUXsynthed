@@ -6,4 +6,8 @@ import icon from "astro-icon";
 export default defineConfig({
   site: "https://synthed.dev",
   integrations: [tailwind(), icon()],
+  output: "static",
+  build: {
+    format: 'file'
+  }
 });

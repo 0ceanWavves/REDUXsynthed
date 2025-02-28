@@ -1,0 +1,9 @@
+[build]
+command = "npm run build"
+publish = "dist"
+
+[site]
+node_compat = false
+
+[env]
+NODE_VERSION = "18" 
