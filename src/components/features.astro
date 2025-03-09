@@ -107,6 +107,15 @@ const features: Array<FeatureItem> = [
       transform: rotateY(360deg);
     }
   }
+
+  @keyframes pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+  }
 </style>
 
 <script>
@@ -115,10 +124,11 @@ const features: Array<FeatureItem> = [
     const cards = document.querySelectorAll('.service-card-inner');
     
     cards.forEach(card => {
-      card.addEventListener('mousemove', (e) => {
+      card.addEventListener('mousemove', (e: Event) => {
+        const mouseEvent = e as MouseEvent;
         const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left; // x position within the element
-        const y = e.clientY - rect.top; // y position within the element
+        const x = mouseEvent.clientX - rect.left; // x position within the element
+        const y = mouseEvent.clientY - rect.top; // y position within the element
         
         // Calculate rotation based on mouse position
         const centerX = rect.width / 2;
@@ -127,16 +137,16 @@ const features: Array<FeatureItem> = [
         const rotateY = (x - centerX) / 15;
         
         // Apply the rotation and add a subtle "lift" effect
-        card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-        card.style.boxShadow = `0 10px 30px -10px rgba(0, 0, 0, 0.3), 
+        (card as HTMLElement).style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+        (card as HTMLElement).style.boxShadow = `0 10px 30px -10px rgba(0, 0, 0, 0.3), 
                                 0 ${Math.abs(rotateX) * 0.5}px ${Math.abs(rotateY) * 0.5}px rgba(96, 165, 250, 0.2), 
                                 0 -${Math.abs(rotateX) * 0.5}px ${Math.abs(rotateY) * 0.5}px rgba(74, 222, 128, 0.2)`;
       });
       
       card.addEventListener('mouseleave', () => {
         // Reset transforms when mouse leaves
-        card.style.transform = '';
-        card.style.boxShadow = '';
+        (card as HTMLElement).style.transform = '';
+        (card as HTMLElement).style.boxShadow = '';
       });
     });
   }
@@ -148,19 +158,20 @@ const features: Array<FeatureItem> = [
         // If the card is visible
         if (entry.isIntersecting) {
           const card = entry.target;
-          const index = parseInt(card.dataset.index, 10);
+          const dataIndex = (card as HTMLElement).dataset.index || '0';
+          const index = parseInt(dataIndex, 10);
           
           // Add the animation classes after a staggered delay
           setTimeout(() => {
-            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
+            (card as HTMLElement).style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            (card as HTMLElement).style.opacity = '1';
+            (card as HTMLElement).style.transform = 'translateY(0)';
             
             // Apply a random rotation to each icon
             const icon = card.querySelector('.service-icon');
             if (icon) {
               const direction = index % 2 === 0 ? 1 : -1;
-              icon.style.animation = `rotate ${4 + index}s linear infinite ${direction === 1 ? '' : 'reverse'}`;
+              (icon as HTMLElement).style.animation = `rotate ${4 + index}s linear infinite ${direction === 1 ? '' : 'reverse'}`;
             }
           }, 100 * index);
           
@@ -182,19 +193,19 @@ const features: Array<FeatureItem> = [
     
     icons.forEach((icon, index) => {
       // Offset the floating animation for each icon
-      icon.style.animationDelay = `${index * 0.5}s`;
+      (icon as HTMLElement).style.animationDelay = `${index * 0.5}s`;
       
       // Add a pulse effect on hover
       icon.addEventListener('mouseenter', () => {
-        icon.style.animation = 'none';
-        icon.offsetHeight; // Trigger reflow
-        icon.style.animation = 'pulse 1s ease-in-out infinite';
+        (icon as HTMLElement).style.animation = 'none';
+        (icon as HTMLElement).offsetHeight; // Trigger reflow
+        (icon as HTMLElement).style.animation = 'pulse 1s ease-in-out infinite';
       });
       
       icon.addEventListener('mouseleave', () => {
-        icon.style.animation = 'none';
-        icon.offsetHeight; // Trigger reflow
-        icon.style.animation = `float 6s ease-in-out infinite ${index * 0.5}s`;
+        (icon as HTMLElement).style.animation = 'none';
+        (icon as HTMLElement).offsetHeight; // Trigger reflow
+        (icon as HTMLElement).style.animation = `float 6s ease-in-out infinite ${index * 0.5}s`;
       });
     });
   }
@@ -205,18 +216,4 @@ const features: Array<FeatureItem> = [
     setupEntranceAnimation();
     setupIconEffects();
   });
-
-  // Add the pulse animation
-  const style = document.createElement('style');
-  style.textContent = `
-    @keyframes pulse {
-      0%, 100% {
-        transform: scale(1);
-      }
-      50% {
-        transform: scale(1.1);
-      }
-    }
-  `;
-  document.head.appendChild(style);
 </script>

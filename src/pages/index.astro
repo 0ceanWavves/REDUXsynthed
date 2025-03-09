@@ -154,10 +154,9 @@ const description =
   }
 
   // Helper function to throttle function calls
-  function throttle(func, limit) {
-    let inThrottle;
-    return function() {
-      const args = arguments;
+  function throttle<T extends (...args: any[]) => void>(func: T, limit: number): (...args: Parameters<T>) => void {
+    let inThrottle: boolean = false;
+    return function(this: any, ...args: any[]) {
       const context = this;
       if (!inThrottle) {
         func.apply(context, args);
