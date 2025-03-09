@@ -13,103 +13,120 @@ const links: Array<FooterLink> = [
     description: "Email Synthed",
     icon: "mdi:email",
   },
+  {
+    url: "https://calendly.com/synthed/consultation",
+    description: "Schedule a Call",
+    icon: "mdi:calendar",
+  },
+  {
+    url: "https://linkedin.com/company/synthed",
+    description: "Synthed on LinkedIn",
+    icon: "fa-brands:linkedin",
+  },
 ];
 ---
 
-<footer class="relative flex h-64 items-center justify-center" id="contact">
-  <div class="relative flex flex-col items-center gap-8">
-    <div class="text-center">
-      <h2 class="text-2xl font-bold mb-2">Get in Touch</h2>
-      <p class="text-offset">Let's discuss your next project</p>
+<footer class="relative py-16 bg-offset" id="contact">
+  <div class="max-w-6xl mx-auto px-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div class="space-y-6">
+        <h2 class="text-3xl font-bold">Ready to Transform Your Digital Presence?</h2>
+        <p class="text-offset max-w-md">
+          We're passionate about crafting custom solutions that address your unique business challenges. 
+          Let's discuss how we can help you achieve your goals.
+        </p>
+        
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <Icon name="mdi:email" class="h-5 w-5 text-primary" />
+            <a href="mailto:sales@synthed.xyz" class="hover:text-primary transition-colors">sales@synthed.xyz</a>
+          </div>
+          <div class="flex items-center gap-2">
+            <Icon name="mdi:phone" class="h-5 w-5 text-primary" />
+            <a href="tel:+15555555555" class="hover:text-primary transition-colors">(555) 555-5555</a>
+          </div>
+          <div class="flex items-center gap-2">
+            <Icon name="mdi:map-marker" class="h-5 w-5 text-primary" />
+            <span>San Francisco, CA & Remote</span>
+          </div>
+        </div>
+        
+        <div class="pt-4">
+          <h3 class="text-xl font-bold mb-4">Follow Us</h3>
+          <ul class="flex gap-4">
+            {
+              links.map((link) => (
+                <li>
+                  <a
+                    class="flex h-12 w-12 items-center justify-center rounded-full border-2 border-current p-2 transition-colors duration-200 hover:border-primary"
+                    href={link.url}
+                  >
+                    <span class="sr-only">{link.description}</span>
+                    <Icon class="h-full w-full" name={link.icon} />
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+      
+      <div class="space-y-6">
+        <h3 class="text-2xl font-bold">Let's Start a Conversation</h3>
+        <div class="border border-default p-6 rounded-lg bg-default">
+          <div class="space-y-4">
+            <p class="text-sm text-offset mb-6">
+              Tell us about your project, and we'll get back to you within 24 hours to schedule a consultation.
+            </p>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <a 
+                href="mailto:sales@synthed.xyz?subject=Project%20Inquiry"
+                class="flex items-center justify-center gap-2 border border-current px-4 py-3 text-sm transition-colors hover:bg-primary hover:text-white"
+              >
+                <Icon name="mdi:email-outline" class="h-5 w-5" />
+                <span>Send Email</span>
+              </a>
+              <a 
+                href="https://calendly.com/synthed/consultation" 
+                target="_blank"
+                class="flex items-center justify-center gap-2 border border-current px-4 py-3 text-sm transition-colors hover:bg-primary hover:text-white"
+              >
+                <Icon name="mdi:calendar" class="h-5 w-5" />
+                <span>Schedule Call</span>
+              </a>
+            </div>
+            
+            <div class="mt-6 space-y-4">
+              <h4 class="font-bold">Our Services Include:</h4>
+              <ul class="text-sm text-offset grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <li class="flex items-center gap-1">
+                  <Icon name="mdi:check" class="h-4 w-4 text-primary" /> Custom Applications
+                </li>
+                <li class="flex items-center gap-1">
+                  <Icon name="mdi:check" class="h-4 w-4 text-primary" /> Web Development
+                </li>
+                <li class="flex items-center gap-1">
+                  <Icon name="mdi:check" class="h-4 w-4 text-primary" /> Mobile Development
+                </li>
+                <li class="flex items-center gap-1">
+                  <Icon name="mdi:check" class="h-4 w-4 text-primary" /> Strategic Consulting
+                </li>
+                <li class="flex items-center gap-1">
+                  <Icon name="mdi:check" class="h-4 w-4 text-primary" /> UI/UX Design
+                </li>
+                <li class="flex items-center gap-1">
+                  <Icon name="mdi:check" class="h-4 w-4 text-primary" /> Cloud Solutions
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <ul class="grid grid-cols-2 gap-4">
-      {
-        links.map((link) => (
-          <li>
-            <a
-              class="flex h-16 w-16 items-center justify-center rounded-full border-2 border-current p-4 transition-colors duration-200 hover:border-primary"
-              href={link.url}
-            >
-              <span class="sr-only">{link.description}</span>
-              <Icon class="h-full w-full" name={link.icon} />
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-    <p class="text-center text-sm text-offset">
-      © {new Date().getFullYear()} Synthed. All rights reserved.
-    </p>
+    
+    <div class="mt-12 pt-6 border-t border-default text-center text-sm text-offset">
+      <p>© {new Date().getFullYear()} Synthed. All rights reserved.</p>
+    </div>
   </div>
 </footer>
-
-<script>
-  class Wave {
-    constructor(
-      private readonly canvas: HTMLCanvasElement,
-      private readonly ctx: CanvasRenderingContext2D,
-      private readonly width: number,
-      private readonly height: number,
-      private readonly frequency: number = 0.01,
-      private readonly amplitude: number = 20,
-      private readonly speed: number = 0.02,
-      private phase: number = 0
-    ) {}
-
-    draw() {
-      this.ctx.beginPath();
-      this.ctx.moveTo(0, this.height / 2);
-
-      for (let x = 0; x < this.width; x++) {
-        const y =
-          this.height / 2 +
-          Math.sin(x * this.frequency + this.phase) * this.amplitude;
-        this.ctx.lineTo(x, y);
-      }
-
-      this.ctx.lineTo(this.width, this.height);
-      this.ctx.lineTo(0, this.height);
-      this.ctx.closePath();
-
-      const gradient = this.ctx.createLinearGradient(
-        0,
-        0,
-        this.width,
-        this.height
-      );
-      gradient.addColorStop(0, "rgba(96, 165, 250, 0.4)"); // blue-400
-      gradient.addColorStop(1, "rgba(74, 222, 128, 0.4)"); // green-400
-
-      this.ctx.fillStyle = gradient;
-      this.ctx.fill();
-    }
-
-    update() {
-      this.phase += this.speed;
-      this.ctx.clearRect(0, 0, this.width, this.height);
-      this.draw();
-    }
-  }
-
-  const canvas = document.getElementById("wave-canvas") as HTMLCanvasElement;
-  const ctx = canvas.getContext("2d");
-
-  if (canvas && ctx) {
-    const resizeCanvas = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    };
-
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-
-    const wave = new Wave(canvas, ctx, canvas.width, canvas.height);
-    
-    const animate = () => {
-      wave.update();
-      requestAnimationFrame(animate);
-    };
-
-    animate();
-  }
-</script>

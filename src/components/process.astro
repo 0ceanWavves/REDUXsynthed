@@ -1,0 +1,70 @@
+---
+import { Icon } from "astro-icon/components";
+import ContentSection from "~/components/content-section.astro";
+
+const processSteps = [
+  {
+    title: "Discovery & Consultation",
+    description: "We start by deeply understanding your business, users, and challenges through comprehensive consultations and research.",
+    icon: "mdi:lightbulb-outline",
+  },
+  {
+    title: "Strategy & Planning",
+    description: "Together, we develop a tailored roadmap that aligns technology solutions with your specific business goals and requirements.",
+    icon: "mdi:map-marker-path",
+  },
+  {
+    title: "Design & Development",
+    description: "Our experts build your solution using modern technologies and best practices, with regular feedback loops throughout.",
+    icon: "mdi:code-tags",
+  },
+  {
+    title: "Testing & Deployment",
+    description: "Rigorous quality assurance ensures your product is robust, secure, and performs optimally before deployment.",
+    icon: "mdi:check-circle-outline",
+  },
+  {
+    title: "Launch & Support",
+    description: "We ensure a smooth launch and provide ongoing support, maintenance, and iterative improvements to your solution.",
+    icon: "mdi:rocket-launch-outline",
+  },
+];
+---
+
+<ContentSection title="Our Approach" id="process">
+  <Fragment slot="lead">
+    We follow a <span class="text-primary">collaborative process</span> that puts your business needs
+    at the center of <span class="text-primary">everything we do</span>.
+  </Fragment>
+  
+  <div class="max-w-5xl mx-auto">
+    <div class="relative">
+      <!-- Connecting line -->
+      <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-primary opacity-30 transform -translate-x-1/2 hidden md:block"></div>
+      
+      <!-- Process steps -->
+      <div class="space-y-12 relative">
+        {
+          processSteps.map((step, index) => (
+            <div class={`flex flex-col md:flex-row gap-8 items-center ${index % 2 === 1 ? 'md:flex-row-reverse' : ''}`}>
+              <div class="flex-1 md:text-right">
+                <div class={`bg-offset border border-default p-6 rounded-lg transition-all duration-300 hover:border-primary hover:shadow-md ${index % 2 === 1 ? 'md:ml-auto' : 'md:mr-auto'}`}>
+                  <h3 class="text-xl font-bold mb-2">{step.title}</h3>
+                  <p class="text-offset text-sm">{step.description}</p>
+                </div>
+              </div>
+              
+              <div class="relative z-10 flex items-center justify-center h-16 w-16 rounded-full border-2 border-primary bg-default p-3">
+                <Icon name={step.icon} class="h-full w-full text-primary" />
+              </div>
+              
+              <div class="flex-1 md:text-left">
+                {index % 2 === 1 && <div class="hidden md:block"></div>}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</ContentSection>

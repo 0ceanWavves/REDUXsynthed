@@ -5,40 +5,40 @@ import type { FeatureItem } from "~/types";
 
 const features: Array<FeatureItem> = [
   {
+    title: "Custom Application Development",
+    description:
+      "Building bespoke software solutions precisely tailored to your unique business requirements, workflows, and growth objectives.",
+    icon: "mdi:code-braces",
+  },
+  {
     title: "Modern Web Development",
     description:
-      "Creating responsive, fast, and beautiful web applications using the latest technologies and frameworks.",
+      "Creating responsive, fast, and beautiful web applications using the latest technologies like React, Vue, Angular, and modern frameworks.",
     icon: "mdi:language-javascript",
   },
   {
     title: "Mobile App Development",
     description:
-      "Building native and cross-platform mobile applications that deliver exceptional user experiences.",
+      "Building native and cross-platform mobile applications that deliver exceptional user experiences across iOS and Android devices.",
     icon: "mdi:cellphone-link",
   },
   {
-    title: "Custom Software Solutions",
+    title: "Strategic Technology Consulting",
     description:
-      "Developing tailored software solutions that address your unique business challenges and requirements.",
-    icon: "mdi:code-braces",
+      "Providing expert guidance on technology selection, architecture design, and digital transformation strategies aligned with your business goals.",
+    icon: "mdi:chart-timeline-variant",
   },
   {
-    title: "UI/UX Design",
+    title: "UI/UX Design Excellence",
     description:
-      "Crafting intuitive and engaging user interfaces that enhance user experience and drive engagement.",
+      "Crafting intuitive and engaging user interfaces with comprehensive UX research to ensure your products resonate with target users.",
     icon: "mdi:palette-outline",
   },
   {
-    title: "Cloud Solutions",
+    title: "Cloud & DevOps Solutions",
     description:
-      "Implementing scalable cloud infrastructure and services to power your digital transformation.",
+      "Implementing scalable cloud infrastructure with automated CI/CD pipelines to accelerate delivery and ensure reliability.",
     icon: "mdi:cloud-outline",
-  },
-  {
-    title: "Technical Consultation",
-    description:
-      "Providing expert guidance and strategic planning to help you make informed technology decisions.",
-    icon: "mdi:chart-timeline-variant",
   },
 ];
 ---
@@ -47,12 +47,12 @@ const features: Array<FeatureItem> = [
   <Fragment slot="lead">
     We deliver <span class="text-primary">comprehensive solutions</span> that merge
     <span class="text-primary">technical excellence</span> with
-    <span class="text-primary">creative design</span>.
+    <span class="text-primary">creative design</span>, always tailored to your specific needs.
   </Fragment>
-  <ul class="grid max-w-6xl grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+  <ul class="grid max-w-6xl grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {
       features.map(({ title, description, icon }) => (
-        <li class="flex flex-col items-center gap-4 border border-default bg-offset p-6">
+        <li class="flex flex-col items-center gap-4 border border-default bg-offset p-6 transition-all duration-300 hover:border-primary hover:shadow-md">
           <div class="h-16 w-16 rounded-full border-2 border-current p-3">
             <Icon name={icon} class="h-full w-full" />
           </div>

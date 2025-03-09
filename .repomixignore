@@ -1,0 +1,11 @@
+node_modules/
+dist/
+dist_backup/
+dist_without_large_files/
+temp-dist/
+.git/
+.wrangler/
+.astro/
+public/
+package-lock.json
+.repomix-output.txt 

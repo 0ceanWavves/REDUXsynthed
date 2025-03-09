@@ -4,6 +4,7 @@ import Features from "~/components/features.astro";
 import Footer from "~/components/footer.astro";
 import Header from "~/components/header.astro";
 import Intro from "~/components/intro.astro";
+import Process from "~/components/process.astro";
 import Projects from "~/components/projects.astro";
 import Splash from "~/components/splash.astro";
 import "~/styles/index.css";
@@ -11,7 +12,7 @@ import "~/styles/index.css";
 const { generator, site } = Astro;
 const image = new URL("social.jpg", site);
 const description =
-  "Transform your ideas into reality with Synthed. We specialize in modern web development, app creation, and innovative project solutions for the digital age.";
+  "Transform your ideas into reality with Synthed. We specialize in custom application development, modern web solutions, and strategic technology consulting tailored to your business needs.";
 ---
 
 <!doctype html>
@@ -22,11 +23,11 @@ const description =
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="generator" content={generator} />
 
-    <title>Synthed - Modern Web & App Development</title>
+    <title>Synthed - Custom Software & Application Development</title>
     <meta name="description" content={description} />
 
     <!-- social media -->
-    <meta property="og:title" content="Synthed" />
+    <meta property="og:title" content="Synthed - Custom Software & Application Development" />
     <meta property="og:type" content="website" />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={image} />
@@ -67,6 +68,7 @@ const description =
       <div class="relative space-y-24 px-8 py-32">
         <Intro />
         <Features />
+        <Process />
         <Projects />
       </div>
       <Footer />
