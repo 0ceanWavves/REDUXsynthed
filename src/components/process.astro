@@ -39,8 +39,8 @@ const processSteps = [
   
   <div class="max-w-5xl mx-auto">
     <div class="relative">
-      <!-- Connecting line -->
-      <div class="process-line absolute left-1/2 top-0 bottom-0 w-0.5 bg-primary opacity-30 transform -translate-x-1/2 hidden md:block"></div>
+      <!-- Connecting line - making it more visible -->
+      <div class="process-line absolute left-1/2 top-0 bottom-0 w-1 bg-primary opacity-50 transform -translate-x-1/2 hidden md:block"></div>
       
       <!-- Process steps -->
       <div class="space-y-12 relative">
@@ -116,6 +116,13 @@ const processSteps = [
     height: 0;
     transition: height 1.5s ease;
   }
+  
+  /* Force process line to be visible immediately */
+  @media (min-width: 768px) {
+    .process-line {
+      height: 100% !important;
+    }
+  }
 </style>
 
 <script>
@@ -160,6 +167,13 @@ const processSteps = [
     // Observe the process line
     const line = document.querySelector('.process-line');
     if (line) observer.observe(line);
+    
+    // Backup to ensure the line is visible
+    setTimeout(() => {
+      if (line) {
+        (line as HTMLElement).style.height = '100%';
+      }
+    }, 1000);
   }
   
   // Add floating effect to process icons
@@ -167,8 +181,7 @@ const processSteps = [
     const icons = document.querySelectorAll('.process-icon');
     
     icons.forEach((icon, index) => {
-      // Remove the particle effect on hover
-      // Just add a simple hover effect instead
+      // Simple hover effect
       icon.addEventListener('mouseenter', () => {
         (icon as HTMLElement).style.transition = 'transform 0.3s ease';
         (icon as HTMLElement).style.transform = 'scale(1.1)';
@@ -182,6 +195,14 @@ const processSteps = [
   }
   
   document.addEventListener('DOMContentLoaded', () => {
+    // Force immediate visibility for all steps while keeping animations
+    setTimeout(() => {
+      document.querySelectorAll('.process-step').forEach((step) => {
+        (step as HTMLElement).style.opacity = '1';
+        (step as HTMLElement).style.transform = 'translateY(0)';
+      });
+    }, 1000);
+    
     animateProcessSteps();
     animateProcessLine();
     setupIconAnimations();
