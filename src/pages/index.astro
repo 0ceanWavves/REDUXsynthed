@@ -73,8 +73,27 @@ const description =
       </div>
       <Footer />
     </div>
+    
+    <!-- Cursor effect -->
+    <div id="cursor-glow" class="hidden md:block"></div>
   </body>
 </html>
+
+<style>
+  /* Custom cursor effect */
+  #cursor-glow {
+    position: fixed;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, rgba(96, 165, 250, 0) 70%);
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    mix-blend-mode: screen;
+  }
+</style>
 
 <script>
   class Wave {
@@ -134,28 +153,128 @@ const description =
     }
   }
 
-  const canvas = document.getElementById("wave-canvas") as HTMLCanvasElement;
-  const ctx = canvas.getContext("2d");
-
-  if (canvas && ctx) {
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = Math.max(
-        window.innerHeight,
-        document.documentElement.scrollHeight
-      );
+  // Helper function to throttle function calls
+  function throttle(func, limit) {
+    let inThrottle;
+    return function() {
+      const args = arguments;
+      const context = this;
+      if (!inThrottle) {
+        func.apply(context, args);
+        inThrottle = true;
+        setTimeout(() => inThrottle = false, limit);
+      }
     };
-
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
-
-    const wave = new Wave(canvas, ctx, canvas.width, canvas.height);
-    
-    const animate = () => {
-      wave.update();
-      requestAnimationFrame(animate);
-    };
-
-    animate();
   }
+
+  // Initialize wave animation
+  function initWaveAnimation() {
+    const canvas = document.getElementById("wave-canvas") as HTMLCanvasElement;
+    const ctx = canvas.getContext("2d");
+
+    if (canvas && ctx) {
+      const resizeCanvas = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = Math.max(
+          window.innerHeight,
+          document.documentElement.scrollHeight
+        );
+      };
+
+      resizeCanvas();
+      window.addEventListener("resize", throttle(resizeCanvas, 200));
+
+      const wave = new Wave(canvas, ctx, canvas.width, canvas.height);
+      
+      const animate = () => {
+        wave.update();
+        requestAnimationFrame(animate);
+      };
+
+      animate();
+    }
+  }
+  
+  // Custom cursor glow effect
+  function initCursorGlow() {
+    const cursorGlow = document.getElementById('cursor-glow');
+    if (!cursorGlow) return;
+    
+    let isVisible = false;
+    
+    // Show the cursor glow when mouse moves
+    document.addEventListener('mousemove', (e) => {
+      if (!isVisible) {
+        cursorGlow.style.opacity = '1';
+        isVisible = true;
+      }
+      
+      // Position the glow at the cursor with a slight delay for smooth effect
+      cursorGlow.style.transform = `translate(${e.clientX - 25}px, ${e.clientY - 25}px)`;
+    });
+    
+    // Change glow color/size based on elements hovered
+    const interactiveElements = document.querySelectorAll('a, button, .service-card, .process-icon, .project-card');
+    
+    interactiveElements.forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursorGlow.style.width = '80px';
+        cursorGlow.style.height = '80px';
+        cursorGlow.style.background = 'radial-gradient(circle, rgba(96, 165, 250, 0.4) 0%, rgba(96, 165, 250, 0) 70%)';
+      });
+      
+      el.addEventListener('mouseleave', () => {
+        cursorGlow.style.width = '50px';
+        cursorGlow.style.height = '50px';
+        cursorGlow.style.background = 'radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, rgba(96, 165, 250, 0) 70%)';
+      });
+    });
+  }
+  
+  // Parallax scrolling effect
+  function initParallaxEffect() {
+    const parallaxElements = document.querySelectorAll('.intro-icon, .process-line');
+    
+    window.addEventListener('scroll', throttle(() => {
+      const scrolled = window.scrollY;
+      
+      parallaxElements.forEach(el => {
+        const element = el as HTMLElement;
+        const speed = 0.15; // Adjust for more or less parallax effect
+        
+        if (element.classList.contains('intro-icon')) {
+          element.style.transform = `translateY(${scrolled * speed}px)`;
+        } else if (element.classList.contains('process-line')) {
+          element.style.height = `${Math.min(100, scrolled * 0.1)}%`;
+        }
+      });
+    }, 10));
+  }
+  
+  // Prefers-reduced-motion check
+  function shouldReduceMotion() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initialize basic animations
+    initWaveAnimation();
+    
+    // Only add the fancier effects if the user doesn't prefer reduced motion
+    if (!shouldReduceMotion()) {
+      initCursorGlow();
+      initParallaxEffect();
+      
+      // Add extra interactive effects
+      document.addEventListener('mousemove', (e) => {
+        // Calculate the mouse position as a percentage of the window
+        const mouseX = e.clientX / window.innerWidth;
+        const mouseY = e.clientY / window.innerHeight;
+        
+        // Subtle movement of background elements based on mouse position
+        document.documentElement.style.setProperty('--mouse-x', mouseX.toString());
+        document.documentElement.style.setProperty('--mouse-y', mouseY.toString());
+      });
+    }
+  });
 </script>

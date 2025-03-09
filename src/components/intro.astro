@@ -4,14 +4,17 @@ import ContentSection from "~/components/content-section.astro";
 ---
 
 <ContentSection title="Building Digital Excellence" id="intro">
-  <Icon slot="eyebrow" name="mdi:code-braces" class="h-32 w-32" />
+  <div class="intro-icon" slot="eyebrow">
+    <Icon name="mdi:code-braces" class="h-32 w-32" />
+    <div class="intro-icon-glow"></div>
+  </div>
   <Fragment slot="lead">
-    We craft <span class="text-primary">modern</span> digital solutions that
-    <span class="text-primary">transform</span> businesses and
-    <span class="text-primary">drive</span> measurable success.
+    We craft <span class="text-primary highlight">modern</span> digital solutions that
+    <span class="text-primary highlight">transform</span> businesses and
+    <span class="text-primary highlight">drive</span> measurable success.
   </Fragment>
   
-  <div class="max-w-3xl mx-auto mb-8">
+  <div class="max-w-3xl mx-auto mb-8 intro-text">
     <p class="text-center text-offset mb-6">
       At Synthed, we specialize in building custom digital solutions that adapt to your unique business challenges. 
       Our team of experts combines technical expertise with strategic thinking to deliver applications that not only meet your current needs 
@@ -23,20 +26,161 @@ import ContentSection from "~/components/content-section.astro";
     </p>
   </div>
   
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-xl mx-auto">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-xl mx-auto intro-buttons">
     <a
       href="#contact"
-      class="flex items-center justify-center gap-3 border-2 border-current px-6 py-4 transition-colors duration-300 hover:bg-primary hover:text-white"
+      class="intro-button flex items-center justify-center gap-3 border-2 border-current px-6 py-4 transition-colors duration-300 hover:bg-primary hover:text-white"
     >
       <Icon name="mdi:email" class="h-8 w-8" />
       <span>Get in Touch</span>
     </a>
     <a
       href="#projects"
-      class="flex items-center justify-center gap-3 border-2 border-current px-6 py-4 transition-colors duration-300 hover:bg-primary hover:text-white"
+      class="intro-button flex items-center justify-center gap-3 border-2 border-current px-6 py-4 transition-colors duration-300 hover:bg-primary hover:text-white"
     >
       <Icon name="mdi:briefcase" class="h-8 w-8" />
       <span>View Our Work</span>
     </a>
   </div>
 </ContentSection>
+
+<style>
+  .intro-icon {
+    position: relative;
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  .intro-icon-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, rgba(96, 165, 250, 0) 70%);
+    z-index: -1;
+    animation: pulse 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-15px);
+    }
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 0.2;
+    }
+    50% {
+      transform: translate(-50%, -50%) scale(1.5);
+      opacity: 0.5;
+    }
+  }
+  
+  .highlight {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.5s ease;
+  }
+  
+  .highlight.animated::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+  
+  .intro-text, .intro-buttons {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .intro-button {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .intro-button::before {
+    content: '';
+    position: absolute;
+    left: -100%;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s ease;
+  }
+  
+  .intro-button:hover::before {
+    left: 100%;
+  }
+</style>
+
+<script>
+  function animateIntroSection() {
+    // Animate highlights
+    const highlights = document.querySelectorAll('.highlight');
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => {
+            entry.target.classList.add('animated');
+          }, 300);
+        }
+      });
+    }, { threshold: 0.5 });
+    
+    highlights.forEach((highlight) => {
+      observer.observe(highlight);
+    });
+    
+    // Animate text and buttons
+    const textObserver = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setTimeout(() => {
+          const text = document.querySelector('.intro-text');
+          if (text) {
+            (text as HTMLElement).style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            (text as HTMLElement).style.opacity = '1';
+            (text as HTMLElement).style.transform = 'translateY(0)';
+          }
+          
+          setTimeout(() => {
+            const buttons = document.querySelector('.intro-buttons');
+            if (buttons) {
+              (buttons as HTMLElement).style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+              (buttons as HTMLElement).style.opacity = '1';
+              (buttons as HTMLElement).style.transform = 'translateY(0)';
+            }
+          }, 400);
+        }, 500);
+      }
+    }, { threshold: 0.2 });
+    
+    const introSection = document.querySelector('#intro');
+    if (introSection) {
+      textObserver.observe(introSection);
+    }
+  }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    animateIntroSection();
+  });
+</script>

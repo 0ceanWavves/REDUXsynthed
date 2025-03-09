@@ -9,6 +9,25 @@
   :root {
     --gradient-stop-1: theme("colors.blue.400");
     --gradient-stop-2: theme("colors.sky.300");
+    
+    /* Animation variables */
+    --animation-primary: theme("colors.blue.400");
+    --animation-secondary: theme("colors.green.400");
+    --animation-accent: theme("colors.purple.400");
+    
+    /* Interactive variables */
+    --mouse-x: 0.5;
+    --mouse-y: 0.5;
+  }
+  
+  /* Accessibility - respect user preferences */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
@@ -21,6 +40,48 @@
       var(--gradient-stop-2)
     );
   }
+  
+  /* Animation related components */
+  .animated-border {
+    position: relative;
+    z-index: 0;
+  }
+  
+  .animated-border::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(
+      45deg,
+      var(--animation-primary),
+      var(--animation-secondary),
+      var(--animation-accent),
+      var(--animation-primary)
+    );
+    background-size: 400% 400%;
+    z-index: -1;
+    border-radius: inherit;
+    animation: moving-border 6s ease infinite;
+    filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .animated-border:hover::after {
+    opacity: 1;
+  }
+  
+  @keyframes moving-border {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
 }
 
 .btn {
@@ -30,4 +91,20 @@
 
 .modal {
   background-color: theme("colors.gray.900" / 0.8);
+}
+
+/* Interactive elements subtle effects */
+a, button, .clickable {
+  position: relative;
+  transition: transform 0.2s ease;
+}
+
+a:active, button:active, .clickable:active {
+  transform: scale(0.98);
+}
+
+/* Subtle parallax effect for background elements */
+.bg-parallax {
+  transform: translateX(calc(var(--mouse-x) * -20px)) translateY(calc(var(--mouse-y) * -20px));
+  transition: transform 0.2s ease-out;
 }

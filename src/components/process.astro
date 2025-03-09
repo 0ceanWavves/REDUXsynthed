@@ -40,21 +40,21 @@ const processSteps = [
   <div class="max-w-5xl mx-auto">
     <div class="relative">
       <!-- Connecting line -->
-      <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-primary opacity-30 transform -translate-x-1/2 hidden md:block"></div>
+      <div class="process-line absolute left-1/2 top-0 bottom-0 w-0.5 bg-primary opacity-30 transform -translate-x-1/2 hidden md:block"></div>
       
       <!-- Process steps -->
       <div class="space-y-12 relative">
         {
           processSteps.map((step, index) => (
-            <div class={`flex flex-col md:flex-row gap-8 items-center ${index % 2 === 1 ? 'md:flex-row-reverse' : ''}`}>
+            <div class={`process-step flex flex-col md:flex-row gap-8 items-center ${index % 2 === 1 ? 'md:flex-row-reverse' : ''}`} data-index={index}>
               <div class="flex-1 md:text-right">
-                <div class={`bg-offset border border-default p-6 rounded-lg transition-all duration-300 hover:border-primary hover:shadow-md ${index % 2 === 1 ? 'md:ml-auto' : 'md:mr-auto'}`}>
+                <div class={`process-card bg-offset border border-default p-6 rounded-lg ${index % 2 === 1 ? 'md:ml-auto' : 'md:mr-auto'}`}>
                   <h3 class="text-xl font-bold mb-2">{step.title}</h3>
                   <p class="text-offset text-sm">{step.description}</p>
                 </div>
               </div>
               
-              <div class="relative z-10 flex items-center justify-center h-16 w-16 rounded-full border-2 border-primary bg-default p-3">
+              <div class="process-icon relative z-10 flex items-center justify-center h-16 w-16 rounded-full border-2 border-primary bg-default p-3">
                 <Icon name={step.icon} class="h-full w-full text-primary" />
               </div>
               
@@ -68,3 +68,122 @@ const processSteps = [
     </div>
   </div>
 </ContentSection>
+
+<style>
+  .process-step {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  
+  .process-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .process-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.3);
+    border-color: var(--color-primary);
+  }
+  
+  .process-icon {
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+  
+  .process-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, rgba(96, 165, 250, 0) 70%);
+    transform: translate(-50%, -50%) scale(0);
+    z-index: -1;
+    transition: transform 0.5s ease-out;
+  }
+  
+  .process-icon:hover {
+    transform: scale(1.1);
+  }
+  
+  .process-icon:hover::before {
+    transform: translate(-50%, -50%) scale(1.8);
+  }
+  
+  .process-line {
+    height: 0;
+    transition: height 1.5s ease;
+  }
+</style>
+
+<script>
+  function animateProcessSteps() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const step = entry.target;
+          const index = parseInt((step as HTMLElement).dataset.index || '0', 10);
+          
+          // Staggered animation for each step
+          setTimeout(() => {
+            (step as HTMLElement).style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            (step as HTMLElement).style.opacity = '1';
+            (step as HTMLElement).style.transform = 'translateY(0)';
+          }, 200 * index);
+          
+          observer.unobserve(step);
+        }
+      });
+    }, { threshold: 0.2 });
+    
+    // Observe all process steps
+    document.querySelectorAll('.process-step').forEach((step) => {
+      observer.observe(step);
+    });
+  }
+  
+  function animateProcessLine() {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const line = entry.target;
+          setTimeout(() => {
+            (line as HTMLElement).style.height = '100%';
+          }, 500);
+          observer.unobserve(line);
+        }
+      });
+    }, { threshold: 0.1 });
+    
+    // Observe the process line
+    const line = document.querySelector('.process-line');
+    if (line) observer.observe(line);
+  }
+  
+  // Add floating effect to process icons
+  function setupIconAnimations() {
+    const icons = document.querySelectorAll('.process-icon');
+    
+    icons.forEach((icon, index) => {
+      // Remove the particle effect on hover
+      // Just add a simple hover effect instead
+      icon.addEventListener('mouseenter', () => {
+        (icon as HTMLElement).style.transition = 'transform 0.3s ease';
+        (icon as HTMLElement).style.transform = 'scale(1.1)';
+      });
+      
+      icon.addEventListener('mouseleave', () => {
+        (icon as HTMLElement).style.transition = 'transform 0.3s ease';
+        (icon as HTMLElement).style.transform = 'scale(1)';
+      });
+    });
+  }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    animateProcessSteps();
+    animateProcessLine();
+    setupIconAnimations();
+  });
+</script>

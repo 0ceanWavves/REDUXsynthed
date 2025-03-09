@@ -17,42 +17,44 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
       <source src="https://pub-c929c30fe7224689b55ff91bc5136ff1.r2.dev/landing_page_video.mp4" type="video/mp4" />
     </video>
   </div>
+  
   <div class="relative grid h-full place-items-center sm:grid-cols-2 gap-16 sm:gap-8 pt-16 sm:pt-0">
-    <div
-      class="flex flex-col items-center gap-2 self-center sm:gap-4 sm:self-auto sm:justify-self-end"
-    >
-      <div
-        class="gradient-text text-center font-extrabold tracking-tighter text-6xl md:text-8xl"
-      >
-        Create
-        <br /> Design
-        <br /> Build
+    <div class="splash-title flex flex-col items-center gap-2 self-center sm:gap-4 sm:self-auto sm:justify-self-end">
+      <div class="gradient-text text-center font-extrabold tracking-tighter text-6xl md:text-8xl">
+        <div class="title-word">Create</div>
+        <div class="title-word">Design</div>
+        <div class="title-word">Build</div>
       </div>
     </div>
-    <div
-      class="w-2/3 max-w-3xl self-center sm:w-10/12 sm:self-auto sm:justify-self-start"
-    >
+    
+    <div class="splash-content w-2/3 max-w-3xl self-center sm:w-10/12 sm:self-auto sm:justify-self-start">
       <div class="text-white text-xl md:text-2xl leading-relaxed">
-        <p class="mb-4">Transforming ideas into</p>
-        <p class="text-primary text-3xl md:text-4xl font-bold mb-6">Tailored Digital Solutions</p>
+        <p class="mb-4 content-item">Transforming ideas into</p>
+        <p class="text-primary text-3xl md:text-4xl font-bold mb-6 content-item">Tailored Digital Solutions</p>
         <div class="space-y-1">
-          <div class="flex items-center gap-2">
-            <Icon name="mdi:check-circle" class="h-5 w-5 text-primary" />
+          <div class="flex items-center gap-2 content-item">
+            <div class="check-circle">
+              <Icon name="mdi:check-circle" class="h-5 w-5 text-primary" />
+            </div>
             <p>Custom Business Applications</p>
           </div>
-          <div class="flex items-center gap-2">
-            <Icon name="mdi:check-circle" class="h-5 w-5 text-primary" />
+          <div class="flex items-center gap-2 content-item">
+            <div class="check-circle">
+              <Icon name="mdi:check-circle" class="h-5 w-5 text-primary" />
+            </div>
             <p>Modern Web & Mobile Development</p>
           </div>
-          <div class="flex items-center gap-2">
-            <Icon name="mdi:check-circle" class="h-5 w-5 text-primary" />
+          <div class="flex items-center gap-2 content-item">
+            <div class="check-circle">
+              <Icon name="mdi:check-circle" class="h-5 w-5 text-primary" />
+            </div>
             <p>Strategic Technology Consulting</p>
           </div>
         </div>
-        <div class="mt-8">
+        <div class="mt-8 content-item">
           <a 
             href="#intro" 
-            class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-md hover:bg-blue-600 transition-colors"
+            class="splash-button inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-md hover:bg-blue-600 transition-colors"
           >
             Learn More
             <Icon name="mdi:arrow-right" class="h-5 w-5" />
@@ -64,9 +66,142 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
 </section>
 
 <style>
+  .gradient-text {
+    background-image: linear-gradient(45deg, var(--tw-gradient-stops));
+    --tw-gradient-from: #818cf8;
+    --tw-gradient-to: #d8b4fe;
+    --tw-gradient-stops: var(--tw-gradient-from), #c084fc, var(--tw-gradient-to);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 150% 150%;
+    animation: gradient 8s ease infinite;
+  }
+  
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  /* Remove particle styling */
+  
+  .title-word, .content-item, .check-circle {
+    opacity: 0;
+  }
+  
+  .splash-button {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .splash-button::after {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .splash-button:hover::after {
+    opacity: 1;
+  }
+  
   @media (prefers-reduced-motion: reduce) {
     video {
       @apply hidden;
     }
+    
+    .title-word, .content-item, .check-circle {
+      opacity: 1 !important;
+      transform: none !important;
+    }
   }
 </style>
+
+<script>
+  function animateSplashScreen() {
+    // Animate title words
+    const titleWords = document.querySelectorAll('.title-word');
+    
+    titleWords.forEach((word, index) => {
+      const el = word as HTMLElement;
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(-20px)';
+      
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }, 500 + (index * 300));
+    });
+    
+    // Animate content items
+    const contentItems = document.querySelectorAll('.content-item');
+    
+    contentItems.forEach((item, index) => {
+      const el = item as HTMLElement;
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }, 1200 + (index * 200));
+    });
+    
+    // Animate check circles
+    const checkCircles = document.querySelectorAll('.check-circle');
+    
+    checkCircles.forEach((circle, index) => {
+      const el = circle as HTMLElement;
+      el.style.opacity = '0';
+      el.style.transform = 'scale(0)';
+      
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+        el.style.opacity = '1';
+        el.style.transform = 'scale(1)';
+      }, 1800 + (index * 150));
+    });
+  }
+  
+  // Interactive elements on scroll
+  function setupScrollInteraction() {
+    const splashSection = document.querySelector('section');
+    if (!splashSection) return;
+    
+    window.addEventListener('scroll', () => {
+      const scrollPos = window.scrollY;
+      const opacity = Math.max(0, 1 - scrollPos / 400);
+      
+      // Parallax effect on title
+      const title = document.querySelector('.splash-title');
+      if (title) {
+        (title as HTMLElement).style.transform = `translateY(${scrollPos * 0.2}px)`;
+      }
+      
+      // Fade out content with parallax
+      const content = document.querySelector('.splash-content');
+      if (content) {
+        (content as HTMLElement).style.opacity = opacity.toString();
+        (content as HTMLElement).style.transform = `translateY(${scrollPos * 0.1}px)`;
+      }
+    });
+  }
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    animateSplashScreen();
+    setupScrollInteraction();
+  });
+</script>
