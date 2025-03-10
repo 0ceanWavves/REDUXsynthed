@@ -65,7 +65,7 @@ const description =
     <Splash />
     <div class="relative">
       <!-- Wave canvas only shown on desktop -->
-      <canvas id="wave-canvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-20 hidden md:block"></canvas>
+      <canvas id="wave-canvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30 hidden md:block"></canvas>
       <div class="relative space-y-24 px-8 py-32">
         <Intro />
         <Features />
@@ -115,9 +115,9 @@ const description =
   class Wave {
     constructor(
       private canvas: HTMLCanvasElement,
-      private freq: number = 0.005,
+      private freq: number = 0.008,
       private phase: number = 0,
-      private amplitude: number = 50
+      private amplitude: number = 70
     ) {
       this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
       this.canvas.width = window.innerWidth;
@@ -133,13 +133,14 @@ const description =
           x: Math.random() * this.canvas.width,
           y: Math.random() * this.canvas.height,
           angle: Math.random() * Math.PI * 2,
-          speed: 0.2 + Math.random() * 0.3
+          speed: 0.5 + Math.random() * 0.5,
+          size: 60 + Math.random() * 40
         });
       }
     }
     
     private ctx: CanvasRenderingContext2D;
-    private centers: {x: number, y: number, angle: number, speed: number}[];
+    private centers: {x: number, y: number, angle: number, speed: number, size: number}[];
     private lastFrameTime: number;
     
     animate = (currentTime: number) => {
@@ -160,17 +161,18 @@ const description =
       }
       
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.ctx.strokeStyle = 'rgba(96, 165, 250, 0.3)';
-      this.ctx.lineWidth = 1;
+      this.ctx.strokeStyle = 'rgba(96, 165, 250, 0.4)';
+      this.ctx.lineWidth = 1.5;
       
-      this.phase += 0.004;
+      this.phase += 0.01;
       
       this.centers.forEach(center => {
         center.angle += center.speed / 100;
-        center.x = this.canvas.width * (0.5 + 0.3 * Math.cos(center.angle));
-        center.y = this.canvas.height * (0.5 + 0.3 * Math.sin(center.angle));
         
-        this.drawWave(center.x, center.y);
+        center.x = this.canvas.width * (0.5 + 0.4 * Math.cos(center.angle));
+        center.y = this.canvas.height * (0.5 + 0.4 * Math.sin(center.angle * 0.8));
+        
+        this.drawWave(center.x, center.y, center.size);
       });
       
       requestAnimationFrame(this.animate);
@@ -184,13 +186,16 @@ const description =
       );
     }
     
-    drawWave(centerX: number, centerY: number) {
+    drawWave(centerX: number, centerY: number, size: number) {
       this.ctx.beginPath();
       
       for (let i = 0; i < Math.PI * 2; i += 0.1) {
-        const wave = Math.sin(i * 8 + this.phase) * this.amplitude / 8;
-        const x = centerX + Math.cos(i) * (80 + wave);
-        const y = centerY + Math.sin(i) * (80 + wave);
+        const wave1 = Math.sin(i * 6 + this.phase) * this.amplitude / 8;
+        const wave2 = Math.sin(i * 4 + this.phase * 1.3) * this.amplitude / 12;
+        const waveHeight = wave1 + wave2;
+        
+        const x = centerX + Math.cos(i) * (size + waveHeight);
+        const y = centerY + Math.sin(i) * (size + waveHeight);
         
         if (i === 0) {
           this.ctx.moveTo(x, y);
@@ -201,6 +206,12 @@ const description =
       
       this.ctx.closePath();
       this.ctx.stroke();
+      
+      this.ctx.save();
+      this.ctx.strokeStyle = 'rgba(96, 165, 250, 0.1)';
+      this.ctx.lineWidth = 4;
+      this.ctx.stroke();
+      this.ctx.restore();
     }
   }
   
