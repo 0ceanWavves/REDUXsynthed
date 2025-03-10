@@ -55,7 +55,14 @@ const features: Array<FeatureItem> = [
         <li class="service-card" data-index={index}>
           <div class="service-card-inner flex flex-col items-center gap-4 border border-default bg-offset p-6 h-full">
             <div class="icon-container h-16 w-16 rounded-full border-2 border-current p-3">
-              <Icon name={icon} class="h-full w-full service-icon" />
+              <div class="icon-3d-wrapper">
+                <div class="icon-3d-face icon-3d-front">
+                  <Icon name={icon} class="h-full w-full service-icon" />
+                </div>
+                <div class="icon-3d-face icon-3d-back">
+                  <span class="number-indicator">{index + 1}</span>
+                </div>
+              </div>
             </div>
             <p class="text-center font-extrabold text-xl">{title}</p>
             <p class="text-center text-offset text-sm">{description}</p>
@@ -78,43 +85,97 @@ const features: Array<FeatureItem> = [
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     transform-style: preserve-3d;
     position: relative;
+    border-radius: 10px;
+    overflow: hidden;
   }
 
   .icon-container {
     position: relative;
     transform-style: preserve-3d;
     animation: float 6s ease-in-out infinite;
+    border-radius: 50%;
+    overflow: visible;
+    background: transparent;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .icon-3d-wrapper {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: rotate3d 12s infinite linear;
+  }
+  
+  .icon-3d-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .icon-3d-front {
+    color: var(--color-primary);
+    background: radial-gradient(ellipse at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
+    transform: translateZ(1px);
+  }
+  
+  .icon-3d-back {
+    background: radial-gradient(ellipse at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
+    transform: rotateY(180deg);
+  }
+  
+  .number-indicator {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--color-primary);
   }
 
   @keyframes float {
     0%, 100% {
-      transform: translateY(0px);
+      transform: translateY(0px) rotateZ(0deg);
     }
     50% {
-      transform: translateY(-10px);
+      transform: translateY(-10px) rotateZ(5deg);
     }
   }
-
-  .service-icon {
-    transform-style: preserve-3d;
-  }
-
-  @keyframes rotate {
+  
+  @keyframes rotate3d {
     0% {
-      transform: rotateY(0deg);
+      transform: rotateY(0deg) rotateX(10deg);
+    }
+    50% {
+      transform: rotateY(180deg) rotateX(-10deg);
     }
     100% {
-      transform: rotateY(360deg);
+      transform: rotateY(360deg) rotateX(10deg);
     }
   }
 
   @keyframes pulse {
     0%, 100% {
       transform: scale(1);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
     }
     50% {
-      transform: scale(1.1);
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
     }
+  }
+  
+  /* Service card hover effect */
+  .service-card-inner:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  .service-card-inner:hover .icon-3d-wrapper {
+    animation-play-state: paused;
+    transform: rotateY(180deg);
   }
 </style>
 
@@ -217,3 +278,4 @@ const features: Array<FeatureItem> = [
     setupIconEffects();
   });
 </script>
+
