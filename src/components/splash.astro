@@ -7,21 +7,22 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
 
 <section class="relative h-full bg-black pb-16 md:pb-0">
   <div class="absolute inset-0 overflow-hidden bg-gradient-to-b from-gray-900 to-black">
-    <!-- Video background - only loaded on desktop -->
+    <!-- Video background - optimized but available on all devices -->
     <video 
-      class="absolute min-h-full min-w-full object-cover opacity-40 hidden md:block"
+      class="absolute min-h-full min-w-full object-cover opacity-40"
       autoplay 
       loop 
       muted 
       playsinline
       preload="none"
       data-poster="/images/video-poster.jpg"
+      crossorigin="anonymous"
     >
       <source src="https://pub-c929c30fe7224689b55ff91bc5136ff1.r2.dev/landing_page_video.mp4" type="video/mp4" />
     </video>
     
-    <!-- Static background for mobile - better performance -->
-    <div class="absolute inset-0 opacity-30 md:hidden">
+    <!-- Static background pattern as fallback/enhancement -->
+    <div class="absolute inset-0 opacity-30">
       <div class="w-full h-full bg-dots-pattern"></div>
     </div>
   </div>
