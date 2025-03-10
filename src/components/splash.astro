@@ -14,11 +14,10 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
       loop 
       muted 
       playsinline
-      preload="none"
-      data-poster="/images/video-poster.jpg"
-      crossorigin="anonymous"
+      preload="metadata"
+      poster="/images/video-poster.jpg"
     >
-      <source src="https://pub-c929c30fe7224689b55ff91bc5136ff1.r2.dev/landing_page_video.mp4" type="video/mp4" />
+      <source src="/videos/landing_page_video.mp4" type="video/mp4" />
     </video>
     
     <!-- Static background pattern as fallback/enhancement -->
@@ -237,16 +236,39 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
     });
   }
   
-  // Initialize video only if needed
+  // Initialize video properly on all devices
   function initVideo() {
-    if (window.matchMedia('(min-width: 768px)').matches) {
-      const video = document.querySelector('video');
-      if (video) {
-        video.removeAttribute('preload');
-        // Load the video
-        video.load();
+    const video = document.querySelector('video');
+    if (!video) return;
+    
+    // Smaller viewport devices will use poster image first for performance
+    const isSmallDevice = window.innerWidth < 768;
+    
+    // Add event listeners for video loading
+    video.addEventListener('loadedmetadata', function() {
+      // Video metadata loaded successfully
+      if (isSmallDevice) {
+        // For mobile: only play if the user has scrolled less than 100px (still on splash screen)
+        if (window.scrollY < 100) {
+          video.play().catch(e => {
+            // Fallback if autoplay fails on mobile
+            console.log('Video autoplay not allowed on this device');
+          });
+        }
+      } else {
+        // Desktop: play immediately
+        video.play().catch(e => {
+          console.log('Video autoplay not allowed on this device');
+        });
       }
-    }
+    });
+    
+    // Add error handling
+    video.addEventListener('error', function() {
+      // Hide video and show only the pattern background if error
+      video.style.display = 'none';
+      console.log('Video failed to load, using fallback background');
+    });
   }
   
   // Wait for the DOM to be fully loaded
@@ -254,10 +276,8 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
     // Initialize animations
     animateSplashScreen();
     
-    // Only setup scroll interaction if not on mobile
-    if (window.innerWidth >= 768) {
-      setupScrollInteraction();
-    }
+    // Setup scroll interaction on all devices (mobile friendly version)
+    setupScrollInteraction();
     
     // Initialize video loading
     initVideo();
