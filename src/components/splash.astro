@@ -6,16 +6,24 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
 ---
 
 <section class="relative h-full bg-black pb-16 md:pb-0">
-  <div class="absolute inset-0 overflow-hidden">
+  <div class="absolute inset-0 overflow-hidden bg-gradient-to-b from-gray-900 to-black">
+    <!-- Video background - only loaded on desktop -->
     <video 
-      class="absolute min-h-full min-w-full object-cover opacity-40"
+      class="absolute min-h-full min-w-full object-cover opacity-40 hidden md:block"
       autoplay 
       loop 
       muted 
       playsinline
+      preload="none"
+      data-poster="/images/video-poster.jpg"
     >
       <source src="https://pub-c929c30fe7224689b55ff91bc5136ff1.r2.dev/landing_page_video.mp4" type="video/mp4" />
     </video>
+    
+    <!-- Static background for mobile - better performance -->
+    <div class="absolute inset-0 opacity-30 md:hidden">
+      <div class="w-full h-full bg-dots-pattern"></div>
+    </div>
   </div>
   
   <div class="relative grid h-full place-items-center sm:grid-cols-2 gap-16 sm:gap-8 pt-16 sm:pt-0">
@@ -80,10 +88,16 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
     }
   }
   
-  /* Remove particle styling */
+  /* Background pattern for mobile */
+  .bg-dots-pattern {
+    background-image: radial-gradient(rgba(96, 165, 250, 0.2) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
   
+  /* Title and content animation optimizations */
   .title-word, .content-item, .check-circle {
     opacity: 0;
+    will-change: opacity, transform;
   }
   
   @media (prefers-reduced-motion: reduce) {
@@ -95,83 +109,156 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
       opacity: 1 !important;
       transform: none !important;
     }
+    
+    .gradient-text {
+      animation: none;
+    }
   }
 </style>
 
 <script>
+  // Use IntersectionObserver for more efficient animation triggering
   function animateSplashScreen() {
-    // Animate title words
+    // More efficient title word animation
     const titleWords = document.querySelectorAll('.title-word');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          titleWords.forEach((word, index) => {
+            const el = word as HTMLElement;
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+              el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+              el.style.opacity = '1';
+              el.style.transform = 'translateY(0)';
+            }, 200 + (index * 200));
+          });
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
     
-    titleWords.forEach((word, index) => {
-      const el = word as HTMLElement;
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(-20px)';
-      
-      setTimeout(() => {
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0)';
-      }, 500 + (index * 300));
-    });
+    if (titleWords.length > 0) {
+      observer.observe(titleWords[0].parentElement as HTMLElement);
+    }
     
-    // Animate content items
+    // More efficient content animation
     const contentItems = document.querySelectorAll('.content-item');
+    const contentObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          contentItems.forEach((item, index) => {
+            const el = item as HTMLElement;
+            setTimeout(() => {
+              el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+              el.style.opacity = '1';
+              el.style.transform = 'translateY(0)';
+            }, 600 + (index * 150));
+          });
+          contentObserver.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
     
-    contentItems.forEach((item, index) => {
-      const el = item as HTMLElement;
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(20px)';
-      
-      setTimeout(() => {
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0)';
-      }, 1200 + (index * 200));
-    });
+    if (contentItems.length > 0) {
+      contentItems.forEach(item => {
+        (item as HTMLElement).style.opacity = '0';
+        (item as HTMLElement).style.transform = 'translateY(20px)';
+      });
+      contentObserver.observe(contentItems[0] as HTMLElement);
+    }
     
-    // Animate check circles
+    // More efficient check circle animation
     const checkCircles = document.querySelectorAll('.check-circle');
+    const checkObserver = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          checkCircles.forEach((circle, index) => {
+            const el = circle as HTMLElement;
+            setTimeout(() => {
+              el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+              el.style.opacity = '1';
+              el.style.transform = 'scale(1)';
+            }, 800 + (index * 100));
+          });
+          checkObserver.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
     
-    checkCircles.forEach((circle, index) => {
-      const el = circle as HTMLElement;
-      el.style.opacity = '0';
-      el.style.transform = 'scale(0)';
-      
-      setTimeout(() => {
-        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        el.style.opacity = '1';
-        el.style.transform = 'scale(1)';
-      }, 1800 + (index * 150));
-    });
+    if (checkCircles.length > 0) {
+      checkCircles.forEach(circle => {
+        (circle as HTMLElement).style.opacity = '0';
+        (circle as HTMLElement).style.transform = 'scale(0)';
+      });
+      checkObserver.observe(checkCircles[0].parentElement as HTMLElement);
+    }
   }
   
-  // Interactive elements on scroll
+  // More efficient scroll interaction with throttling
   function setupScrollInteraction() {
+    if (typeof window === 'undefined') return;
+    
     const splashSection = document.querySelector('section');
     if (!splashSection) return;
     
+    let ticking = false;
+    
     window.addEventListener('scroll', () => {
-      const scrollPos = window.scrollY;
-      const opacity = Math.max(0, 1 - scrollPos / 400);
-      
-      // Parallax effect on title
-      const title = document.querySelector('.splash-title');
-      if (title) {
-        (title as HTMLElement).style.transform = `translateY(${scrollPos * 0.2}px)`;
-      }
-      
-      // Fade out content with parallax
-      const content = document.querySelector('.splash-content');
-      if (content) {
-        (content as HTMLElement).style.opacity = opacity.toString();
-        (content as HTMLElement).style.transform = `translateY(${scrollPos * 0.1}px)`;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollPos = window.scrollY;
+          const opacity = Math.max(0, 1 - scrollPos / 400);
+          
+          // Parallax effect on title
+          const title = document.querySelector('.splash-title');
+          if (title) {
+            (title as HTMLElement).style.transform = `translateY(${scrollPos * 0.1}px)`;
+          }
+          
+          // Fade out content with parallax
+          const content = document.querySelector('.splash-content');
+          if (content) {
+            (content as HTMLElement).style.opacity = opacity.toString();
+            (content as HTMLElement).style.transform = `translateY(${scrollPos * 0.05}px)`;
+          }
+          
+          ticking = false;
+        });
+        
+        ticking = true;
       }
     });
   }
   
+  // Initialize video only if needed
+  function initVideo() {
+    if (window.matchMedia('(min-width: 768px)').matches) {
+      const video = document.querySelector('video');
+      if (video) {
+        video.removeAttribute('preload');
+        // Load the video
+        video.load();
+      }
+    }
+  }
+  
+  // Wait for the DOM to be fully loaded
   document.addEventListener('DOMContentLoaded', () => {
+    // Initialize animations
     animateSplashScreen();
-    setupScrollInteraction();
+    
+    // Only setup scroll interaction if not on mobile
+    if (window.innerWidth >= 768) {
+      setupScrollInteraction();
+    }
+    
+    // Initialize video loading
+    initVideo();
   });
 </script>
