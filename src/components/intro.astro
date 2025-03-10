@@ -5,7 +5,7 @@ import ContentSection from "~/components/content-section.astro";
 
 <ContentSection title="Building Digital Excellence" id="intro">
   <div class="intro-icon" slot="eyebrow">
-    <Icon name="mdi:code-braces" class="h-32 w-32" />
+    <img src="/images/synthed-logo.png" alt="Synthed Logo" class="h-80 w-80 object-contain" />
     <div class="intro-icon-glow"></div>
   </div>
   <Fragment slot="lead">
@@ -48,6 +48,17 @@ import ContentSection from "~/components/content-section.astro";
   .intro-icon {
     position: relative;
     animation: float 6s ease-in-out infinite;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .intro-icon img {
+    width: 100%;
+    height: auto;
+    max-width: 364px;
+    z-index: 2;
+    filter: drop-shadow(0 0 14px rgba(59, 130, 246, 0.4));
   }
   
   .intro-icon-glow {
@@ -55,8 +66,8 @@ import ContentSection from "~/components/content-section.astro";
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 120px;
-    height: 120px;
+    width: 390px;
+    height: 390px;
     border-radius: 50%;
     background: radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, rgba(96, 165, 250, 0) 70%);
     z-index: -1;
