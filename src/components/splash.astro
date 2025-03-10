@@ -51,15 +51,6 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
             <p>Strategic Technology Consulting</p>
           </div>
         </div>
-        <div class="mt-8 content-item">
-          <a 
-            href="#intro" 
-            class="splash-button inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-md hover:bg-blue-600 transition-colors"
-          >
-            Learn More
-            <Icon name="mdi:arrow-right" class="h-5 w-5" />
-          </a>
-        </div>
       </div>
     </div>
   </div>
@@ -93,27 +84,6 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
   
   .title-word, .content-item, .check-circle {
     opacity: 0;
-  }
-  
-  .splash-button {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .splash-button::after {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-  
-  .splash-button:hover::after {
-    opacity: 1;
   }
   
   @media (prefers-reduced-motion: reduce) {
