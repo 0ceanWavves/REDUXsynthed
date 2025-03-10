@@ -16,8 +16,9 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
       playsinline
       preload="metadata"
       poster="/images/video-poster.jpg"
+      crossorigin="anonymous"
     >
-      <source src="/videos/landing_page_video.mp4" type="video/mp4" />
+      <source src="https://pub-c929c30fe7224689b55ff91bc5136ff1.r2.dev/landing_page_video.mp4" type="video/mp4" />
     </video>
     
     <!-- Static background pattern as fallback/enhancement -->
@@ -243,9 +244,24 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
     
     // Smaller viewport devices will use poster image first for performance
     const isSmallDevice = window.innerWidth < 768;
+    let videoLoaded = false;
+    
+    // Timeout for video loading - show fallback if taking too long
+    const videoTimeout = setTimeout(() => {
+      if (!videoLoaded) {
+        // If video hasn't loaded in 5 seconds, use fallback
+        const pattern = document.querySelector('.bg-dots-pattern');
+        if (pattern) {
+          (pattern.parentElement as HTMLElement).style.opacity = '0.5'; // Make pattern more visible
+        }
+      }
+    }, 5000);
     
     // Add event listeners for video loading
-    video.addEventListener('loadedmetadata', function() {
+    video.addEventListener('loadeddata', function() {
+      videoLoaded = true;
+      clearTimeout(videoTimeout);
+      
       // Video metadata loaded successfully
       if (isSmallDevice) {
         // For mobile: only play if the user has scrolled less than 100px (still on splash screen)
@@ -265,8 +281,13 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
     
     // Add error handling
     video.addEventListener('error', function() {
+      clearTimeout(videoTimeout);
       // Hide video and show only the pattern background if error
       video.style.display = 'none';
+      const pattern = document.querySelector('.bg-dots-pattern');
+      if (pattern) {
+        (pattern.parentElement as HTMLElement).style.opacity = '0.5'; // Make pattern more visible
+      }
       console.log('Video failed to load, using fallback background');
     });
   }
