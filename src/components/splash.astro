@@ -19,6 +19,8 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
       crossorigin="anonymous"
     >
       <source src="https://pub-c929c30fe7224689b55ff91bc5136ff1.r2.dev/landing_page_video.mp4" type="video/mp4" />
+      <!-- Fallback message if video doesn't load -->
+      Your browser does not support the video tag.
     </video>
     
     <!-- Static background pattern as fallback/enhancement -->
@@ -39,7 +41,7 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
     <div class="splash-content w-2/3 max-w-3xl self-center sm:w-10/12 sm:self-auto sm:justify-self-start">
       <div class="text-white text-xl md:text-2xl leading-relaxed">
         <p class="mb-4 content-item">Transforming ideas into</p>
-        <p class="text-primary text-3xl md:text-4xl font-bold mb-6 content-item">Tailored Digital Solutions</p>
+        <p class="text-primary text-3xl md:text-4xl font-bold mb-6 content-item">Digital Solutions</p>
         <div class="space-y-1 mb-12 md:mb-0">
           <div class="flex items-center gap-2 content-item">
             <div class="check-circle">
@@ -237,59 +239,95 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
     });
   }
   
-  // Initialize video properly on all devices
+  // More reliable video initialization
   function initVideo() {
     const video = document.querySelector('video');
     if (!video) return;
     
-    // Smaller viewport devices will use poster image first for performance
-    const isSmallDevice = window.innerWidth < 768;
+    // Show pattern background immediately for better initial loading appearance
+    const pattern = document.querySelector('.bg-dots-pattern');
+    if (pattern && pattern.parentElement) {
+      (pattern.parentElement as HTMLElement).style.opacity = '0.5';
+    }
+    
+    // Handle video errors and apply fallbacks
     let videoLoaded = false;
     
-    // Timeout for video loading - show fallback if taking too long
-    const videoTimeout = setTimeout(() => {
-      if (!videoLoaded) {
-        // If video hasn't loaded in 5 seconds, use fallback
-        const pattern = document.querySelector('.bg-dots-pattern');
-        if (pattern) {
-          (pattern.parentElement as HTMLElement).style.opacity = '0.5'; // Make pattern more visible
-        }
-      }
-    }, 5000);
-    
-    // Add event listeners for video loading
-    video.addEventListener('loadeddata', function() {
+    video.addEventListener('loadedmetadata', function() {
       videoLoaded = true;
-      clearTimeout(videoTimeout);
-      
-      // Video metadata loaded successfully
-      if (isSmallDevice) {
-        // For mobile: only play if the user has scrolled less than 100px (still on splash screen)
-        if (window.scrollY < 100) {
-          video.play().catch(e => {
-            // Fallback if autoplay fails on mobile
-            console.log('Video autoplay not allowed on this device');
-          });
+      // If the video metadata loaded successfully, attempt to play
+      video.play().catch(e => {
+        console.log('Video autoplay not allowed. Error:', e);
+        // Keep pattern visible if video doesn't autoplay
+        if (pattern && pattern.parentElement) {
+          (pattern.parentElement as HTMLElement).style.opacity = '0.5';
         }
-      } else {
-        // Desktop: play immediately
-        video.play().catch(e => {
-          console.log('Video autoplay not allowed on this device');
-        });
+      });
+    });
+    
+    video.addEventListener('playing', function() {
+      // Once playing successfully, adjust pattern opacity
+      if (pattern && pattern.parentElement) {
+        (pattern.parentElement as HTMLElement).style.opacity = '0.3';
       }
     });
     
     // Add error handling
-    video.addEventListener('error', function() {
-      clearTimeout(videoTimeout);
-      // Hide video and show only the pattern background if error
+    video.addEventListener('error', function(e) {
+      console.error('Video failed to load. Error:', e);
+      // Hide video and make pattern more visible on error
       video.style.display = 'none';
-      const pattern = document.querySelector('.bg-dots-pattern');
-      if (pattern) {
-        (pattern.parentElement as HTMLElement).style.opacity = '0.5'; // Make pattern more visible
+      if (pattern && pattern.parentElement) {
+        (pattern.parentElement as HTMLElement).style.opacity = '0.5';
       }
-      console.log('Video failed to load, using fallback background');
     });
+    
+    // Add a staggered retry mechanism for loading issues (like CSP blocks)
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    function retryVideoLoad() {
+      if (retryCount < maxRetries && !videoLoaded && video) {
+        retryCount++;
+        console.log(`Retrying video load attempt ${retryCount}...`);
+        
+        // Create a new source element
+        const source = document.createElement('source');
+        source.src = 'https://pub-c929c30fe7224689b55ff91bc5136ff1.r2.dev/landing_page_video.mp4';
+        source.type = 'video/mp4';
+        
+        // Remove any existing sources
+        while (video.firstChild) {
+          video.removeChild(video.firstChild);
+        }
+        
+        // Add the new source
+        video.appendChild(source);
+        
+        // Force load
+        video.load();
+        
+        // Try again in 2 seconds if needed
+        setTimeout(() => {
+          if (!videoLoaded && video) {
+            retryVideoLoad();
+          }
+        }, 2000);
+      } else if (!videoLoaded) {
+        console.log('Max retries reached, using fallback pattern');
+        // Ensure fallback is visible after max retries
+        if (pattern && pattern.parentElement) {
+          (pattern.parentElement as HTMLElement).style.opacity = '0.5';
+        }
+      }
+    }
+    
+    // Start first retry after 3 seconds if video hasn't loaded
+    setTimeout(() => {
+      if (!videoLoaded && video) {
+        retryVideoLoad();
+      }
+    }, 3000);
   }
   
   // Wait for the DOM to be fully loaded

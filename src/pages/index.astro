@@ -17,62 +17,62 @@ const description =
 
 <!doctype html>
 <html lang="en" class="h-full motion-safe:scroll-smooth" data-theme="dark">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta name="generator" content={generator} />
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" href="/synthedlogo.svg" type="image/svg+xml" />
+		<meta name="generator" content={generator} />
 
     <title>Synthed - Custom Software & Application Development</title>
     <meta name="description" content={description} />
+		
+		<!-- social media -->
+		<meta property="og:title" content="Synthed - Custom Software & Application Development" />
+		<meta property="og:type" content="website" />
+		<meta property="og:description" content={description} />
+		<meta property="og:image" content={image} />
+		<meta property="og:url" content={site} />
+		<meta name="twitter:card" content="summary_large_image" />
+		
+		<!-- initialize theme -->
+		<script is:inline>
+			const themeSaved = localStorage.getItem("theme");
 
-    <!-- social media -->
-    <meta property="og:title" content="Synthed - Custom Software & Application Development" />
-    <meta property="og:type" content="website" />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={image} />
-    <meta property="og:url" content={site} />
-    <meta name="twitter:card" content="summary_large_image" />
+			if (themeSaved) {
+				document.documentElement.dataset.theme = themeSaved;
+			} else {
+				const prefersDark = window.matchMedia(
+					"(prefers-color-scheme: dark)",
+				).matches;
+				document.documentElement.dataset.theme = prefersDark ? "dark" : "light";
+			}
 
-    <!-- initialize theme -->
-    <script is:inline>
-      const themeSaved = localStorage.getItem("theme");
-
-      if (themeSaved) {
-        document.documentElement.dataset.theme = themeSaved;
-      } else {
-        const prefersDark = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        document.documentElement.dataset.theme = prefersDark ? "dark" : "light";
-      }
-
-      window
-        .matchMedia("(prefers-color-scheme: dark)")
-        .addEventListener("change", (event) => {
-          if (!localStorage.getItem("theme")) {
-            document.documentElement.dataset.theme = event.matches
-              ? "dark"
-              : "light";
-          }
-        });
-    </script>
-  </head>
+			window
+				.matchMedia("(prefers-color-scheme: dark)")
+				.addEventListener("change", (event) => {
+					if (!localStorage.getItem("theme")) {
+						document.documentElement.dataset.theme = event.matches
+							? "dark"
+							: "light";
+					}
+				});
+		</script>
+	</head>
   <body
     class="h-full overflow-x-hidden bg-default text-default text-base selection:bg-secondary selection:text-white"
   >
     <Header />
-    <Splash />
+		<Splash />
     <div class="relative">
       <!-- Wave canvas shown on all devices (optimized for mobile) -->
-      <canvas id="wave-canvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-30"></canvas>
+      <canvas id="wave-canvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-40"></canvas>
       <div class="relative space-y-24 px-8 py-32">
         <Intro />
-        <Features />
+				<Features />
         <Process />
         <Projects />
       </div>
-      <Footer />
+			<Footer />
     </div>
     
     <!-- Cursor effect only on desktop -->
@@ -108,40 +108,79 @@ const description =
 </style>
 
 <script>
-  // Only initialize performance-intensive features if not on mobile
+  // Initialize for all devices
   const isMobile = window.innerWidth < 768;
   
-  // Wave canvas class with performance optimizations
+  document.addEventListener('DOMContentLoaded', () => {
+    // Initialize wave canvas
+    const waveCanvas = document.getElementById('wave-canvas') as HTMLCanvasElement;
+    if (waveCanvas) {
+      const wave = new Wave(waveCanvas);
+      requestAnimationFrame(wave.animate);
+    }
+    
+    // Init cursor effect (desktop only)
+    if (!isMobile) {
+      const cursorGlow = document.getElementById('cursor-glow');
+      if (!cursorGlow) return;
+      
+      cursorGlow.style.opacity = '1';
+      
+      document.addEventListener('mousemove', (e) => {
+        requestAnimationFrame(() => {
+          cursorGlow.style.transform = `translate(${e.clientX - 25}px, ${e.clientY - 25}px)`;
+        });
+      });
+    }
+  });
+  
+  // Wave animation with fewer, thicker, and filled-in waves
   class Wave {
     constructor(
-      private canvas: HTMLCanvasElement,
-      private freq: number = 0.008,
-      private phase: number = 0,
-      private amplitude: number = 70
+      private canvas: HTMLCanvasElement
     ) {
       this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
       this.canvas.width = window.innerWidth;
       this.canvas.height = window.innerHeight;
-      this.centers = [];
       this.lastFrameTime = 0;
+      this.amplitude = isMobile ? 35 : 50; // Slightly reduced amplitude
       
-      // Create less wave centers on mobile
-      const maxCenters = isMobile ? 3 : 8;
+      // Create wave rows - REDUCED number of waves
+      this.waves = [];
       
-      for (let i = 0; i < maxCenters; i++) {
-        this.centers.push({
-          x: Math.random() * this.canvas.width,
-          y: Math.random() * this.canvas.height,
-          angle: Math.random() * Math.PI * 2,
-          speed: isMobile ? 0.2 + Math.random() * 0.3 : 0.5 + Math.random() * 0.5, // Slower on mobile
-          size: isMobile ? 40 + Math.random() * 30 : 60 + Math.random() * 40 // Smaller on mobile
+      // Fewer wave rows with better spacing
+      const waveCount = isMobile ? 2 : 3;
+      
+      // Calculate vertical spacing to evenly distribute waves
+      const screenHeight = this.canvas.height;
+      const startPosition = screenHeight * 0.5; // Start waves at middle of screen
+      const spacing = screenHeight * 0.2; // Space between waves
+      
+      for (let i = 0; i < waveCount; i++) {
+        // Create waves with different speeds and more vibrant colors
+        this.waves.push({
+          y: startPosition + (i * spacing), // Distribute from middle to bottom
+          speed: 0.2 + (i * 0.05), // Increased speed for better flow
+          frequency: 0.008 - (i * 0.001), // Lower frequency for longer waves
+          amplitude: this.amplitude - (i * 5), // Less amplitude difference for more filling
+          phase: i * 2, // Offset phases for variety
+          color: i % 2 === 0 ? 
+            'rgba(96, 165, 250, 0.25)' : // Blue - reduced opacity 
+            'rgba(74, 222, 128, 0.2)'    // Green - reduced opacity
         });
       }
+      
+      // Resize handling
+      window.addEventListener('resize', () => {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      });
     }
     
     private ctx: CanvasRenderingContext2D;
-    private centers: {x: number, y: number, angle: number, speed: number, size: number}[];
+    private waves: {y: number, speed: number, frequency: number, amplitude: number, phase: number, color: string}[];
     private lastFrameTime: number;
+    private amplitude: number;
     
     animate = (currentTime: number) => {
       if (!this.canvas) return;
@@ -164,25 +203,13 @@ const description =
       }
       
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      this.ctx.strokeStyle = isMobile ? 'rgba(96, 165, 250, 0.2)' : 'rgba(96, 165, 250, 0.4)'; // Lower opacity on mobile
-      this.ctx.lineWidth = isMobile ? 1 : 1.5; // Thinner lines on mobile
       
-      // Slower animation on mobile
-      this.phase += isMobile ? 0.005 : 0.01;
-      
-      this.centers.forEach(center => {
-        center.angle += center.speed / 100;
+      // Draw each wave row
+      this.waves.forEach(wave => {
+        // Advance the phase
+        wave.phase += wave.speed / 100;
         
-        // Simpler movement pattern on mobile
-        if (isMobile) {
-          center.x = this.canvas.width * (0.5 + 0.3 * Math.cos(center.angle));
-          center.y = this.canvas.height * (0.5 + 0.3 * Math.sin(center.angle));
-        } else {
-          center.x = this.canvas.width * (0.5 + 0.4 * Math.cos(center.angle));
-          center.y = this.canvas.height * (0.5 + 0.4 * Math.sin(center.angle * 0.8));
-        }
-        
-        this.drawWave(center.x, center.y, center.size);
+        this.drawWave(wave.y, wave.frequency, wave.amplitude, wave.phase, wave.color);
       });
       
       requestAnimationFrame(this.animate);
@@ -196,118 +223,43 @@ const description =
       );
     }
     
-    drawWave(centerX: number, centerY: number, size: number) {
+    drawWave(centerY: number, frequency: number, amplitude: number, phase: number, color: string) {
+      // Create gradient for more realistic water effect
+      const gradient = this.ctx.createLinearGradient(0, centerY - amplitude, 0, this.canvas.height);
+      
+      // Extract base color
+      const baseColor = color.replace(/[\d.]+\)$/, '');
+      
+      // Add gradient stops with more subtle values
+      gradient.addColorStop(0, baseColor + '0.4)'); // Less opaque at top of wave
+      gradient.addColorStop(0.7, baseColor + '0.2)'); // More transparent toward bottom
+      gradient.addColorStop(1, baseColor + '0.05)'); // Almost transparent at bottom
+      
       this.ctx.beginPath();
       
-      // Simpler wave pattern on mobile
-      if (isMobile) {
-        for (let i = 0; i < Math.PI * 2; i += 0.2) { // Fewer points for mobile
-          const wave = Math.sin(i * 4 + this.phase) * this.amplitude / 10;
-          const x = centerX + Math.cos(i) * (size + wave);
-          const y = centerY + Math.sin(i) * (size + wave);
-          
-          if (i === 0) {
-            this.ctx.moveTo(x, y);
-          } else {
-            this.ctx.lineTo(x, y);
-          }
-        }
-      } else {
-        for (let i = 0; i < Math.PI * 2; i += 0.1) {
-          const wave1 = Math.sin(i * 6 + this.phase) * this.amplitude / 8;
-          const wave2 = Math.sin(i * 4 + this.phase * 1.3) * this.amplitude / 12;
-          const waveHeight = wave1 + wave2;
-          
-          const x = centerX + Math.cos(i) * (size + waveHeight);
-          const y = centerY + Math.sin(i) * (size + waveHeight);
-          
-          if (i === 0) {
-            this.ctx.moveTo(x, y);
-          } else {
-            this.ctx.lineTo(x, y);
-          }
-        }
-      }
+      // Start at the left edge of the canvas, at the bottom
+      this.ctx.moveTo(0, this.canvas.height);
       
-      this.ctx.closePath();
-      this.ctx.stroke();
+      // Draw path to the leftmost point of the wave
+      this.ctx.lineTo(0, centerY);
       
-      // Only add glow effect on desktop
-      if (!isMobile) {
-        this.ctx.save();
-        this.ctx.strokeStyle = 'rgba(96, 165, 250, 0.1)';
-        this.ctx.lineWidth = 4;
-        this.ctx.stroke();
-        this.ctx.restore();
-      }
-    }
-  }
-  
-  // Cursor glow effect with throttling for better performance
-  function setupCursorGlow() {
-    const cursor = document.getElementById('cursor-glow');
-    if (!cursor) return;
-    
-    let ticking = false;
-    let isVisible = false;
-    
-    document.addEventListener('mousemove', (e) => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          // Reveal cursor on first move
-          if (!isVisible) {
-            cursor.style.opacity = '1';
-            isVisible = true;
-          }
-          
-          cursor.style.transform = `translate(${e.clientX - 25}px, ${e.clientY - 25}px)`;
-          ticking = false;
-        });
+      // Draw the wave across the screen
+      for (let x = 0; x < this.canvas.width; x += 8) {
+        // Create two overlapping sine waves for more organic motion
+        const y1 = Math.sin(x * frequency + phase) * amplitude;
         
-        ticking = true;
-      }
-    });
-    
-    document.addEventListener('mouseleave', () => {
-      cursor.style.opacity = '0';
-      isVisible = false;
-    });
-  }
-  
-  // Load scripts after page content is loaded
-  document.addEventListener('DOMContentLoaded', () => {
-    // Only initialize heavy animations on desktop
-    if (!isMobile) {
-      const canvas = document.getElementById('wave-canvas') as HTMLCanvasElement;
-      if (canvas) {
-        const wave = new Wave(canvas);
-        setTimeout(() => {
-          requestAnimationFrame(wave.animate);
-        }, 500);
+        // Draw each point of the wave
+        this.ctx.lineTo(x, centerY + y1);
       }
       
-      setupCursorGlow();
+      // Complete the path to the bottom right corner and back to start
+      this.ctx.lineTo(this.canvas.width, centerY);
+      this.ctx.lineTo(this.canvas.width, this.canvas.height);
+      this.ctx.closePath();
+      
+      // Fill with gradient
+      this.ctx.fillStyle = gradient;
+      this.ctx.fill();
     }
-    
-    // Throttled mouse tracking
-    if (!isMobile) {
-      let ticking = false;
-      document.addEventListener('mousemove', (e) => {
-        if (!ticking) {
-          window.requestAnimationFrame(() => {
-            const mouseX = e.clientX / window.innerWidth;
-            const mouseY = e.clientY / window.innerHeight;
-            
-            // Subtle movement of background elements based on mouse position
-            document.documentElement.style.setProperty('--mouse-x', mouseX.toString());
-            document.documentElement.style.setProperty('--mouse-y', mouseY.toString());
-            
-            ticking = false;
-          });
-          
-          ticking = true;
-        }
-      });
-    }
-  });
+  }
 </script>
