@@ -1,47 +1,120 @@
-# Astro Landing Page <picture><source media="(prefers-color-scheme: dark)" srcset="https://astro.build/assets/press/astro-icon-light.png"><source media="(prefers-color-scheme: light)" srcset="https://astro.build/assets/press/astro-icon-dark.png"><img align="right" valign="center" height="79" width="63" src="https://astro.build/assets/press/astro-icon-dark.png" alt="Astro logo" /></picture>
+# Synthed - Interactive Web Experience
 
-> An Astro + Tailwind CSS example/template for landing pages.
+A modern, visually stunning web platform built with cutting-edge web technologies, featuring interactive 3D graphics, morphing animations, and responsive design.
 
-<div align="center">
+## Technology Stack
 
-[![Built with Astro](https://astro.badg.es/v2/built-with-astro/small.svg)](https://astro.build)
+### Core Framework
+- **[Astro](https://astro.build/)** - The main web framework, providing high-performance static site generation with zero JavaScript by default
+- **TypeScript** - For type-safe JavaScript development
 
-</div>
+### 3D Graphics & Animation
+- **[Three.js](https://threejs.org/)** - Powerful 3D library for creating and displaying 3D computer graphics in a web browser
+- **Simplex Noise** (`simplex-noise`) - Procedural noise generation for organic motion effects
+- **Custom Morphing System** - Advanced implementation of Three.js morph targets for smooth shape transitions
 
-![Screenshots of Astro Landing Page](screenshots.jpg)
+### UI Components & Icons
+- **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework for rapid UI development
+- **[Astro Icon](https://github.com/natemoo-re/astro-icon)** - Icon integration for Astro
 
-## Features
+### Performance Optimizations
+- Browser-specific rendering optimizations (Chrome, Firefox)
+- Device-specific adjustments (mobile, desktop)
+- Efficient memory management with proper resource disposal
+- Visibility-based rendering pausing
+- Intersection Observer API for efficient animations
 
-- 💨 Tailwind CSS for styling
-- 🎨 Themeable
-  - CSS variables are defined in `src/styles/theme.css` and mapped to Tailwind classes (`tailwind.config.cjs`)
-- 🌙 Dark mode
-- 📱 Responsive (layout, images, typography)
-- ♿ Accessible (as measured by https://web.dev/measure/)
-- 🔎 SEO-enabled (as measured by https://web.dev/measure/)
-- 🔗 Open Graph tags for social media sharing
-- 💅 [Prettier](https://prettier.io/) setup for both [Astro](https://github.com/withastro/prettier-plugin-astro) and [Tailwind](https://github.com/tailwindlabs/prettier-plugin-tailwindcss)
+## Key Features
 
-## Commands
+### Interactive 3D Elements
+- **Morphing Prism** - Advanced implementation that transitions between all five Platonic solids
+- **Wireframe Edges** - Dynamic edge highlighting for better shape definition
+- **User Interaction** - Fully interactive 3D elements that respond to user input
+- **Optimized Rendering** - Efficient rendering pipeline with multiple visual enhancements
 
-| Command                | Action                                            |
-| :--------------------- | :------------------------------------------------ |
-| `npm install`          | Install dependencies                              |
-| `npm run dev`          | Start local dev server at `localhost:4321`        |
-| `npm run build`        | Build your production site to `./dist/`           |
-| `npm run preview`      | Preview your build locally, before deploying      |
-| `npm run astro ...`    | Run CLI commands like `astro add`, `astro check`  |
-| `npm run astro --help` | Get help using the Astro CLI                      |
-| `npm run format`       | Format code with [Prettier](https://prettier.io/) |
-| `npm run clean`        | Remove `node_modules` and build output            |
+### Visual Effects
+- **Glow Effects** - Subtle backlighting for 3D elements
+- **Gradient Text** - Beautiful text gradients with browser-specific optimizations
+- **Animation Sequences** - Choreographed element entrance animations
+- **Parallax Scrolling** - Subtle depth effects on scroll
 
-## Credits
+### UI/UX Design
+- **Responsive Layout** - Fully responsive design that adapts to all screen sizes
+- **Performance-First Approach** - Optimized for smooth performance even on lower-end devices
+- **Accessibility Considerations** - Including reduced motion support
 
-- astronaut image
-  - source: https://github.com/withastro/astro-og-image; note: this repo is not available anymore
-- moon image
-  - source: https://unsplash.com/@nasa
-- other than that, a lot of material (showcase data, copy) was taken from official Astro sources, in particular https://astro.build/blog/introducing-astro/ and https://github.com/withastro/astro.build
+## Project Structure
+
+```
+src/
+├── components/
+│   ├── AmorphousPrism.astro   # 3D morphing prism implementation
+│   ├── FlowBackground.astro   # Flowing liquid background effect
+│   ├── Splash.astro           # Hero section component
+│   └── ...                    # Other components
+├── styles/
+│   └── global.css             # Global styles and utilities
+├── pages/
+│   └── index.astro            # Main entry point
+└── ...                        # Other project files
+```
+
+## Setting Up the Development Environment
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/synthed.git
+   cd synthed
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Build for production**
+   ```bash
+   npm run build
+   ```
+
+## Deployment
+
+The project is optimized for deployment on modern hosting platforms:
+
+- **GitHub Pages**: Easily deploy directly from your repository
+- **Cloudflare Pages**: High-performance hosting with global CDN
+- **Netlify/Vercel**: One-click deployments with preview functionality
+
+## Technical Notes
+
+### 3D Implementation Details
+
+The 3D graphics implementation leverages several advanced Three.js techniques:
+
+1. **Morph Target Animation** - Rather than directly manipulating vertices, we use Three.js morph targets for smoother transitions between shapes.
+
+2. **Vertex Mapping Algorithm** - Custom algorithm that maps vertices between different geometries with varying vertex counts.
+
+3. **Browser-Specific Optimizations** - Different rendering paths for Chrome, Firefox, and mobile devices to ensure optimal performance.
+
+4. **Edge Enhancement** - Custom implementation of `EdgesGeometry` with optimized thresholds for better visibility of geometric forms.
+
+5. **Memory Management** - Careful cleanup and disposal of Three.js resources to prevent memory leaks during navigation.
+
+## License
+
+[MIT License](LICENSE)
+
+## Acknowledgments
+
+- Three.js community for their excellent documentation and examples
+- Astro team for creating a stellar web framework
+- All the open-source contributors whose work makes modern web development possible
 
 # Database Index Migration for Unindexed Foreign Keys
 
