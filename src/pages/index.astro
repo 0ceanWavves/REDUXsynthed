@@ -2,11 +2,12 @@
 import "@fontsource-variable/inter";
 import Features from "~/components/features.astro";
 import Footer from "~/components/footer.astro";
-import Header from "~/components/header.astro";
 import Intro from "~/components/intro.astro";
 import Process from "~/components/process.astro";
 import Projects from "~/components/projects.astro";
 import Splash from "~/components/splash.astro";
+import AmorphousPrism from "~/components/AmorphousPrism.astro";
+import FlowBackground from "~/components/FlowBackground.astro";
 import "~/styles/index.css";
 
 const { generator, site } = Astro;
@@ -61,24 +62,47 @@ const description =
   <body
     class="h-full overflow-x-hidden bg-default text-default text-base selection:bg-secondary selection:text-white"
   >
-    <Header />
-		<Splash />
-    <div class="relative">
-      <!-- Wave canvas shown on all devices (optimized for mobile) -->
-      <canvas id="wave-canvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-40"></canvas>
-      <div class="relative space-y-24 px-8 py-32">
-        <Intro />
-				<Features />
-        <Process />
-        <Projects />
+    <!-- Wave canvas shown behind everything -->
+    <canvas id="wave-canvas" class="fixed top-0 left-0 w-full h-full -z-20 opacity-60 transition-opacity duration-700" style="display: block;"></canvas>
+
+    <!-- Flow background to provide liquid texture around the prism -->
+    <FlowBackground />
+    
+    <!-- Navigation initially at bottom, moves to top on scroll -->
+    <nav id="main-nav" class="fixed bottom-0 left-0 w-full z-50 bg-black/70 backdrop-blur-md py-4 px-6 transition-all duration-500">
+      <div class="max-w-screen-xl mx-auto flex justify-between items-center">
+        <a href="/" class="text-xl font-bold text-white">Synthed</a>
+        <div class="flex items-center gap-6">
+          <a href="#features" class="text-sm text-white hover:text-blue-300 transition-colors">Services</a>
+          <a href="#projects" class="text-sm text-white hover:text-blue-300 transition-colors">Projects</a>
+          <a href="#contact" class="text-sm text-white hover:text-blue-300 transition-colors">Contact</a>
+        </div>
       </div>
-			<Footer />
+    </nav>
+    
+    <!-- Hero section with prism positioned at top - eliminate empty space -->
+    <div class="relative min-h-screen">
+      <!-- Amorphous prism moved up to top of viewport -->
+      <div id="prism-background" class="absolute top-0 left-0 w-full h-screen pointer-events-auto" style="z-index: 15; transform: translateZ(0); will-change: transform;">
+        <AmorphousPrism />
+      </div>
+      
+      <!-- Splash content with higher z-index to appear over prism -->
+      <div class="relative z-30" style="transform: translateZ(0.1px);">
+        <Splash />
+      </div>
     </div>
+    
+    <!-- Main content with higher z-index to appear above backgrounds -->
+    <div class="relative z-40 space-y-24 px-8 py-16 mt-12 bg-black/50 backdrop-blur-sm">
+      <Features />
+      <Process />
+      <Projects />
+    </div>
+    <Footer />
     
     <!-- Cursor effect only on desktop -->
     <div id="cursor-glow" class="hidden md:block"></div>
-  </body>
-</html>
 
 <style>
   /* Custom cursor effect */
@@ -87,7 +111,7 @@ const description =
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, rgba(96, 165, 250, 0) 70%);
+    background: radial-gradient(circle, rgba(129, 98, 255, 0.3) 0%, rgba(129, 98, 255, 0) 70%);
     pointer-events: none;
     z-index: 9999;
     opacity: 0;
@@ -104,6 +128,23 @@ const description =
     #wave-canvas {
       display: none;
     }
+    
+    #prism-background {
+      display: none !important;
+    }
+    
+    #flow-bg-canvas {
+      display: none !important;
+    }
+  }
+
+  /* Chrome-specific fixes */
+  @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
+    .chrome-fix {
+      /* Force text to be on top with proper compositing */
+      transform: translateZ(0.5px) !important;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+    }
   }
 </style>
 
@@ -111,12 +152,37 @@ const description =
   // Initialize for all devices
   const isMobile = window.innerWidth < 768;
   
+  // Handle initial setup on page load
   document.addEventListener('DOMContentLoaded', () => {
-    // Initialize wave canvas
+    console.log('DOM Content Loaded');
+    
+    // Check and log the visibility status of both elements
     const waveCanvas = document.getElementById('wave-canvas') as HTMLCanvasElement;
+    const prismBackground = document.getElementById('prism-background');
+    
     if (waveCanvas) {
+      console.log('Wave canvas found, initializing');
+      console.log('Wave canvas visibility:', window.getComputedStyle(waveCanvas).visibility);
+      console.log('Wave canvas display:', window.getComputedStyle(waveCanvas).display);
+      console.log('Wave canvas opacity:', window.getComputedStyle(waveCanvas).opacity);
+      
+      // Make sure canvas is properly sized and visible
+      waveCanvas.width = window.innerWidth;
+      waveCanvas.height = window.innerHeight;
+      waveCanvas.style.display = 'block';
+      
       const wave = new Wave(waveCanvas);
       requestAnimationFrame(wave.animate);
+    } else {
+      console.error('Wave canvas element not found during initialization!');
+    }
+    
+    if (prismBackground) {
+      console.log('Prism background found');
+      console.log('Prism background visibility:', window.getComputedStyle(prismBackground).visibility);
+      console.log('Prism background display:', window.getComputedStyle(prismBackground).display);
+    } else {
+      console.error('Prism background element not found!');
     }
     
     // Init cursor effect (desktop only)
@@ -132,9 +198,63 @@ const description =
         });
       });
     }
+    
+    // Handle navbar scrolling behavior
+    handleNavbarScroll();
+
+    // Browser detection for cross-browser optimizations
+    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    const isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1 && 
+                    navigator.userAgent.toLowerCase().indexOf('edge') === -1;
+    
+    // Fix text visibility issues in Chrome
+    if (isChrome) {
+      // Force repaint to ensure text renders properly
+      setTimeout(() => {
+        const splash = document.querySelector('.splash-title');
+        if (splash) {
+          // Slightly nudge the element to force a repaint
+          splash.classList.add('chrome-fix');
+        }
+      }, 500);
+    }
+    
+    // Optimize rendering in Firefox
+    if (isFirefox) {
+      // Reduce animation complexity for better performance
+      if (prismBackground) {
+        prismBackground.style.willChange = 'auto'; // Disable will-change optimization which can be expensive
+      }
+    }
   });
   
-  // Wave animation with fewer, thicker, and filled-in waves
+  // Navbar scroll behavior
+  function handleNavbarScroll() {
+    const navbar = document.getElementById('main-nav');
+    if (!navbar) return;
+    
+    let lastScrollTop = 0;
+    const scrollThreshold = window.innerHeight * 0.7; // 70% of viewport height
+    
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      
+      // If we've scrolled down past threshold, move navbar to top
+      if (scrollTop > scrollThreshold) {
+        navbar.classList.remove('bottom-0');
+        navbar.classList.add('top-0');
+      } 
+      // If we're near the top of the page, move navbar to bottom
+      else if (scrollTop < 50) {
+        navbar.classList.remove('top-0');
+        navbar.classList.add('bottom-0');
+      }
+      
+      lastScrollTop = scrollTop;
+    });
+  }
+  
+  // Wave animation with thicker, filled-in waves
   class Wave {
     constructor(
       private canvas: HTMLCanvasElement
@@ -143,7 +263,7 @@ const description =
       this.canvas.width = window.innerWidth;
       this.canvas.height = window.innerHeight;
       this.lastFrameTime = 0;
-      this.amplitude = isMobile ? 35 : 50; // Slightly reduced amplitude
+      this.amplitude = isMobile ? 45 : 60; // Increased amplitude for more visible waves
       
       // Create wave rows - REDUCED number of waves
       this.waves = [];
@@ -165,8 +285,8 @@ const description =
           amplitude: this.amplitude - (i * 5), // Less amplitude difference for more filling
           phase: i * 2, // Offset phases for variety
           color: i % 2 === 0 ? 
-            'rgba(96, 165, 250, 0.25)' : // Blue - reduced opacity 
-            'rgba(74, 222, 128, 0.2)'    // Green - reduced opacity
+            'rgba(96, 165, 250, 0.4)' : // Blue - increased opacity 
+            'rgba(74, 222, 128, 0.35)'  // Green - increased opacity
         });
       }
       

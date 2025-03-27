@@ -3,54 +3,46 @@ import { Icon } from "astro-icon/components";
 import ContentSection from "~/components/content-section.astro";
 ---
 
-<ContentSection title="Building Digital Excellence" id="intro">
-  <div class="intro-icon" slot="eyebrow">
-    <img src="/images/synthed-logo.png" alt="Synthed Logo" class="h-80 w-80 object-contain" />
-    <div class="intro-icon-glow"></div>
-  </div>
+<ContentSection title="Innovative Technology Solutions" id="intro">
+  <Icon slot="eyebrow" name="logomark" class="h-32" />
   <Fragment slot="lead">
-    We craft <span class="text-primary highlight">modern</span> digital solutions that
-    <span class="text-primary highlight">transform</span> businesses and
-    <span class="text-primary highlight">drive</span> measurable success.
+    We transform <span class="text-primary">innovative ideas</span> into
+    <span class="text-primary">powerful solutions</span>, delivering software that
+    <span class="text-primary">exceeds expectations</span>.
   </Fragment>
-  
-  <div class="max-w-3xl mx-auto mb-8 intro-text">
-    <p class="text-center text-offset mb-6">
-      At Synthed, we specialize in building custom digital solutions that adapt to your unique business challenges. 
-      Our team of experts combines technical expertise with strategic thinking to deliver applications that not only meet your current needs 
-      but can evolve with your business over time.
-    </p>
-    <p class="text-center text-offset">
-      Whether you need a scalable web platform, mobile application, or enterprise software solution, 
-      we work closely with you at every step to ensure the final product exceeds expectations.
-    </p>
-  </div>
-  
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-xl mx-auto intro-buttons">
+  <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
     <a
-      href="#contact"
-      class="intro-button flex items-center justify-center gap-3 border-2 border-current px-6 py-4 transition-colors duration-300 hover:bg-primary hover:text-white"
+      href="#features"
+      class="flex items-center justify-center gap-3 border-2 border-current px-6 py-4"
     >
-      <Icon name="mdi:email" class="h-8 w-8" />
-      <span>Get in Touch</span>
+      <Icon name="mdi:code-braces" class="h-8" />
+      <span>Our Services</span>
     </a>
     <a
-      href="#projects"
-      class="intro-button flex items-center justify-center gap-3 border-2 border-current px-6 py-4 transition-colors duration-300 hover:bg-primary hover:text-white"
+      href="#process"
+      class="flex items-center justify-center gap-3 border-2 border-current px-6 py-4"
     >
-      <Icon name="mdi:briefcase" class="h-8 w-8" />
-      <span>View Our Work</span>
+      <Icon name="mdi:timeline-check" class="h-8" />
+      <span>Our Process</span>
     </a>
   </div>
 </ContentSection>
 
 <style>
+  .logo-container {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
   .intro-icon {
     position: relative;
-    animation: float 6s ease-in-out infinite;
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-bottom: 4rem;
   }
   
   .intro-icon img {
@@ -61,36 +53,20 @@ import ContentSection from "~/components/content-section.astro";
     filter: drop-shadow(0 0 14px rgba(59, 130, 246, 0.4));
   }
   
-  .intro-icon-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 390px;
-    height: 390px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(96, 165, 250, 0.3) 0%, rgba(96, 165, 250, 0) 70%);
-    z-index: -1;
-    animation: pulse 3s ease-in-out infinite;
-  }
-  
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0);
+  /* Enhanced mobile styles */
+  @media (max-width: 768px) {
+    .logo-container {
+      padding: 1rem;
+      margin-bottom: 1.5rem;
     }
-    50% {
-      transform: translateY(-15px);
+    
+    .intro-icon {
+      margin-bottom: 3rem;
     }
-  }
-  
-  @keyframes pulse {
-    0%, 100% {
-      transform: translate(-50%, -50%) scale(1);
-      opacity: 0.2;
-    }
-    50% {
-      transform: translate(-50%, -50%) scale(1.5);
-      opacity: 0.5;
+    
+    .intro-icon img {
+      max-width: 280px;
+      filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
     }
   }
   
@@ -140,6 +116,23 @@ import ContentSection from "~/components/content-section.astro";
   
   .intro-button:hover::before {
     left: 100%;
+  }
+  
+  .feature-item {
+    @apply bg-offset p-4 rounded-md border border-default w-[45%] sm:w-[22%] flex flex-col items-center;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+  
+  .feature-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .feature-item:hover {
+      transform: none;
+      box-shadow: none;
+    }
   }
 </style>
 

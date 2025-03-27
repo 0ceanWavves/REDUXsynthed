@@ -1,0 +1,74 @@
+---
+description: Astro Specific Rules:
+globs: 
+alwaysApply: true
+---
+# Project-Specific Rules
+# These are tailored to this Astro project
+
+   <astro>
+   When working with Astro:
+   - Leverage Astro islands for interactive components
+   - Use .astro files for pages with minimal JavaScript
+   - Follow Astro's component structure
+   - Implement partial hydration when possible
+   - Use Astro.glob() for content collection
+   - Consider serverless capabilities
+   </astro>
+
+<components>
+   For components:
+   - Keep components modular and reusable
+   - Follow atomic design principles (atoms, molecules, organisms)
+   - Use props for configuration
+   - Document prop types and default values
+   - Implement proper state management
+   - Use CSS modules or CSS-in-JS for styling
+   - Create component tests
+   </components>
+
+<content>
+   For content in the application:
+   - Structure content in markdown or MDX
+   - Use frontmatter for metadata
+   - Implement content collections
+   - Follow consistent naming conventions
+   - Optimize images and media
+   - Consider internationalization
+   </content>
+
+<styling>
+   For CSS and styling:
+   - Use Tailwind utilities consistently
+   - Follow responsive design principles
+   - Maintain a consistent design system
+   - Create reusable utility classes
+   - Consider dark mode support
+   - Ensure cross-browser compatibility
+   - Optimize CSS for performance
+   </styling>
+
+
+<testing>
+   For testing:
+   - Write unit tests for business logic
+   - Create component tests
+   - Implement end-to-end tests for critical flows
+   - Use mocks and stubs appropriately
+   - Follow testing pyramid principles
+   - Test for accessibility
+   - Maintain test coverage reports
+   </testing>
+
+   
+
+   <deployment>
+   For deployment:
+   - Optimize build output
+   - Configure proper caching strategies
+   - Set up CI/CD pipelines
+   - Implement proper error monitoring
+   - Configure analytics
+   - Follow staging -> production workflow
+   - Document deployment procedures
+   </deployment>

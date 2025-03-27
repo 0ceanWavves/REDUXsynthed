@@ -40,7 +40,7 @@ const projects = [
     solution: "We developed a responsive web application with real-time data visualization, secure document sharing, and integrated communication tools.",
     results: "Client engagement increased by 45%, paperwork processing time reduced by 60%, and significant improvement in client retention.",
     icon: "mdi:chart-line",
-    link: "https://resilient-crepe-d64f31.netlify.app/",
+    link: "https://prism-financial.com",
     tags: ["FinTech", "Security", "Client Portal"]
   },
 ];
@@ -116,6 +116,7 @@ const projects = [
   .project-icon {
     position: relative;
     transition: transform 0.3s ease;
+    color: currentColor;
   }
   
   .project-icon::after {
@@ -134,21 +135,22 @@ const projects = [
   }
   
   .project-icon:hover {
-    transform: scale(1.1);
+    transform: scale(1.05);
+    color: currentColor;
   }
   
   .project-icon:hover::after {
     opacity: 1;
-    transform: scale(1.1);
+    transform: scale(1);
     animation: spin 4s linear infinite;
   }
   
   @keyframes spin {
     from {
-      transform: scale(1.1) rotate(0deg);
+      transform: scale(1) rotate(0deg);
     }
     to {
-      transform: scale(1.1) rotate(360deg);
+      transform: scale(1) rotate(360deg);
     }
   }
   
@@ -176,12 +178,21 @@ const projects = [
     transform: translateX(20px);
   }
   
+  .project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.3s ease;
+  }
+  
   .arrow-icon {
     transition: transform 0.3s ease;
+    color: currentColor;
   }
   
   .project-link:hover .arrow-icon {
     transform: translateX(4px);
+    color: currentColor;
   }
   
   .cta-button {
@@ -215,8 +226,8 @@ const projects = [
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          const item = entry.target;
-          const index = parseInt(item.dataset.index, 10);
+          const item = entry.target as HTMLElement;
+          const index = parseInt(item.dataset.index || '0', 10);
           
           // Animate project item
           setTimeout(() => {
@@ -228,9 +239,9 @@ const projects = [
             const sections = item.querySelectorAll('.project-section');
             sections.forEach((section, sectionIndex) => {
               setTimeout(() => {
-                section.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-                section.style.opacity = '1';
-                section.style.transform = 'translateX(0)';
+                (section as HTMLElement).style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                (section as HTMLElement).style.opacity = '1';
+                (section as HTMLElement).style.transform = 'translateX(0)';
               }, 300 + (sectionIndex * 150));
             });
           }, 200 * index);
@@ -299,48 +310,8 @@ const projects = [
     document.head.appendChild(style);
   }
   
-  // Add magnetic effect to project icons
-  function addMagneticEffect() {
-    const icons = document.querySelectorAll('.project-icon');
-    
-    icons.forEach(icon => {
-      const parent = icon.parentElement;
-      
-      parent.addEventListener('mousemove', (e) => {
-        const rect = parent.getBoundingClientRect();
-        const x = e.clientX - rect.left - rect.width / 2;
-        const y = e.clientY - rect.top - rect.height / 2;
-        
-        // Calculate distance from center
-        const distance = Math.sqrt(x * x + y * y);
-        const maxDistance = Math.max(rect.width, rect.height) / 2;
-        
-        // Only apply magnetic effect if cursor is close enough
-        if (distance < maxDistance) {
-          // Scale the movement (less movement the further away)
-          const scale = 15 * (1 - distance / maxDistance);
-          
-          // Apply transformation to the icon
-          icon.style.transform = `translate(${x / scale}px, ${y / scale}px)`;
-        }
-      });
-      
-      parent.addEventListener('mouseleave', () => {
-        // Reset position with a smooth transition
-        icon.style.transition = 'transform 0.3s ease';
-        icon.style.transform = 'translate(0, 0)';
-        
-        // Remove the transition after it completes
-        setTimeout(() => {
-          icon.style.transition = '';
-        }, 300);
-      });
-    });
-  }
-  
   document.addEventListener('DOMContentLoaded', () => {
     animateProjectItems();
     addCardRippleEffect();
-    addMagneticEffect();
   });
 </script>

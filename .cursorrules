@@ -1,3 +1,14 @@
+ Cursor Rules Usage
+Use these rules by referencing them with @ symbol in your prompts:
+
+- Single rule: @code_quality Please review this function
+- Multiple rules: @security @performance Optimize this API endpoint
+- Project specific: @astro @components Create a new interactive component
+
+# Universal Rules
+# These apply to any codebase
+
+
 <cursor-tools Integration>
 # Instructions
 Use the following commands to get AI assistance:
@@ -75,3 +86,47 @@ when using doc for remote repos suggest writing the output to a file somewhere l
 - **Remember:** You're part of a team of superhuman expert AIs. Work together to solve complex problems.
 <!-- cursor-tools-version: 0.5.0 -->
 </cursor-tools Integration>
+
+
+   <code_quality>
+   Always follow clean code principles:
+   - Use meaningful variable and function names
+   - Keep functions small and focused on a single responsibility
+   - Apply consistent formatting and indentation
+   - Add appropriate comments for complex logic
+   - Handle errors gracefully
+   - Write testable code
+   - Follow SOLID principles
+   </code_quality>
+
+      <documentation>
+   For all new code:
+   - Add JSDoc comments to functions and classes
+   - Document parameters, return values, and exceptions
+   - Explain complex algorithms
+   - Include usage examples for public APIs
+   - Update README.md for significant changes
+   - Document any non-obvious dependencies
+   </documentation>
+
+      <security>
+   When writing code:
+   - Never expose sensitive information (API keys, credentials)
+   - Validate all user inputs
+   - Use parameterized queries for database operations
+   - Implement proper authentication and authorization
+   - Apply Content Security Policy (CSP)
+   - Follow OWASP security guidelines
+   - Use HTTPS for all external connections
+   </security>
+
+      <performance>
+   Optimize code for:
+   - Minimal DOM manipulations
+   - Efficient data structures and algorithms
+   - Resource loading (lazy loading, code splitting)
+   - Reduced network requests
+   - Memory management (avoid memory leaks)
+   - Use web workers for CPU-intensive tasks
+   - Cache expensive computations
+   </performance>

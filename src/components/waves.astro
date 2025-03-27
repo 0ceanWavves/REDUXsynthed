@@ -1,0 +1,151 @@
+<div id="wave-canvas-container" class="absolute inset-0 z-0 opacity-40 pointer-events-none transition-opacity duration-1000">
+  <canvas id="wave-canvas" class="w-full h-full"></canvas>
+</div>
+
+<script>
+  // Detect if the device is mobile
+  function isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+      || (window.innerWidth <= 768);
+  }
+
+  // Define wave type for better type checking
+  interface Wave {
+    y: number;
+    length: number;
+    amplitude: number;
+    speed: number;
+    offset: number;
+    color: string;
+    points: Array<{x: number; y: number}>;
+  }
+
+  // We initialize the wave canvas for both desktop and mobile
+  // but with different complexity based on device capabilities
+  function initWaveCanvas() {
+    const isMobile = isMobileDevice();
+    const canvas = document.getElementById('wave-canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Set canvas dimensions to match container
+    const container = document.getElementById('wave-canvas-container');
+    if (!container) return;
+    
+    // Adjust canvas size to match container size
+    function resizeCanvas() {
+      if (!container) return;
+      canvas.width = container.clientWidth;
+      canvas.height = container.clientHeight;
+    }
+    
+    // Initialize with the correct size
+    resizeCanvas();
+    
+    // Update canvas size when window is resized
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Show canvas container once initialized
+    if (container) {
+      container.style.opacity = '0.4';
+    }
+    
+    // Wave parameters - simplified for mobile
+    const waves: Wave[] = [];
+    const waveCount = isMobile ? 3 : 5; // Fewer waves on mobile
+    
+    // Create waves with different properties
+    for (let i = 0; i < waveCount; i++) {
+      waves.push({
+        y: canvas.height / 2,
+        length: 100 + i * 50,
+        amplitude: isMobile ? 15 + i * 5 : 25 + i * 10,
+        speed: 0.05 + i * 0.01,
+        offset: Math.random() * 1000,
+        color: `rgba(25, 25, 35, ${0.1 + i * 0.1})`,
+        points: []
+      });
+    }
+    
+    // Animation variables
+    let animationFrame: number;
+    let mouseX = canvas.width / 2;
+    let mouseY = canvas.height / 2;
+    
+    // Only add mouse move tracking on desktop
+    if (!isMobile) {
+      // Track mouse movement to create subtle background movements
+      document.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+      });
+    }
+    
+    // Animation function
+    function animate() {
+      if (!ctx) return;
+      
+      // Clear the canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Update and draw each wave
+      waves.forEach((wave) => {
+        // Update wave points
+        wave.points = [];
+        
+        // Calculate influence from mouse position (desktop only)
+        let mouseInfluence = 0;
+        if (!isMobile) {
+          const mouseXRatio = mouseX / canvas.width;
+          const mouseYRatio = mouseY / canvas.height; // Using this for potential future enhancements
+          mouseInfluence = (mouseXRatio - 0.5) * 50;
+        }
+        
+        // Calculate wave points
+        for (let x = 0; x <= canvas.width; x += 20) {
+          const y = wave.y + 
+            Math.sin((x / wave.length) + wave.offset + (Date.now() * wave.speed / 1000)) * 
+            wave.amplitude;
+          
+          wave.points.push({x, y: y + mouseInfluence});
+        }
+        
+        // Draw wave
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height);
+        
+        wave.points.forEach((point) => {
+          ctx.lineTo(point.x, point.y);
+        });
+        
+        ctx.lineTo(canvas.width, canvas.height);
+        ctx.closePath();
+        
+        ctx.fillStyle = wave.color;
+        ctx.fill();
+      });
+      
+      // Continue animation
+      animationFrame = requestAnimationFrame(animate);
+    }
+    
+    // Start animation
+    animate();
+    
+    // Clean up function to prevent memory leaks
+    return () => {
+      cancelAnimationFrame(animationFrame);
+      window.removeEventListener('resize', resizeCanvas);
+      if (!isMobile) {
+        document.removeEventListener('mousemove', () => {});
+      }
+    };
+  }
+  
+  // Initialize when DOM content is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    initWaveCanvas();
+  });
+</script> 
