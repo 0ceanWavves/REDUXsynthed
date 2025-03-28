@@ -74,7 +74,10 @@ const description =
     />
     
     <!-- Decorative wave effect for bottom of page - Adjusted for mobile -->
-    <div class="wave-container fixed bottom-0 left-0 w-full h-[70vh] md:h-[70vh] pointer-events-none z-10 opacity-80"></div>
+    <div class="wave-container fixed bottom-0 left-0 w-full h-[100vh] md:h-[100vh] pointer-events-none z-10 opacity-80"></div>
+    
+    <!-- Additional middle wave effect - Positioned in the middle of the page -->
+    <div class="wave-container-middle fixed top-[30vh] left-0 w-full h-[80vh] pointer-events-none z-5 opacity-60"></div>
     
     <!-- Dark overlay to ensure consistent background darkness -->
     <div class="fixed inset-0 bg-[#0a0a1a]/60 z-5 pointer-events-none"></div>
@@ -142,10 +145,23 @@ const description =
     background: linear-gradient(to top, rgba(10, 10, 26, 0.6), transparent);
     overflow: hidden;
     filter: drop-shadow(0 0 25px rgba(129, 98, 255, 0.25)) drop-shadow(0 0 35px rgba(0, 229, 153, 0.15));
+    transform: scaleY(1);
+    transform-origin: bottom;
+  }
+  
+  /* Middle wave container - Inverted and different color scheme */
+  .wave-container-middle {
+    background: linear-gradient(to bottom, rgba(10, 10, 26, 0.3), transparent);
+    overflow: hidden;
+    filter: drop-shadow(0 0 25px rgba(0, 229, 153, 0.2)) drop-shadow(0 0 35px rgba(129, 98, 255, 0.1));
+    transform: scaleY(-1); /* Flip the waves upside down */
+    transform-origin: top;
   }
   
   .wave-container::before,
-  .wave-container::after {
+  .wave-container::after,
+  .wave-container-middle::before,
+  .wave-container-middle::after {
     content: '';
     position: absolute;
     left: 0;
@@ -172,6 +188,22 @@ const description =
     animation-direction: reverse;
   }
   
+  /* Different colors for the middle waves */
+  .wave-container-middle::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%2300e599' d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' opacity='.2'%3E%3C/path%3E%3C/svg%3E");
+    animation-duration: 18s;
+    bottom: auto;
+    top: 0;
+  }
+  
+  .wave-container-middle::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%238162ff' d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' opacity='.2'%3E%3C/path%3E%3C/svg%3E");
+    animation-duration: 23s;
+    animation-direction: reverse;
+    bottom: auto;
+    top: 20px;
+  }
+  
   @keyframes waveAnimation {
     0% {
       transform: translateX(0);
@@ -187,15 +219,19 @@ const description =
   /* Mobile optimizations */
   @media (max-width: 768px) {
     .wave-container::before,
-    .wave-container::after {
+    .wave-container::after,
+    .wave-container-middle::before,
+    .wave-container-middle::after {
       height: 30%; /* Smaller waves on mobile */
     }
     
-    .wave-container::before {
+    .wave-container::before,
+    .wave-container-middle::before {
       animation-duration: 25s; /* Slower animation on mobile */
     }
     
-    .wave-container::after {
+    .wave-container::after,
+    .wave-container-middle::after {
       animation-duration: 18s; /* Slower animation on mobile */
     }
     
@@ -236,7 +272,9 @@ const description =
     }
     
     .wave-container::before,
-    .wave-container::after {
+    .wave-container::after,
+    .wave-container-middle::before,
+    .wave-container-middle::after {
       animation: none;
     }
   }
@@ -278,13 +316,28 @@ const description =
     
     // Add parallax effect to wave container
     const waveContainer = document.querySelector('.wave-container');
-    if (waveContainer) {
-      window.addEventListener('scroll', () => {
-        const scrollPosition = window.scrollY;
-        const parallaxAmount = scrollPosition * 0.15;
-        (waveContainer as HTMLElement).style.transform = `translateY(${parallaxAmount}px)`;
-      });
-    }
+    const waveContainerMiddle = document.querySelector('.wave-container-middle');
+    
+    window.addEventListener('scroll', () => {
+      const scrollPosition = window.scrollY;
+      const viewportHeight = window.innerHeight;
+      
+      // Bottom wave container - moves up slightly on scroll
+      if (waveContainer) {
+        const parallaxAmount = scrollPosition * 0.12;
+        (waveContainer as HTMLElement).style.transform = `scaleY(1) translateY(${parallaxAmount}px)`;
+      }
+      
+      // Middle wave container - moves down with scroll at different rate
+      if (waveContainerMiddle) {
+        const middleParallaxAmount = scrollPosition * 0.08;
+        (waveContainerMiddle as HTMLElement).style.transform = `scaleY(-1) translateY(${-middleParallaxAmount}px)`;
+        
+        // Also adjust opacity based on scroll position
+        const opacityFactor = Math.min(0.6, 0.2 + (scrollPosition / viewportHeight) * 0.4);
+        (waveContainerMiddle as HTMLElement).style.opacity = opacityFactor.toString();
+      }
+    });
   });
   
   // Navbar scroll behavior
