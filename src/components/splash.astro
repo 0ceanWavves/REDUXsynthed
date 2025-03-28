@@ -34,18 +34,18 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
   <SplashActionButtons />
 </section>
 
-<!-- Inline Critical CSS for FOUC prevention -->
+<!-- Inline Critical CSS for FOUC prevention - Updated to avoid conflicting with animations -->
 <style is:inline>
-  /* Prevent FOUC and ensure text visibility during initial load */
-  .splash-title, .splash-content, .scroll-indicator {
+  /* Only apply to content elements, NOT title words */
+  .splash-content, .scroll-indicator {
     z-index: 900 !important;
     position: relative !important;
     visibility: visible !important;
     opacity: 1 !important;
   }
   
-  /* Ensure text is visible during CSS loading */
-  .gradient-text, .splash-content {
+  /* Ensure content text is visible during CSS loading */
+  .splash-content {
     color: white !important;
     visibility: visible !important;
     opacity: 1 !important;
@@ -65,11 +65,8 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
     z-index: 999 !important;
   }
 
-  /* Ensure title words are visible */
-  .title-word {
-    opacity: 1 !important;
-    transform: none !important;
-  }
+  /* IMPORTANT: Do NOT force title words to be visible immediately */
+  /* Let the SplashTitle component handle its own animations */
 </style>
 
 <style>
@@ -94,13 +91,12 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
   document.addEventListener('DOMContentLoaded', () => {
     console.log("Splash section initialized");
     
-    // Ensure all text content is visible
-    const textElements = document.querySelectorAll('.splash-title, .splash-content, .title-word, .content-item, .check-circle');
-    textElements.forEach(el => {
+    // IMPORTANT: Only apply to content elements, NOT title words
+    const contentElements = document.querySelectorAll('.splash-content, .content-item, .check-circle');
+    contentElements.forEach(el => {
       if (el instanceof HTMLElement) {
         el.style.opacity = '1';
         el.style.visibility = 'visible';
-        el.style.transform = 'none';
         el.style.zIndex = '999';
       }
     });

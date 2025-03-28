@@ -16,11 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log("Set prism-background z-index to 6");
   }
   
-  // Force all text elements to higher z-index
-  const textSelectors = [
-    '.splash-title', 
-    '.title-word', 
-    '.gradient-text', 
+  // IMPORTANT: Do NOT touch the title words, they are handled by SplashTitle.astro
+  // Only apply to these specific content elements
+  const contentSelectors = [
     '.splash-content', 
     '.content-item',
     '.check-circle', 
@@ -28,7 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     '.relative.z-50'
   ];
   
-  textSelectors.forEach(selector => {
+  // Apply to content but skip title elements
+  contentSelectors.forEach(selector => {
     document.querySelectorAll(selector).forEach(el => {
       if (el instanceof HTMLElement) {
         el.style.position = 'relative';
@@ -39,5 +38,16 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   
-  console.log("Z-index fix applied to all text elements");
+  console.log("Z-index fix applied to content elements only");
+  
+  // Add a safety check after a short delay to ensure title words are not affected
+  setTimeout(() => {
+    const titleWords = document.querySelectorAll('.title-word');
+    titleWords.forEach(word => {
+      if (word instanceof HTMLElement && !word.classList.contains('animation-complete')) {
+        console.log("Found title word not yet animated");
+        // Don't force visibility, let animations handle it
+      }
+    });
+  }, 500);
 });

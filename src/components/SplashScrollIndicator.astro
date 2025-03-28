@@ -2,8 +2,8 @@
 // SplashScrollIndicator.astro - Component for the scroll down indicator
 ---
 
-<!-- Scroll indicator - correctly centered -->
-<div class="scroll-indicator content-item absolute left-0 right-0 mx-auto text-center flex flex-col items-center justify-center" style="bottom: 5vh; z-index: 70;" id="scroll-for-more">
+<!-- Scroll indicator - shifted up by 15% from previous position -->
+<div class="scroll-indicator content-item absolute left-0 right-0 mx-auto text-center flex flex-col items-center justify-center" style="bottom: 20vh; z-index: 70;" id="scroll-for-more">
   <div class="scroll-indicator-container backdrop-blur-sm bg-black/10 rounded-full px-5 py-2">
     <p class="text-white/80 text-sm mb-1">Scroll for more</p>
     <div class="animate-bounce">
@@ -70,7 +70,7 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // Animate scroll indicator
+    // Animate scroll indicator with a 5-second delay
     const contentItems = document.querySelectorAll('.content-item');
     contentItems.forEach((item, index) => {
       const el = item as HTMLElement;
@@ -78,7 +78,7 @@
         el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
         el.style.opacity = '1';
         el.style.transform = 'translateY(0)';
-      }, 1200 + (index * 100)); // Appear after content items
+      }, 5000); // Set to exactly 5 seconds as requested
     });
   });
-</script> 
+</script>

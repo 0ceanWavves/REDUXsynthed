@@ -6,6 +6,7 @@ import Process from "~/components/process.astro";
 import Projects from "~/components/projects.astro";
 import HeroSection from "~/components/HeroSection.astro";
 import FlowBackgroundController from "~/components/FlowBackgroundController.astro";
+import LoadingScreen from "~/components/LoadingScreen.astro"; // Import the new loading screen
 import "~/styles/index.css";
 
 const { generator, site } = Astro;
@@ -65,10 +66,16 @@ const description =
 		
 		<!-- Fix for interaction issues -->
 		<script src="/fix-interaction.js" is:inline></script>
+    
+    <!-- Extra safety script to ensure title words remain visible -->
+    <script src="/ensure-title-visibility.js" is:inline></script>
 	</head>
   <body
     class="h-full overflow-x-hidden text-default text-base selection:bg-secondary selection:text-white bg-[#0a0a1a]"
   >
+    <!-- Add the Loading Screen component -->
+    <LoadingScreen />
+    
     <!-- Flow background with customizable settings - Full opacity -->
     <FlowBackgroundController 
       opacity={1.0}
@@ -120,6 +127,11 @@ const description =
     <div id="cursor-glow" class="hidden md:block"></div>
 
 <style>
+  /* Force title words to be visible */
+  .title-word {
+    opacity: 1 !important;
+  }
+
   /* Remove diagonal strobing lines */
   .content-wrapper::before {
     content: none !important;
@@ -347,6 +359,16 @@ const description =
     
     // Handle navbar scrolling behavior
     handleNavbarScroll();
+    
+    // Force title words to be visible (additional safety measure)
+    setTimeout(() => {
+      document.querySelectorAll('.title-word').forEach(word => {
+        if (word instanceof HTMLElement) {
+          word.style.opacity = '1';
+          word.style.transform = 'translateY(0) scale(1)';
+        }
+      });
+    }, 3000);
   });
   
   // Navbar scroll behavior

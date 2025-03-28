@@ -1,0 +1,91 @@
+---
+// LoadingScreen.astro - A proper loading screen that appears while the page loads
+---
+
+<div id="loading-overlay" class="loading-overlay">
+  <div class="loading-content">
+    <div class="spinner"></div>
+    <div class="loading-logo">SYNTHED</div>
+  </div>
+</div>
+
+<style>
+  .loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #0a0a1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+  }
+
+  .loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .loading-logo {
+    font-size: 28px;
+    font-weight: bold;
+    color: white;
+    letter-spacing: 2px;
+    background: linear-gradient(45deg, #8162ff, #00e599);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  }
+
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: #8162ff;
+    border-bottom-color: #00e599;
+    animation: spin 1s ease-in-out infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Faded out state */
+  .loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+</style>
+
+<script>
+  // This script handles the loading screen behavior
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('Loading screen initialized');
+  });
+  
+  // Hide loading screen when everything is fully loaded
+  window.addEventListener('load', () => {
+    console.log('Window loaded, preparing to hide loading screen');
+    // Give a slight delay to ensure everything is ready
+    setTimeout(() => {
+      const loadingOverlay = document.getElementById('loading-overlay');
+      if (loadingOverlay) {
+        loadingOverlay.classList.add('hidden');
+        
+        // Remove from DOM after transition completes
+        setTimeout(() => {
+          loadingOverlay.style.display = 'none';
+          document.dispatchEvent(new CustomEvent('loadingScreenRemoved'));
+          console.log('Loading screen removed, triggering animations');
+        }, 500);
+      }
+    }, 500);
+  });
+</script>
