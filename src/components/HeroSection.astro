@@ -7,13 +7,13 @@ import Splash from "./splash.astro";
 <section class="hero-section">
   <div class="relative min-h-screen">
     <!-- Amorphous prism container with gooey effect applied -->
-    <div id="prism-background" class="absolute top-0 left-0 w-full h-screen pointer-events-auto gooey-container" 
-         style="z-index: 15; transform: translateZ(0); will-change: transform; cursor: grab;">
+    <div id="hero-prism-container" class="absolute top-0 left-0 w-full h-screen pointer-events-auto gooey-container" 
+         style="z-index: 6; transform: translateZ(0); will-change: transform; cursor: grab; touch-action: none;">
       <AmorphousPrism />
     </div>
     
     <!-- Splash content with higher z-index to appear over prism but not block interaction -->
-    <div class="relative z-30 pointer-events-none" style="transform: translateZ(0.1px);">
+    <div class="relative z-60 pointer-events-none" style="transform: translateZ(0.1px);">
       <Splash />
     </div>
   </div>
@@ -35,11 +35,13 @@ import Splash from "./splash.astro";
     background: transparent;
   }
   
-  #prism-background {
+  #hero-prism-container {
     backface-visibility: hidden;
     perspective: 1000px;
     transform-style: preserve-3d;
     will-change: transform;
+    z-index: 6 !important;
+    pointer-events: auto !important;
   }
   
   /* Apply gooey effect to the container */
@@ -47,9 +49,15 @@ import Splash from "./splash.astro";
     filter: url('#gooey-effect');
   }
   
+  /* Make sure splash content is above 3D elements */
+  .z-60 {
+    z-index: 999 !important;
+    pointer-events: none !important; /* Critical: allow clicks to pass through to the canvas */
+  }
+  
   @media (max-width: 768px) {
     /* Mobile-specific adjustments */
-    #prism-background {
+    #hero-prism-container {
       transform: scale(0.9) translateZ(0);
       height: 90vh; /* Increase height to make object more prominent */
       top: 5vh; /* Adjust vertical positioning */
@@ -62,23 +70,29 @@ import Splash from "./splash.astro";
 <script>
   // Hero-specific interactions
   document.addEventListener('DOMContentLoaded', () => {
+    const prismContainer = document.getElementById('hero-prism-container');
     const prismBackground = document.getElementById('prism-background');
+    const canvas = document.getElementById('prism-bg-canvas');
     const heroSection = document.querySelector('.hero-section');
     
-    if (prismBackground && heroSection) {
+    // Force all interactive elements to have pointer events
+    if (canvas) {
+      canvas.style.pointerEvents = 'auto';
+      canvas.style.zIndex = '5';
+    }
+    
+    if (prismBackground) {
+      prismBackground.style.pointerEvents = 'auto';
+      prismBackground.style.zIndex = '6';
+    }
+    
+    if (prismContainer && heroSection) {
       // Log visibility for debugging
       console.log('Hero section initialized');
       
       // Add a smooth parallax effect on scroll with optimizations
       let lastScrollY = 0;
       let animationFrame: number | null = null;
-      
-      // Pre-calculate values to avoid layout thrashing
-      const initialTransform = {
-        scale: 1,
-        y: 0,
-        z: 0
-      };
       
       // More efficient scroll handler with debounce
       function onScroll() {
@@ -95,9 +109,11 @@ import Splash from "./splash.astro";
               const scale = Math.max(0.95, 1 - (scrollY * 0.0001)); // Limit minimum scale
               const yOffset = scrollY * 0.08; // Reduced movement
               
-              // Apply hardware-accelerated transform
-              if (prismBackground) {
-                prismBackground.style.transform = `scale3d(${scale}, ${scale}, 1) translate3d(0, ${yOffset}px, 0)`;
+              // Apply hardware-accelerated transform but keep z-index and pointer-events
+              if (prismContainer) {
+                prismContainer.style.transform = `scale3d(${scale}, ${scale}, 1) translate3d(0, ${yOffset}px, 0)`;
+                prismContainer.style.zIndex = '6'; // Maintain correct z-index during scroll
+                prismContainer.style.pointerEvents = 'auto';
               }
             }
             
@@ -116,7 +132,14 @@ import Splash from "./splash.astro";
         if (window.scrollY > 0) {
           onScroll();
         }
+        
+        // Force event handling for all interactive elements
+        document.querySelectorAll('#prism-bg-canvas, #prism-background').forEach(el => {
+          if (el instanceof HTMLElement) {
+            el.style.pointerEvents = 'auto';
+          }
+        });
       }, 100);
     }
   });
-</script> 
+</script>

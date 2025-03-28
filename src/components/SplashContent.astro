@@ -2,15 +2,15 @@
 // SplashContent.astro - Component for the content section
 ---
 
-<div class="splash-content w-full max-w-2xl text-center mt-3 md:mt-4 browser-optimized-text pointer-events-none px-5 mx-auto">
+<div class="splash-content w-full max-w-2xl text-center mt-3 md:mt-4 browser-optimized-text pointer-events-none px-5 mx-auto" style="z-index: 90;">
   <div class="text-white text-lg md:text-xl leading-relaxed">
-    <p class="mb-1 content-item">Transforming ideas into</p>
-    <p class="text-primary text-2xl md:text-3xl font-bold mb-2 md:mb-3 content-item">Digital Solutions</p>
+    <p class="mb-1 content-item" style="opacity: 1; transform: none;">Transforming ideas into</p>
+    <p class="text-primary text-2xl md:text-3xl font-bold mb-2 md:mb-3 content-item" style="opacity: 1; transform: none;">Digital Solutions</p>
     
     <!-- Service items with better spacing -->
     <div class="flex flex-col items-center md:flex-row md:flex-wrap justify-center gap-2 md:gap-3 mb-5 md:mb-6">
-      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
-        <div class="check-circle">
+      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto" style="opacity: 1; transform: none;">
+        <div class="check-circle" style="opacity: 1; transform: none;">
           <!-- SVG Check Circle -->
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -18,8 +18,8 @@
         </div>
         <p class="text-center">Custom Business Applications</p>
       </div>
-      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
-        <div class="check-circle">
+      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto" style="opacity: 1; transform: none;">
+        <div class="check-circle" style="opacity: 1; transform: none;">
           <!-- SVG Check Circle -->
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -27,8 +27,8 @@
         </div>
         <p class="text-center">Modern Web & Mobile Development</p>
       </div>
-      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
-        <div class="check-circle">
+      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto" style="opacity: 1; transform: none;">
+        <div class="check-circle" style="opacity: 1; transform: none;">
           <!-- SVG Check Circle -->
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -36,8 +36,8 @@
         </div>
         <p class="text-center">Strategic Technology Consulting</p>
       </div>
-      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
-        <div class="check-circle">
+      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto" style="opacity: 1; transform: none;">
+        <div class="check-circle" style="opacity: 1; transform: none;">
           <!-- SVG Check Circle -->
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -63,6 +63,10 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    
+    /* Ensure content is visible above 3D elements */
+    position: relative;
+    z-index: 75;
   }
 
   /* Mobile specific adjustments */
@@ -84,80 +88,38 @@
     }
   }
 
-  /* Content item and check circle animation */
+  /* Override content item animation to ensure visibility */
   .content-item, .check-circle {
-    opacity: 0;
-    will-change: opacity, transform;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .content-item, .check-circle {
-      opacity: 1 !important;
-      transform: none !important;
-    }
+  /* Ensure text visibility */
+  .splash-content {
+    color: white !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .splash-content p {
+    opacity: 1 !important;
+  }
+  
+  .text-primary {
+    color: #00e599 !important;
   }
 </style>
 
 <script>
-  function animateContentItems() {
-    if (typeof window === 'undefined') return;
-
-    // Content items animation
-    const contentItems = document.querySelectorAll('.content-item');
-    const contentObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          contentItems.forEach((item, index) => {
-            const el = item as HTMLElement;
-            setTimeout(() => {
-              el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-              el.style.opacity = '1';
-              el.style.transform = 'translateY(0)';
-            }, 600 + (index * 150));
-          });
-          contentObserver.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (contentItems.length > 0) {
-      contentItems.forEach(item => {
-        (item as HTMLElement).style.opacity = '0';
-        (item as HTMLElement).style.transform = 'translateY(20px)';
-      });
-      contentObserver.observe(contentItems[0] as HTMLElement);
-    }
-
-    // Check circles animation
-    const checkCircles = document.querySelectorAll('.check-circle');
-    const checkObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          checkCircles.forEach((circle, index) => {
-            const el = circle as HTMLElement;
-            setTimeout(() => {
-              el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-              el.style.opacity = '1';
-              el.style.transform = 'scale(1)';
-            }, 800 + (index * 100));
-          });
-          checkObserver.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (checkCircles.length > 0) {
-      checkCircles.forEach(circle => {
-        (circle as HTMLElement).style.opacity = '0';
-        (circle as HTMLElement).style.transform = 'scale(0)';
-      });
-      checkObserver.observe(checkCircles[0].parentElement as HTMLElement);
-    }
-  }
-
   document.addEventListener('DOMContentLoaded', () => {
-    animateContentItems();
+    console.log("SplashContent: Content initialization");
+    // Ensure all content is visible regardless of animation state
+    const contentItems = document.querySelectorAll('.content-item, .check-circle');
+    contentItems.forEach(item => {
+      if (item instanceof HTMLElement) {
+        item.style.opacity = '1';
+        item.style.transform = 'none';
+      }
+    });
   });
-</script> 
+</script>

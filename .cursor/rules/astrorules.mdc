@@ -1,4 +1,9 @@
 ---
+description: 
+globs: 
+alwaysApply: false
+---
+---
 description: Astro Specific Rules:
 globs: 
 alwaysApply: true

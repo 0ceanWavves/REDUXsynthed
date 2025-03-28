@@ -19,7 +19,7 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
     <SplashPrism />
   </div>
 
-  <div class="relative z-10 flex flex-col items-center justify-center min-h-[75vh] gap-4 md:gap-6 pt-0 pb-10 md:pb-12 pointer-events-none">
+  <div class="relative z-50 flex flex-col items-center justify-center min-h-[75vh] gap-4 md:gap-6 pt-0 pb-10 md:pb-12 pointer-events-none">
     <!-- Title component -->
     <SplashTitle />
 
@@ -34,6 +34,44 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
   <SplashActionButtons />
 </section>
 
+<!-- Inline Critical CSS for FOUC prevention -->
+<style is:inline>
+  /* Prevent FOUC and ensure text visibility during initial load */
+  .splash-title, .splash-content, .scroll-indicator {
+    z-index: 900 !important;
+    position: relative !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  /* Ensure text is visible during CSS loading */
+  .gradient-text, .splash-content {
+    color: white !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .splash-content p {
+    opacity: 1 !important;
+  }
+  
+  /* Prevent empty black screen while loading */
+  body {
+    background-color: #0a0a1a !important;
+  }
+
+  /* Force content to be above canvas */
+  .z-50 {
+    z-index: 999 !important;
+  }
+
+  /* Ensure title words are visible */
+  .title-word {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+</style>
+
 <style>
   /* Add a special rule to ensure text elements don't block pointer events */
   .pointer-events-none {
@@ -44,54 +82,38 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
   #prism-bg-canvas, #prism-background {
     pointer-events: auto !important;
   }
+
+  /* Ensure text elements appear above the 3D prism */
+  .relative.z-50 {
+    z-index: 999 !important;
+  }
 </style>
 
 <script>
-  // More efficient scroll interaction with throttling
-  function setupScrollInteraction() {
-    if (typeof window === 'undefined') return;
-
-    const splashSection = document.querySelector('section');
-    if (!splashSection) return;
-
-    let ticking = false;
-
-    window.addEventListener('scroll', () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const scrollPos = window.scrollY;
-
-          // Limit the parallax effect to avoid content disappearing
-          // Apply a much milder effect that stops after 200px of scrolling
-          const maxParallax = 20; // Maximum pixels to move
-          const parallaxAmount = Math.min(maxParallax, scrollPos * 0.05);
-
-          // Only apply subtle parallax to title with a minimum opacity
-          const title = document.querySelector('.splash-title');
-          if (title) {
-            (title as HTMLElement).style.transform = `translateY(${parallaxAmount}px)`;
-          }
-
-          // Keep content visible with minimum opacity of 0.7
-          const content = document.querySelector('.splash-content');
-          if (content) {
-            const contentOpacity = Math.max(0.7, 1 - scrollPos / 800);
-            (content as HTMLElement).style.opacity = contentOpacity.toString();
-            // No transform on content to keep it in place
-            (content as HTMLElement).style.transform = 'none';
-          }
-
-          ticking = false;
-        });
-
-        ticking = true;
-      }
-    });
-  }
-
   // Wait for the DOM to be fully loaded
   document.addEventListener('DOMContentLoaded', () => {
-    // Setup scroll interaction on all devices (mobile friendly version)
-    setupScrollInteraction();
+    console.log("Splash section initialized");
+    
+    // Ensure all text content is visible
+    const textElements = document.querySelectorAll('.splash-title, .splash-content, .title-word, .content-item, .check-circle');
+    textElements.forEach(el => {
+      if (el instanceof HTMLElement) {
+        el.style.opacity = '1';
+        el.style.visibility = 'visible';
+        el.style.transform = 'none';
+        el.style.zIndex = '999';
+      }
+    });
+    
+    // Force 3D elements to have lower z-index
+    const canvas = document.getElementById('prism-bg-canvas');
+    if (canvas && canvas instanceof HTMLElement) {
+      canvas.style.zIndex = '5';
+    }
+    
+    const prismBackground = document.getElementById('prism-background');
+    if (prismBackground && prismBackground instanceof HTMLElement) {
+      prismBackground.style.zIndex = '6';
+    }
   });
-</script> 
+</script>

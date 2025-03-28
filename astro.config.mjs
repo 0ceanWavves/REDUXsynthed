@@ -22,12 +22,26 @@ export default defineConfig({
       }
     },
     optimizeDeps: {
-      include: ['three', 'simplex-noise']
+      include: ['three', 'simplex-noise'],
+      force: true // Force pre-bundling to resolve dependency issues
     },
     build: {
       commonjsOptions: {
         transformMixedEsModules: true
+      },
+      // Reduce chunk size for better performance
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            three: ['three'],
+            simplex: ['simplex-noise']
+          }
+        }
       }
+    },
+    // Improve error reporting
+    esbuild: {
+      logOverride: { 'this-is-undefined-in-esm': 'silent' }
     }
   }
 });

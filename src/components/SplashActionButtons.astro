@@ -2,7 +2,7 @@
 // SplashActionButtons.astro - Component for action buttons
 ---
 
-<div class="buttons-container fixed bottom-20 left-0 right-0 mx-auto z-20 w-full max-w-md flex justify-center gap-3 content-item">
+<div class="buttons-container fixed bottom-20 left-0 right-0 mx-auto z-30 w-full max-w-md flex justify-center gap-3 content-item" style="opacity: 1; transform: none;">
   <a href="#features" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto shadow-lg">
     <!-- SVG Code Tags -->
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -22,8 +22,9 @@
 <style>
   /* Styling for the buttons container */
   .buttons-container {
-    transform: translateY(0);
+    transform: translateY(0) !important;
     transition: transform 0.5s ease;
+    opacity: 1 !important;
   }
   
   .buttons-container a {
@@ -46,17 +47,25 @@
     }
   }
 
-  /* Content animation optimization */
+  /* Override the content-item animation to ensure visibility */
   .content-item {
-    opacity: 0;
-    will-change: opacity, transform;
+    opacity: 1 !important;
+    transform: none !important;
   }
 </style>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // Setup buttons visibility handling
+    console.log("SplashActionButtons: Button initialization");
+    
+    // Ensure buttons are visible regardless of animation state
     const buttonsContainer = document.querySelector('.buttons-container');
+    if (buttonsContainer instanceof HTMLElement) {
+      buttonsContainer.style.opacity = '1';
+      buttonsContainer.style.transform = 'translateY(0)';
+    }
+    
+    // Setup buttons visibility handling
     let lastScrollY = 0;
     let scrollAnimationFrame: number | null = null;
     
@@ -81,16 +90,5 @@
     
     // Use passive scroll listener for performance
     window.addEventListener('scroll', handleButtonVisibility, { passive: true });
-
-    // Animate button appearance
-    const contentItems = document.querySelectorAll('.content-item');
-    contentItems.forEach((item, index) => {
-      const el = item as HTMLElement;
-      setTimeout(() => {
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        el.style.opacity = '1';
-        el.style.transform = 'translateY(0)';
-      }, 1000 + (index * 150));
-    });
   });
-</script> 
+</script>

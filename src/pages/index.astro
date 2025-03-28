@@ -25,6 +25,9 @@ const description =
     <title>Synthed - Custom Software & Application Development</title>
     <meta name="description" content={description} />
 		
+		<!-- Preload critical assets -->
+		<link rel="preload" href="/synthedlogo.svg" as="image" />
+		
 		<!-- social media -->
 		<meta property="og:title" content="Synthed - Custom Software & Application Development" />
 		<meta property="og:type" content="website" />
@@ -56,6 +59,12 @@ const description =
 					}
 				});
 		</script>
+		
+		<!-- Emergency fix for z-index issues -->
+		<script src="/fix-zindex.js" is:inline></script>
+		
+		<!-- Fix for interaction issues -->
+		<script src="/fix-interaction.js" is:inline></script>
 	</head>
   <body
     class="h-full overflow-x-hidden text-default text-base selection:bg-secondary selection:text-white bg-[#0a0a1a]"
@@ -77,7 +86,7 @@ const description =
     <div class="wave-container fixed bottom-0 left-0 w-[100vw] h-[150vh] md:h-[150vh] pointer-events-none z-5 opacity-90"></div>
     
     <!-- Add a transition gradient between hero and content sections -->
-    <div class="section-transition-gradient fixed w-full pointer-events-none z-10"></div>
+    <div class="section-transition-gradient fixed w-full pointer-events-none z-2" data-astro-cid-j7pv25f6=""></div>
     
     <!-- Dark overlay to ensure consistent background darkness -->
     <div class="fixed inset-0 bg-[#0a0a1a]/60 z-5 pointer-events-none"></div>
@@ -261,6 +270,8 @@ const description =
                 rgba(6, 10, 24, 0.3) 50%,
                 rgba(10, 10, 26, 0.6) 100%);
     mix-blend-mode: normal;
+    pointer-events: none !important; /* Ensure pointer events are disabled */
+    z-index: 2 !important; /* Force lower z-index */
   }
   
   /* Better styling for content sections */
@@ -274,6 +285,27 @@ const description =
   .content-wrapper > :not(:first-child) {
     margin-top: 2rem;
   }
+  
+  /* Fix for 3D interaction */
+  #prism-bg-canvas {
+    pointer-events: auto !important;
+    z-index: 5 !important;
+  }
+  
+  #prism-background {
+    pointer-events: auto !important;
+    z-index: 6 !important;
+  }
+  
+  /* Ensure text doesn't block interaction */
+  .splash-title, .title-word, .gradient-text, .splash-content, .content-item, .check-circle {
+    pointer-events: none !important;
+  }
+  
+  /* But let buttons be clickable */
+  .buttons-container a {
+    pointer-events: auto !important;
+  }
 </style>
 
 <script>
@@ -283,6 +315,21 @@ const description =
   // Handle initial setup on page load
   document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM Content Loaded');
+    
+    // Ensure 3D elements can be interacted with
+    const canvas = document.getElementById('prism-bg-canvas');
+    if (canvas) {
+      canvas.style.pointerEvents = 'auto';
+      canvas.style.zIndex = '5';
+      console.log('Canvas interaction enabled');
+    }
+    
+    const prismBg = document.getElementById('prism-background');
+    if (prismBg) {
+      prismBg.style.pointerEvents = 'auto';
+      prismBg.style.zIndex = '6';
+      console.log('Prism background interaction enabled');
+    }
     
     // Init cursor effect (desktop only)
     if (!isMobile) {
@@ -328,3 +375,5 @@ const description =
     });
   }
 </script>
+</body>
+</html>

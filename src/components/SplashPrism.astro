@@ -4,8 +4,9 @@
 
 <div class="prism-container relative">
   <!-- Add a draggable indicator div with custom cursor over the 3D object -->
-  <div id="prism-background" class="prism-interactive-area absolute inset-0 cursor-grab active:cursor-grabbing">
-    <!-- Add a subtle visual cue -->
+  
+  <!-- Make sure the background div has a low z-index -->
+  <div id="prism-background" class="prism-interactive-area absolute inset-0 cursor-grab active:cursor-grabbing" style="z-index: 6;">
     <div class="interactivity-hint absolute inset-0 flex items-center justify-center pointer-events-none">
       <div class="bg-gradient-to-r from-transparent via-white/5 to-transparent w-full h-20 animate-pulse-slow"></div>
     </div>
@@ -49,7 +50,7 @@
     height: 100%;
     top: 0;
     left: 0;
-    z-index: 50; /* Increase z-index to ensure it appears above everything */
+    z-index: 7; /* Just above prism but below text */
     pointer-events: none;
   }
 
@@ -68,7 +69,7 @@
     transform: translate(-50%, -50%);
     animation: flashArrow 15s linear;
     animation-delay: 5s;
-    z-index: 60;
+    z-index: 7;
   }
 
   /* Add a background to make the arrow more visible */
@@ -184,9 +185,15 @@
   /* Add cursor styles to indicate draggable object */
   .prism-interactive-area {
     cursor: grab;
-    z-index: 15; /* Increased from 5 to ensure it's higher than other elements */
+    z-index: 6; /* CHANGED: Lower z-index to be behind text but above canvas */
     background-color: transparent;
     pointer-events: auto !important; /* Force pointer events to be enabled */
+    position: fixed; /* Change to fixed to cover entire viewport */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    touch-action: none;
   }
   
   .prism-interactive-area:active {
@@ -209,7 +216,7 @@
   @media (max-width: 768px) {
     /* Improve swipe indicators visibility */
     .rotation-arrows {
-      z-index: 50; /* Ensure it's above other elements */
+      z-index: 7; /* Ensure it's above other elements but below text */
     }
     
     .main-rotation-arrow {
@@ -256,6 +263,12 @@
     
     // Setup direct interaction with the 3D prism
     setupDirectPrismInteraction();
+    
+    // Fix z-index for prism background
+    const prismBackground = document.getElementById('prism-background');
+    if (prismBackground) {
+      prismBackground.style.zIndex = '6';
+    }
   });
   
   // Function to ensure text elements don't block interaction with the 3D object
@@ -273,12 +286,14 @@
     const prismBackground = document.getElementById('prism-background');
     if (prismBackground) {
       prismBackground.style.pointerEvents = 'auto';
+      prismBackground.style.zIndex = '6'; // Ensure lower z-index
     }
     
     // Make sure the AmorphousPrism canvas is receiving events
     const canvas = document.getElementById('prism-bg-canvas');
     if (canvas) {
       canvas.style.pointerEvents = 'auto';
+      canvas.style.zIndex = '5'; // Ensure lowest z-index
     }
   }
   
@@ -286,6 +301,9 @@
   function setupDirectPrismInteraction() {
     const prismBackground = document.getElementById('prism-background');
     if (!prismBackground) return;
+    
+    // Ensure proper z-index
+    prismBackground.style.zIndex = '6';
     
     const isMobile = window.innerWidth < 768;
     const rotationSpeed = isMobile ? 0.005 : 0.003;
@@ -357,8 +375,10 @@
       event.preventDefault();
       
       // Update visual feedback
-      prismBackground.classList.remove('cursor-grabbing');
-      prismBackground.classList.add('cursor-grab');
+      if (prismBackground) {
+        prismBackground.classList.remove('cursor-grabbing');
+        prismBackground.classList.add('cursor-grab');
+      }
       
       // Track interaction state
       isInteracting = false;
@@ -384,13 +404,11 @@
     
     // Add hover effects
     prismBackground.addEventListener('mouseover', () => {
-      if (prismBackground) {
-        prismBackground.classList.add('cursor-grab');
-      }
+      prismBackground.classList.add('cursor-grab');
     });
     
     prismBackground.addEventListener('mouseout', () => {
-      if (!isInteracting && prismBackground) {
+      if (!isInteracting) {
         prismBackground.classList.remove('cursor-grab');
         prismBackground.classList.remove('cursor-grabbing');
       }
@@ -502,4 +520,4 @@
       
     }, 800); // Start sooner after load
   }
-</script> 
+</script>
