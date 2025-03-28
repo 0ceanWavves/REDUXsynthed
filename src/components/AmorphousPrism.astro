@@ -192,13 +192,12 @@
         transparent: true,
         opacity: 0.9,
         ior: 1.5,
-        reflectivity: 0.5,
-        // @ts-ignore - morphTargets is supported in THREE.js but missing in type definitions
-        morphTargets: true // IMPORTANT for morph targets
+        reflectivity: 0.5
     });
 
     // 5. Create the Mesh
     const prism = new THREE.Mesh(baseGeometry, material);
+    prism.morphTargetInfluences = new Array(baseGeometry.morphAttributes.position.length).fill(0);
 
     // Size and position - REDUCED SIZE (by 10-15%)
     const sizeMultiplier = isMobile ? 0.75 : 1.0; // Reduced from 0.9/1.2
@@ -309,11 +308,10 @@
         color: colors.edgeColor,
         linewidth: isMobile ? 1.5 : 1, // Note: linewidth > 1 only works on some platforms
         transparent: true,
-        opacity: 0.75,
-        // @ts-ignore - morphTargets is supported in THREE.js but missing in type definitions
-        morphTargets: true // CRUCIAL for edges to morph!
+        opacity: 0.75
     });
     const prismEdges = new THREE.LineSegments(edgesGeometry, edgeMaterial);
+    prismEdges.morphTargetInfluences = new Array(baseGeometry.morphAttributes.position.length).fill(0);
 
     // Edges need the same initial transform as the prism
     prismEdges.scale.copy(prism.scale);
@@ -327,12 +325,12 @@
       color: 0x8162ff,
       transparent: true,
       opacity: isMobile ? 0.35 : 0.25, // Reduced for better edge visibility
-      side: THREE.BackSide,
-      // @ts-ignore - morphTargets is supported in THREE.js but missing in type definitions
-      morphTargets: true // IMPORTANT for glow too
+      side: THREE.BackSide
     });
 
     const glowMesh = new THREE.Mesh(baseGeometry, glowMaterial); // Use the SAME geometry
+    glowMesh.morphTargetInfluences = new Array(baseGeometry.morphAttributes.position.length).fill(0);
+    
     const glowScaleFactor = 1.1; // Reduced to make glow closer to the shape
     glowMesh.scale.copy(prism.scale).multiplyScalar(glowScaleFactor);
     glowMesh.position.copy(prism.position);
