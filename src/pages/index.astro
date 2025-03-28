@@ -74,7 +74,10 @@ const description =
     />
     
     <!-- Decorative wave effect for bottom of page - Adjusted for mobile -->
-    <div class="wave-container fixed bottom-0 left-0 w-[100vw] h-[120vh] md:h-[120vh] pointer-events-none z-5 opacity-95"></div>
+    <div class="wave-container fixed bottom-0 left-0 w-[100vw] h-[150vh] md:h-[150vh] pointer-events-none z-5 opacity-90"></div>
+    
+    <!-- Add a transition gradient between hero and content sections -->
+    <div class="section-transition-gradient fixed w-full pointer-events-none z-10"></div>
     
     <!-- Dark overlay to ensure consistent background darkness -->
     <div class="fixed inset-0 bg-[#0a0a1a]/60 z-5 pointer-events-none"></div>
@@ -94,8 +97,8 @@ const description =
     <!-- Hero section with prism and splash content -->
     <HeroSection />
     
-    <!-- Main content without its own background or overlay -->
-    <div class="relative z-30 px-4 md:px-8 py-4 md:py-6 mx-auto w-full content-wrapper"
+    <!-- Main content with improved styling for smoother transitions -->
+    <div class="relative z-30 px-4 md:px-8 py-4 md:py-8 mx-auto w-full content-wrapper"
         style="margin-top: 0; margin-bottom: 0;"
     >
       <Features />
@@ -143,7 +146,7 @@ const description =
     width: 100vw;
     left: 0;
     right: 0;
-    background: linear-gradient(to top, rgba(6, 8, 24, 0.9), rgba(10, 25, 41, 0.5), transparent);
+    background: linear-gradient(to top, rgba(6, 8, 24, 0.95), rgba(10, 25, 41, 0.5), transparent);
     overflow: hidden;
     filter: drop-shadow(0 0 40px rgba(0, 52, 89, 0.5)); 
     transform: scaleY(1);
@@ -247,6 +250,29 @@ const description =
       transform: translateZ(0.5px) !important;
       filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
     }
+  }
+
+  /* Section transition gradient */
+  .section-transition-gradient {
+    height: 25vh;
+    bottom: 0;
+    background: linear-gradient(to bottom, 
+                rgba(10, 10, 26, 0) 0%, 
+                rgba(6, 10, 24, 0.3) 50%,
+                rgba(10, 10, 26, 0.6) 100%);
+    mix-blend-mode: normal;
+  }
+  
+  /* Better styling for content sections */
+  .content-wrapper {
+    position: relative;
+    background: transparent;
+    overflow: visible;
+  }
+  
+  /* Add space between sections */
+  .content-wrapper > :not(:first-child) {
+    margin-top: 2rem;
   }
 </style>
 
