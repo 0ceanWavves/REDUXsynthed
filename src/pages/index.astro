@@ -120,6 +120,15 @@ const description =
     will-change: transform, opacity;
   }
   
+  /* Center the "Scroll for more" text */
+  [id*="scroll-for-more"] {
+    text-align: center !important;
+    width: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 auto !important;
+  }
+  
   @media (prefers-reduced-motion: reduce) {
     #cursor-glow {
       display: none;

@@ -147,8 +147,8 @@
           // Rotate to reduce axial bias
           mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
           
-          // Reduced octaves from 5 to 3
-          for (int i = 0; i < 3; ++i) {
+          // Reduced to just 2 octaves
+          for (int i = 0; i < 2; ++i) {
             v += a * noise(x);
             x = rot * x * 2.0 + shift;
             a *= 0.5;
@@ -162,40 +162,30 @@
           // Time-based animation
           float t = time * 0.2;
           
-          // Create flowing liquid effect with multiple noise layers
+          // Create flowing liquid effect with just one main noise layer
           vec2 p1 = uv + vec2(0.0, t * 0.1);
-          vec2 p2 = uv * 2.5 + vec2(t * 0.15, 0.0);
           
-          // Reduced noise layers (removed third layer)
-          float noise1 = fbm(p1 * 3.0);
-          float noise2 = fbm(p2 * 1.5);
-          
-          // Combine noise layers - simplified
-          float finalNoise = noise1 * 0.6 + noise2 * 0.4;
+          // Single noise layer
+          float finalNoise = fbm(p1 * 3.0);
           finalNoise = (finalNoise * 0.5 + 0.5); // Normalize to 0-1 range
           
-          // Create distortion effect
+          // Create subtle distortion
           vec2 distortedUV = uv;
-          distortedUV.x += finalNoise * 0.05;
-          distortedUV.y += finalNoise * 0.03;
+          distortedUV.x += finalNoise * 0.03;
           
-          // Final flowing pattern
-          float flowPattern = fbm(distortedUV * 4.0 + vec2(t * 0.25, t * 0.15));
-          flowPattern = flowPattern * 0.7 + finalNoise * 0.3;
-          flowPattern = smoothstep(0.2, 0.8, flowPattern); // Add contrast
+          // Final flowing pattern - simplified for one main horizontal flow
+          float flowPattern = fbm(distortedUV * 2.5 + vec2(t * 0.25, 0));
           
-          // Create color gradient based on noise value
-          vec3 color;
-          if (flowPattern < 0.4) {
-            float t = flowPattern / 0.4;
-            color = mix(color3, color2, t * colorBlend);
-          } else if (flowPattern < 0.7) {
-            float t = (flowPattern - 0.4) / 0.3;
-            color = mix(color2, color1, t * colorBlend);
-          } else {
-            float t = (flowPattern - 0.7) / 0.3;
-            color = mix(color1, vec3(1.0), t * 0.7 * colorBlend);
-          }
+          // Create horizontal band effect
+          float yPos = abs(uv.y - 0.5) * 2.0; // Distance from center horizontal line
+          float band = smoothstep(0.8, 0.95, 1.0 - yPos); // Single band in the middle
+          
+          // Apply band effect to flow pattern
+          flowPattern = flowPattern * band;
+          flowPattern = smoothstep(0.1, 0.5, flowPattern); // Add contrast
+          
+          // Create color gradient based on noise value - simplified for one band
+          vec3 color = mix(color3, mix(color2, color1, flowPattern), flowPattern * colorBlend);
           
           // Add focus effect in center (for prism visibility)
           float distance = length(uv - vec2(0.5));
