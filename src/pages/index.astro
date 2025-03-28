@@ -146,9 +146,9 @@ const description =
     width: 100vw;
     left: 0;
     right: 0;
-    background: linear-gradient(to top, rgba(10, 10, 26, 0.6), transparent);
+    background: linear-gradient(to top, rgba(10, 10, 26, 0.8), rgba(10, 10, 26, 0.4), transparent);
     overflow: hidden;
-    filter: drop-shadow(0 0 25px rgba(129, 98, 255, 0.25)) drop-shadow(0 0 35px rgba(0, 229, 153, 0.15));
+    filter: drop-shadow(0 0 30px rgba(129, 98, 255, 0.4)) drop-shadow(0 0 50px rgba(0, 229, 153, 0.3));
     transform: scaleY(1);
     transform-origin: bottom;
   }
@@ -159,9 +159,9 @@ const description =
     width: 100vw;
     left: 0;
     right: 0;
-    background: linear-gradient(to bottom, rgba(10, 10, 26, 0.3), transparent);
+    background: linear-gradient(to bottom, rgba(10, 10, 26, 0.6), rgba(10, 10, 26, 0.2), transparent);
     overflow: hidden;
-    filter: drop-shadow(0 0 25px rgba(0, 229, 153, 0.2)) drop-shadow(0 0 35px rgba(129, 98, 255, 0.1));
+    filter: drop-shadow(0 0 30px rgba(0, 229, 153, 0.3)) drop-shadow(0 0 50px rgba(129, 98, 255, 0.2));
     transform: scaleY(-1); /* Flip the waves upside down */
     transform-origin: top;
   }
@@ -182,39 +182,40 @@ const description =
     background-repeat: repeat-x;
     background-size: 200% 100%; /* Wider SVG coverage */
     width: 200%; /* Extended width for full coverage */
-    height: 40%;
-    opacity: 0.3;
-    animation: waveAnimation 25s linear infinite;
+    height: 50%; /* Taller waves for better visibility */
+    opacity: 0.5; /* Increased opacity for more visibility */
+    animation: waveAnimation 30s linear infinite; /* Slowed down for smoother effect */
     mix-blend-mode: screen;
   }
   
-  /* Simplified SVG paths for better rendering */
+  /* Enhanced SVG paths for smoother, more visible waves */
   .wave-container::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 134'%3E%3Cpath d='M0,25.2c253,0,253,88.9,506,88.9c253,0,253-88.9,506-88.9c253,0,253,88.9,506,88.9c253,0,253-88.9,506-88.9v46.9H0V25.2z' fill='%238162ff' fill-opacity='0.25'/%3E%3C/svg%3E");
-    animation-duration: 20s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%238162ff' fill-opacity='0.4' d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z'%3E%3C/path%3E%3C/svg%3E");
+    animation-duration: 25s;
+    bottom: -15px;
   }
   
   .wave-container::after {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 134'%3E%3Cpath d='M0,25.2c253,0,253,88.9,506,88.9c253,0,253-88.9,506-88.9c253,0,253,88.9,506,88.9c253,0,253-88.9,506-88.9v46.9H0V25.2z' fill='%2300e599' fill-opacity='0.25'/%3E%3C/svg%3E");
-    bottom: -20px;
-    animation-duration: 15s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%2300e599' fill-opacity='0.4' d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z'%3E%3C/path%3E%3C/svg%3E");
+    bottom: -35px; /* Offset to create layered effect */
+    animation-duration: 20s;
     animation-direction: reverse;
   }
   
-  /* Different colors for the middle waves - simplified SVGs */
+  /* Different colors for the middle waves */
   .wave-container-middle::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 134'%3E%3Cpath d='M0,25.2c253,0,253,88.9,506,88.9c253,0,253-88.9,506-88.9c253,0,253,88.9,506,88.9c253,0,253-88.9,506-88.9v46.9H0V25.2z' fill='%2300e599' fill-opacity='0.2'/%3E%3C/svg%3E");
-    animation-duration: 18s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%2300e599' fill-opacity='0.3' d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z'%3E%3C/path%3E%3C/svg%3E");
+    animation-duration: 22s;
     bottom: auto;
     top: 0;
   }
   
   .wave-container-middle::after {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 134'%3E%3Cpath d='M0,25.2c253,0,253,88.9,506,88.9c253,0,253-88.9,506-88.9c253,0,253,88.9,506,88.9c253,0,253-88.9,506-88.9v46.9H0V25.2z' fill='%238162ff' fill-opacity='0.2'/%3E%3C/svg%3E");
-    animation-duration: 23s;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%238162ff' fill-opacity='0.3' d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z'%3E%3C/path%3E%3C/svg%3E");
+    animation-duration: 28s;
     animation-direction: reverse;
     bottom: auto;
-    top: 20px;
+    top: 25px; /* Increased offset for better layering */
   }
   
   @keyframes waveAnimation {
