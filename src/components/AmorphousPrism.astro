@@ -8,8 +8,8 @@
   import * as THREE from 'three';
   import { createNoise4D } from 'simplex-noise';
 
-  // Create a simple circular texture for particles
-  function createCircleTexture(size = 64) {
+  // Create a simple circular texture for particles - using power-of-2 dimensions
+  function createCircleTexture(size = 128) { // Changed to 128 (power of 2)
     // Create a canvas element
     const canvas = document.createElement('canvas');
     canvas.width = size;
@@ -21,6 +21,9 @@
       console.warn('Failed to get 2D context for particle texture');
       return new THREE.Texture();
     }
+    
+    // Clear the canvas completely first
+    ctx.clearRect(0, 0, size, size);
     
     // Create a radial gradient (white in center, transparent at edges)
     const gradient = ctx.createRadialGradient(
@@ -37,7 +40,13 @@
     
     // Create a texture from the canvas
     const texture = new THREE.CanvasTexture(canvas);
+    
+    // Prevent mipmap generation warnings
+    texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
     texture.needsUpdate = true;
+    
     return texture;
   }
 
