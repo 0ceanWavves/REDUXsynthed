@@ -25,6 +25,7 @@ import Splash from "./splash.astro";
     width: 100%;
     overflow: hidden;
     background: transparent;
+    contain: layout paint style;
   }
   
   /* Make sure the hero takes up full viewport height */
@@ -32,6 +33,13 @@ import Splash from "./splash.astro";
     min-height: 100vh;
     position: relative;
     background: transparent;
+  }
+  
+  #prism-background {
+    backface-visibility: hidden;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    will-change: transform;
   }
   
   @media (max-width: 768px) {
@@ -51,26 +59,55 @@ import Splash from "./splash.astro";
     if (prismBackground && heroSection) {
       // Log visibility for debugging
       console.log('Hero section initialized');
-      console.log('Prism background visibility:', window.getComputedStyle(prismBackground).visibility);
-      console.log('Prism background display:', window.getComputedStyle(prismBackground).display);
       
-      // Add a slight parallax effect on scroll
-      let ticking = false;
-      window.addEventListener('scroll', () => {
-        if (!ticking) {
-          window.requestAnimationFrame(() => {
-            const scrollPos = window.scrollY;
+      // Add a smooth parallax effect on scroll with optimizations
+      let lastScrollY = 0;
+      let animationFrame: number | null = null;
+      
+      // Pre-calculate values to avoid layout thrashing
+      const initialTransform = {
+        scale: 1,
+        y: 0,
+        z: 0
+      };
+      
+      // More efficient scroll handler with debounce
+      function onScroll() {
+        if (animationFrame) return;
+        
+        animationFrame = window.requestAnimationFrame(() => {
+          const scrollY = window.scrollY;
+          
+          // Only update if scroll position changed significantly
+          if (Math.abs(scrollY - lastScrollY) > 1) {
             // Only apply effect for first 500px of scrolling
-            if (scrollPos < 500) {
-              const scale = 1 - (scrollPos * 0.0001); // Subtle scale
-              const yOffset = scrollPos * 0.1; // Subtle movement
-              prismBackground.style.transform = `scale(${scale}) translateY(${yOffset}px) translateZ(0)`;
+            if (scrollY < 500) {
+              // Smoother transition values
+              const scale = Math.max(0.95, 1 - (scrollY * 0.0001)); // Limit minimum scale
+              const yOffset = scrollY * 0.08; // Reduced movement
+              
+              // Apply hardware-accelerated transform
+              if (prismBackground) {
+                prismBackground.style.transform = `scale3d(${scale}, ${scale}, 1) translate3d(0, ${yOffset}px, 0)`;
+              }
             }
-            ticking = false;
-          });
-          ticking = true;
+            
+            lastScrollY = scrollY;
+          }
+          
+          animationFrame = null;
+        });
+      }
+      
+      // Use passive scroll listener for better performance
+      window.addEventListener('scroll', onScroll, { passive: true });
+      
+      // Set initial transform with a slight delay to ensure proper initial rendering
+      setTimeout(() => {
+        if (window.scrollY > 0) {
+          onScroll();
         }
-      });
+      }, 100);
     }
   });
 </script> 
