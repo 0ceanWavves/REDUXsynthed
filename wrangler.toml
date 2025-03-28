@@ -1,0 +1,15 @@
+name = "synthedxyz"
+compatibility_date = "2023-01-01"
+
+[site]
+bucket = "./dist"
+entry-point = "."
+
+# Configuration for Cloudflare Pages
+pages_build_output_dir = "dist"
+
+[site.static]
+include = ["dist"]
+
+[env.production]
+name = "synthed-website"

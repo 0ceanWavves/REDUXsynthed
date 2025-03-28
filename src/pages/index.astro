@@ -62,8 +62,8 @@ const description =
   <body
     class="h-full overflow-x-hidden bg-default text-default text-base selection:bg-secondary selection:text-white"
   >
-    <!-- Wave canvas shown behind everything -->
-    <canvas id="wave-canvas" class="fixed top-0 left-0 w-full h-full -z-20 opacity-60 transition-opacity duration-700" style="display: block;"></canvas>
+    <!-- Remove wave canvas as it's causing visual clashes -->
+    <!-- <canvas id="wave-canvas" class="fixed top-0 left-0 w-full h-full -z-20 opacity-60 transition-opacity duration-700" style="display: block;"></canvas> -->
 
     <!-- Flow background to provide liquid texture around the prism -->
     <FlowBackground />
@@ -125,9 +125,12 @@ const description =
       display: none;
     }
     
+    /* Remove reference to wave-canvas since we removed it */
+    /*
     #wave-canvas {
       display: none;
     }
+    */
     
     #prism-background {
       display: none !important;
@@ -160,6 +163,8 @@ const description =
     const waveCanvas = document.getElementById('wave-canvas') as HTMLCanvasElement;
     const prismBackground = document.getElementById('prism-background');
     
+    // Remove wave canvas initialization since we've disabled it
+    /* 
     if (waveCanvas) {
       console.log('Wave canvas found, initializing');
       console.log('Wave canvas visibility:', window.getComputedStyle(waveCanvas).visibility);
@@ -176,6 +181,7 @@ const description =
     } else {
       console.error('Wave canvas element not found during initialization!');
     }
+    */
     
     if (prismBackground) {
       console.log('Prism background found');
@@ -252,134 +258,5 @@ const description =
       
       lastScrollTop = scrollTop;
     });
-  }
-  
-  // Wave animation with thicker, filled-in waves
-  class Wave {
-    constructor(
-      private canvas: HTMLCanvasElement
-    ) {
-      this.ctx = this.canvas.getContext('2d') as CanvasRenderingContext2D;
-      this.canvas.width = window.innerWidth;
-      this.canvas.height = window.innerHeight;
-      this.lastFrameTime = 0;
-      this.amplitude = isMobile ? 45 : 60; // Increased amplitude for more visible waves
-      
-      // Create wave rows - REDUCED number of waves
-      this.waves = [];
-      
-      // Fewer wave rows with better spacing
-      const waveCount = isMobile ? 2 : 3;
-      
-      // Calculate vertical spacing to evenly distribute waves
-      const screenHeight = this.canvas.height;
-      const startPosition = screenHeight * 0.5; // Start waves at middle of screen
-      const spacing = screenHeight * 0.2; // Space between waves
-      
-      for (let i = 0; i < waveCount; i++) {
-        // Create waves with different speeds and more vibrant colors
-        this.waves.push({
-          y: startPosition + (i * spacing), // Distribute from middle to bottom
-          speed: 0.2 + (i * 0.05), // Increased speed for better flow
-          frequency: 0.008 - (i * 0.001), // Lower frequency for longer waves
-          amplitude: this.amplitude - (i * 5), // Less amplitude difference for more filling
-          phase: i * 2, // Offset phases for variety
-          color: i % 2 === 0 ? 
-            'rgba(96, 165, 250, 0.4)' : // Blue - increased opacity 
-            'rgba(74, 222, 128, 0.35)'  // Green - increased opacity
-        });
-      }
-      
-      // Resize handling
-      window.addEventListener('resize', () => {
-        this.canvas.width = window.innerWidth;
-        this.canvas.height = window.innerHeight;
-      });
-    }
-    
-    private ctx: CanvasRenderingContext2D;
-    private waves: {y: number, speed: number, frequency: number, amplitude: number, phase: number, color: string}[];
-    private lastFrameTime: number;
-    private amplitude: number;
-    
-    animate = (currentTime: number) => {
-      if (!this.canvas) return;
-      
-      // Limit FPS for better performance - even lower on mobile
-      const targetFPS = isMobile ? 20 : 30; // 20fps on mobile, 30fps on desktop
-      const frameInterval = 1000 / targetFPS;
-      
-      if (currentTime - this.lastFrameTime < frameInterval) {
-        requestAnimationFrame(this.animate);
-        return;
-      }
-      
-      this.lastFrameTime = currentTime;
-      
-      // Skip drawing if canvas is outside viewport
-      if (!this.isInViewport()) {
-        requestAnimationFrame(this.animate);
-        return;
-      }
-      
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-      
-      // Draw each wave row
-      this.waves.forEach(wave => {
-        // Advance the phase
-        wave.phase += wave.speed / 100;
-        
-        this.drawWave(wave.y, wave.frequency, wave.amplitude, wave.phase, wave.color);
-      });
-      
-      requestAnimationFrame(this.animate);
-    }
-    
-    isInViewport() {
-      const rect = this.canvas.getBoundingClientRect();
-      return (
-        rect.top <= window.innerHeight &&
-        rect.bottom >= 0
-      );
-    }
-    
-    drawWave(centerY: number, frequency: number, amplitude: number, phase: number, color: string) {
-      // Create gradient for more realistic water effect
-      const gradient = this.ctx.createLinearGradient(0, centerY - amplitude, 0, this.canvas.height);
-      
-      // Extract base color
-      const baseColor = color.replace(/[\d.]+\)$/, '');
-      
-      // Add gradient stops with more subtle values
-      gradient.addColorStop(0, baseColor + '0.4)'); // Less opaque at top of wave
-      gradient.addColorStop(0.7, baseColor + '0.2)'); // More transparent toward bottom
-      gradient.addColorStop(1, baseColor + '0.05)'); // Almost transparent at bottom
-      
-      this.ctx.beginPath();
-      
-      // Start at the left edge of the canvas, at the bottom
-      this.ctx.moveTo(0, this.canvas.height);
-      
-      // Draw path to the leftmost point of the wave
-      this.ctx.lineTo(0, centerY);
-      
-      // Draw the wave across the screen
-      for (let x = 0; x < this.canvas.width; x += 8) {
-        // Create two overlapping sine waves for more organic motion
-        const y1 = Math.sin(x * frequency + phase) * amplitude;
-        
-        // Draw each point of the wave
-        this.ctx.lineTo(x, centerY + y1);
-      }
-      
-      // Complete the path to the bottom right corner and back to start
-      this.ctx.lineTo(this.canvas.width, centerY);
-      this.ctx.lineTo(this.canvas.width, this.canvas.height);
-      this.ctx.closePath();
-      
-      // Fill with gradient
-      this.ctx.fillStyle = gradient;
-      this.ctx.fill();
-    }
   }
 </script>

@@ -8,6 +8,39 @@
   import * as THREE from 'three';
   import { createNoise4D } from 'simplex-noise';
 
+  // Create a simple circular texture for particles
+  function createCircleTexture(size = 64) {
+    // Create a canvas element
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    
+    // Return a blank texture if context is null
+    if (!ctx) {
+      console.warn('Failed to get 2D context for particle texture');
+      return new THREE.Texture();
+    }
+    
+    // Create a radial gradient (white in center, transparent at edges)
+    const gradient = ctx.createRadialGradient(
+      size/2, size/2, 0,
+      size/2, size/2, size/2
+    );
+    gradient.addColorStop(0, 'rgba(255,255,255,1)');
+    gradient.addColorStop(0.5, 'rgba(255,255,255,0.5)');
+    gradient.addColorStop(1, 'rgba(255,255,255,0)');
+    
+    // Draw the gradient
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    
+    // Create a texture from the canvas
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    return texture;
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     console.log("Prism initialization started");
     const canvas = document.getElementById('prism-bg-canvas') as HTMLCanvasElement | null;
@@ -34,7 +67,9 @@
         accent1: new THREE.Color("#8162ff"),    // Vibrant purple
         accent2: new THREE.Color("#00e599"),    // Teal
         accent3: new THREE.Color("#ffffff"),    // White for highlights
-        edgeColor: new THREE.Color("#e0e0ff")   // Light blueish white for edges
+        edgeColor: new THREE.Color("#e0e0ff"),  // Light blueish white for edges
+        particleColor1: new THREE.Color("#7142ff"), // Darker purple for particles
+        particleColor2: new THREE.Color("#00c489")  // Darker teal for particles
     };
     
     // Shape morphing configuration
@@ -55,7 +90,9 @@
     // Create camera
     const fov = isMobile ? 65 : 75;
     const camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.z = isMobile ? 4.5 : 4.0; // Increased camera distance for smaller object view
+    camera.position.z = isMobile ? 5.0 : 4.0; // Increased distance for mobile to show more of the scene
+    // Center camera horizontally
+    camera.position.x = 0;
     
     // Create renderer
     const renderer = new THREE.WebGLRenderer({
@@ -68,7 +105,7 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, isFirefox ? 1.5 : (isMobile ? 1.5 : 2)));
     renderer.setClearColor(0x000000, 0.1);
     renderer.setClearAlpha(0.1);
-
+    
     // --- Geometry Setup for Morphing ---
     // 1. Define the target shapes (Platonic Solids)
     const targetGeometries = [
@@ -79,7 +116,7 @@
       new THREE.IcosahedronGeometry(1.1, 0)     // Target 4
     ];
     const platonicNames = ["Tetrahedron", "Cube", "Octahedron", "Dodecahedron", "Icosahedron"];
-
+    
     // 2. Create the Base Geometry (subdivided sphere for consistent vertex count)
     const baseGeometry = new THREE.SphereGeometry(1.1, 32, 16); // Radius, WidthSegments, HeightSegments
     baseGeometry.morphAttributes.position = []; // Initialize morph position attributes array
@@ -163,17 +200,108 @@
     // 5. Create the Mesh
     const prism = new THREE.Mesh(baseGeometry, material);
 
-    // Size and position - REDUCED SIZE
-    const sizeMultiplier = isMobile ? 1.0 : 1.2; // Reduced from 1.4/1.8
+    // Size and position - REDUCED SIZE (by 10-15%)
+    const sizeMultiplier = isMobile ? 0.75 : 1.0; // Reduced from 0.9/1.2
     prism.scale.set(sizeMultiplier, sizeMultiplier, sizeMultiplier);
     
-    // Position the prism - adjusted for better centering
-    const yPosition = isMobile ? 0.0 : 0.2; 
-    const xPosition = isMobile ? 0.0 : 0.2; // Reduced offset for better centering
+    // Position the prism - adjusted for perfect centering
+    const yPosition = isMobile ? -0.1 : 0.2; // Slight adjustment downward on mobile
+    const xPosition = 0; // No x-offset for perfect horizontal centering
     prism.position.set(xPosition, yPosition, 0);
     prism.rotation.x = 0.4;
-    prism.rotation.y = 0.6;
+    prism.rotation.y = isMobile ? 0.5 : 0.6; // Adjusted rotation for mobile
+    
+    // Center the scene origin
+    scene.position.x = 0;
     scene.add(prism);
+    
+    // --- NEW: Create Particle Atmosphere ---
+    const particleCount = isFirefox ? 200 : (isMobile ? 300 : 500);
+    const particleGeometry = new THREE.BufferGeometry();
+    const particlePositions = new Float32Array(particleCount * 3);
+    const particleSizes = new Float32Array(particleCount);
+    const particleColors = new Float32Array(particleCount * 3);
+    
+    // Create a larger sphere around the prism for particle positions
+    const atmosphereRadius = 2.0 * sizeMultiplier;
+    
+    // Generate random particles in a sphere arrangement
+    for (let i = 0; i < particleCount; i++) {
+        // Generate points in a spherical distribution
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        
+        // Calculate radius with some variation (not all particles at exact sphere surface)
+        const radius = atmosphereRadius * (0.7 + Math.random() * 0.6);
+        
+        // Convert to Cartesian coordinates
+        const x = radius * Math.sin(phi) * Math.cos(theta);
+        const y = radius * Math.sin(phi) * Math.sin(theta);
+        const z = radius * Math.cos(phi);
+        
+        particlePositions[i * 3] = x;
+        particlePositions[i * 3 + 1] = y;
+        particlePositions[i * 3 + 2] = z;
+        
+        // Random sizes
+        particleSizes[i] = 0.05 + Math.random() * 0.15;
+        
+        // Interpolate between colors based on position
+        const lerpFactor = Math.random();
+        particleColors[i * 3] = colors.particleColor1.r * (1 - lerpFactor) + colors.particleColor2.r * lerpFactor;
+        particleColors[i * 3 + 1] = colors.particleColor1.g * (1 - lerpFactor) + colors.particleColor2.g * lerpFactor;
+        particleColors[i * 3 + 2] = colors.particleColor1.b * (1 - lerpFactor) + colors.particleColor2.b * lerpFactor;
+    }
+    
+    particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+    particleGeometry.setAttribute('size', new THREE.BufferAttribute(particleSizes, 1));
+    particleGeometry.setAttribute('color', new THREE.BufferAttribute(particleColors, 3));
+    
+    // Create particle material with custom shader
+    const particleMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            time: { value: 0 },
+            pointTexture: { value: createCircleTexture() }
+        },
+        vertexShader: `
+            attribute float size;
+            attribute vec3 color;
+            varying vec3 vColor;
+            uniform float time;
+            
+            void main() {
+                vColor = color;
+                vec3 pos = position;
+                
+                // Simple oscillation effect
+                float noise = sin(position.x * 5.0 + time) * 0.05 + cos(position.y * 5.0 + time * 0.8) * 0.05;
+                pos.x += sin(position.y * 0.8 + time * 0.6) * 0.08;
+                pos.y += cos(position.z * 0.8 + time * 0.5) * 0.08;
+                pos.z += noise;
+                
+                vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                gl_PointSize = size * (300.0 / -mvPosition.z);
+                gl_Position = projectionMatrix * mvPosition;
+            }
+        `,
+        fragmentShader: `
+            uniform sampler2D pointTexture;
+            varying vec3 vColor;
+            
+            void main() {
+                gl_FragColor = vec4(vColor, 1.0) * texture2D(pointTexture, gl_PointCoord);
+                if (gl_FragColor.a < 0.3) discard;
+            }
+        `,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        transparent: true,
+    });
+    
+    // Create and add particle system
+    const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+    particleSystem.position.copy(prism.position);
+    scene.add(particleSystem);
 
     // --- NEW: Create Edges Outline ---
     const edgesGeometry = new THREE.EdgesGeometry(baseGeometry, 15); // Threshold angle in degrees
@@ -212,18 +340,18 @@
     scene.add(glowMesh);
 
     // --- Lighting ---
-    const ambientLight = new THREE.AmbientLight(0xffffff, isMobile ? 1.0 : 0.8);
+    const ambientLight = new THREE.AmbientLight(0xffffff, isMobile ? 1.5 : 0.8); // Increased intensity for mobile
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(colors.accent1, isMobile ? 3.0 : 2.5);
+    const directionalLight = new THREE.DirectionalLight(colors.accent1, isMobile ? 4.0 : 2.5); // Brighter on mobile
     directionalLight.position.set(2, 3, 5);
     scene.add(directionalLight);
 
-    const directionalLight2 = new THREE.DirectionalLight(colors.accent2, isMobile ? 2.5 : 2.0);
+    const directionalLight2 = new THREE.DirectionalLight(colors.accent2, isMobile ? 3.5 : 2.0); // Brighter on mobile
     directionalLight2.position.set(-3, -1, 2);
     scene.add(directionalLight2);
     
-    const spotLight = new THREE.SpotLight(0xffffff, isFirefox ? 2.0 : (isMobile ? 3.5 : 3.0));
+    const spotLight = new THREE.SpotLight(0xffffff, isFirefox ? 2.0 : (isMobile ? 5.0 : 3.0)); // Much brighter on mobile
     spotLight.position.set(0, 5, 2);
     spotLight.angle = Math.PI / 6;
     spotLight.penumbra = 0.3;
@@ -240,7 +368,7 @@
     let lastMorphTime = performance.now();
     let holdStartTime = 0; // When did we reach the target shape?
     const holdDuration = 1500; // Milliseconds to hold a shape before starting next morph
-
+    
     // --- User Interaction ---
     const rotationVelocity = { x: 0, y: 0 };
     let isUserInteracting = false;
@@ -249,7 +377,7 @@
     const userRotationSpeed = isMobile ? 0.007 : 0.005;
     const dampingFactor = 0.95;
     const minVelocityThreshold = 0.00005;
-
+    
     // Hint for user interaction
     const addInteractionHint = () => {
         if (isMobile) return;
@@ -299,7 +427,7 @@
     if (!('ontouchstart' in window) && !isMobile) {
       setTimeout(addInteractionHint, 1500);
     }
-
+    
     // --- Morphing Update Function (Refactored for Morph Targets) ---
     function updateMorphing() {
       if (!isMorphing || morphingPausedByUser) return;
@@ -333,10 +461,10 @@
          // Calculate progress based on desired duration
          morphProgress = Math.min(1.0, morphElapsedTime / morphInterval);
       }
-
+      
       // Smooth easing
       const easedProgress = 0.5 - 0.5 * Math.cos(morphProgress * Math.PI);
-
+      
       // --- Update Morph Influences ---
       // Ensure the influences array exists and has the correct length
       if (!prism.morphTargetInfluences || prism.morphTargetInfluences.length !== baseGeometry.morphAttributes.position.length) {
@@ -388,7 +516,7 @@
       // Make edges slightly more visible during transitions
       edgeMaterial.opacity = 0.6 + transitionFactor * 0.4;
     }
-
+    
     // --- User interaction handlers ---
     function onPointerDown(event: PointerEvent | TouchEvent) {
       event.preventDefault();
@@ -549,8 +677,17 @@
       prismEdges.position.copy(prism.position);
       prismEdges.scale.copy(prism.scale);
       
+      // Update particle system
+      particleSystem.rotation.y += 0.0005;
+      particleSystem.rotation.x += 0.0003;
+      
+      // Update particle shader uniforms
+      if (particleMaterial.uniforms) {
+        particleMaterial.uniforms.time.value = time;
+      }
+      
       // Update shape morphing
-      updateMorphing();
+        updateMorphing();
       
       // Render scene
       renderer.render(scene, camera);
@@ -601,7 +738,7 @@
       
       // Dispose THREE.js objects
       scene.traverse(object => {
-          if (object instanceof THREE.Mesh || object instanceof THREE.LineSegments) {
+          if (object instanceof THREE.Mesh || object instanceof THREE.LineSegments || object instanceof THREE.Points) {
               if (object.geometry) object.geometry.dispose();
               if (object.material) {
                   if (Array.isArray(object.material)) {
@@ -616,11 +753,13 @@
       // Explicit disposal for clarity
       if (edgesGeometry) edgesGeometry.dispose();
       if (edgeMaterial) edgeMaterial.dispose();
+      if (particleGeometry) particleGeometry.dispose();
+      if (particleMaterial) particleMaterial.dispose();
       
       if (renderer) renderer.dispose();
       console.log("Prism cleanup complete.");
     });
     
-    console.log("Prism initialization completed using Morph Targets with edge definition.");
+    console.log("Prism initialization completed using Morph Targets with edge definition and particles.");
   });
 </script> 

@@ -2,7 +2,7 @@
 // FlowBackground.astro - Creates a flowing liquid background effect that matches the prism texture
 ---
 
-<canvas id="flow-bg-canvas" class="fixed top-0 left-0 w-full h-full z-0" style="opacity: 0.9; pointer-events: none;"></canvas>
+<canvas id="flow-bg-canvas" class="fixed top-0 left-0 w-full h-full z-0" style="opacity: 0.95; pointer-events: none;"></canvas>
 
 <script>
   import * as THREE from 'three';
@@ -47,7 +47,7 @@
     const cellSize = 6;         // Size of each cell in the grid
     const noiseScale1 = 0.5;    // Primary flow scale
     const noiseScale2 = 0.8;    // Secondary flow scale
-    const colorBlend = 0.9;     // Increased for stronger colors
+    const colorBlend = 0.95;     // Increased for stronger colors
 
     // --- Setup Canvas Renderer ---
     console.log("Initializing flow background");
@@ -201,14 +201,14 @@
           float distance = length(uv - vec2(0.5));
           
           // Create a larger hole in the center for the prism to be more visible
-          float centerHole = smoothstep(0.15, 0.35, distance); 
+          float centerHole = smoothstep(0.18, 0.4, distance); 
           
           // Add vignette effect
           float vignette = 1.0 - smoothstep(0.4, 1.1, distance * 1.8);
           color *= vignette;
           
           // Create varying opacity for more ethereal look
-          float alpha = centerHole * (0.6 + flowPattern * 0.3) * 0.7; // Reduced overall opacity
+          float alpha = centerHole * (0.6 + flowPattern * 0.3) * 0.75; // Slightly increased overall opacity
           
           gl_FragColor = vec4(color, alpha);
         }
