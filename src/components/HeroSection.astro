@@ -6,8 +6,8 @@ import Splash from "./splash.astro";
 <!-- HeroSection.astro - Encapsulates the entire hero section of the homepage -->
 <section class="hero-section">
   <div class="relative min-h-screen">
-    <!-- Amorphous prism container -->
-    <div id="prism-background" class="absolute top-0 left-0 w-full h-screen pointer-events-auto" 
+    <!-- Amorphous prism container with gooey effect applied -->
+    <div id="prism-background" class="absolute top-0 left-0 w-full h-screen pointer-events-auto gooey-container" 
          style="z-index: 15; transform: translateZ(0); will-change: transform; cursor: grab;">
       <AmorphousPrism />
     </div>
@@ -42,10 +42,19 @@ import Splash from "./splash.astro";
     will-change: transform;
   }
   
+  /* Apply gooey effect to the container */
+  .gooey-container {
+    filter: url('#gooey-effect');
+  }
+  
   @media (max-width: 768px) {
     /* Mobile-specific adjustments */
     #prism-background {
-      transform: scale(0.85) translateZ(0);
+      transform: scale(0.9) translateZ(0);
+      height: 90vh; /* Increase height to make object more prominent */
+      top: 5vh; /* Adjust vertical positioning */
+      left: 0; /* Center horizontally */
+      width: 100%; /* Use full width */
     }
   }
 </style>

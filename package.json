@@ -7,6 +7,7 @@
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
+    "postbuild": "shx cp -r public/* dist/",
     "preview": "astro preview",
     "astro": "astro",
     "format": "prettier --write **/*.astro .",
@@ -25,6 +26,7 @@
     "prettier-plugin-tailwindcss": "^0.6.9",
     "rimraf": "^6.0.1",
     "sharp": "^0.33.5",
+    "shx": "^0.4.0",
     "tailwindcss-fluid-type": "^2.0.6"
   },
   "dependencies": {

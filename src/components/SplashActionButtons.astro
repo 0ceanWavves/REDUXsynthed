@@ -1,0 +1,96 @@
+---
+// SplashActionButtons.astro - Component for action buttons
+---
+
+<div class="buttons-container fixed bottom-20 left-0 right-0 mx-auto z-20 w-full max-w-md flex justify-center gap-3 content-item">
+  <a href="#features" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto shadow-lg">
+    <!-- SVG Code Tags -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+    </svg>
+    Our Services
+  </a>
+  <a href="#process" class="bg-transparent border border-teal-400 hover:bg-teal-900/20 text-teal-300 font-medium py-2 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto shadow-lg">
+    <!-- SVG Chart Timeline -->
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+    </svg>
+    Our Process
+  </a>
+</div>
+
+<style>
+  /* Styling for the buttons container */
+  .buttons-container {
+    transform: translateY(0);
+    transition: transform 0.5s ease;
+  }
+  
+  .buttons-container a {
+    backdrop-filter: blur(5px);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Hide buttons when scrolling down */
+  .hide-buttons {
+    transform: translateY(150%);
+  }
+
+  /* Mobile specific adjustments */
+  @media (max-width: 768px) {
+    /* Adjust buttons for mobile */
+    .buttons-container {
+      bottom: 12vh; /* Position buttons lower on mobile to match the main view adjustment */
+      padding: 0 1rem;
+    }
+  }
+
+  /* Content animation optimization */
+  .content-item {
+    opacity: 0;
+    will-change: opacity, transform;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Setup buttons visibility handling
+    const buttonsContainer = document.querySelector('.buttons-container');
+    let lastScrollY = 0;
+    let scrollAnimationFrame: number | null = null;
+    
+    // Handle button visibility on scroll
+    function handleButtonVisibility() {
+      if (scrollAnimationFrame) return;
+      
+      scrollAnimationFrame = window.requestAnimationFrame(() => {
+        const scrollY = window.scrollY;
+        
+        // If scrolled down more than 100px, hide buttons
+        if (scrollY > 100 && scrollY > lastScrollY) {
+          buttonsContainer?.classList.add('hide-buttons');
+        } else {
+          buttonsContainer?.classList.remove('hide-buttons');
+        }
+        
+        lastScrollY = scrollY;
+        scrollAnimationFrame = null;
+      });
+    }
+    
+    // Use passive scroll listener for performance
+    window.addEventListener('scroll', handleButtonVisibility, { passive: true });
+
+    // Animate button appearance
+    const contentItems = document.querySelectorAll('.content-item');
+    contentItems.forEach((item, index) => {
+      const el = item as HTMLElement;
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }, 1000 + (index * 150));
+    });
+  });
+</script> 

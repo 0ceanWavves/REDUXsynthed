@@ -1,0 +1,505 @@
+---
+// SplashPrism.astro - Component for the 3D prism and rotation arrow
+---
+
+<div class="prism-container relative">
+  <!-- Add a draggable indicator div with custom cursor over the 3D object -->
+  <div id="prism-background" class="prism-interactive-area absolute inset-0 cursor-grab active:cursor-grabbing">
+    <!-- Add a subtle visual cue -->
+    <div class="interactivity-hint absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div class="bg-gradient-to-r from-transparent via-white/5 to-transparent w-full h-20 animate-pulse-slow"></div>
+    </div>
+  </div>
+
+  <!-- Add swipe indicators to show object is interactive -->
+  <div class="rotation-arrows pointer-events-none">
+    <!-- Only one arrow with increased size -->
+    <div class="curved-arrow main-rotation-arrow">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50" class="arrow-svg">
+        <path d="M90,25 Q50,50 10,25" class="arrow-path" />
+        <polygon points="15,20 5,25 15,30" class="arrow-head" />
+      </svg>
+      <div class="rotate-label">Rotate Me!</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .prism-container {
+    position: absolute;
+    inset: 0;
+    z-index: 5; /* Keep this moderate */
+  }
+
+  /* Add slow pulsing animation for interactivity hint */
+  @keyframes pulse-slow {
+    0% { opacity: 0; }
+    50% { opacity: 0.5; }
+    100% { opacity: 0; }
+  }
+
+  .animate-pulse-slow {
+    animation: pulse-slow 3s infinite;
+  }
+
+  /* Style for swipe indicators */
+  .rotation-arrows {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 50; /* Increase z-index to ensure it appears above everything */
+    pointer-events: none;
+  }
+
+  .curved-arrow {
+    position: absolute;
+    width: 160px;
+    height: 80px;
+    opacity: 0;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+  }
+
+  .main-rotation-arrow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: flashArrow 15s linear;
+    animation-delay: 5s;
+    z-index: 60;
+  }
+
+  /* Add a background to make the arrow more visible */
+  .arrow-svg {
+    filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.5));
+    width: 100%;
+    height: 100%;
+  }
+
+  .arrow-path, .arrow-head {
+    stroke: white;
+    stroke-width: 4;
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: drawArrow 1.5s ease-in-out forwards;
+  }
+
+  .arrow-head {
+    fill: white;
+    opacity: 0;
+    animation: fadeIn 0.3s ease-in-out forwards;
+    animation-delay: 1.2s;
+  }
+
+  .main-rotation-arrow .arrow-path {
+    animation: drawArrow 1.5s ease-in-out forwards;
+    animation-iteration-count: 3;
+    animation-delay: 0s, 5s, 10s;
+  }
+  
+  .main-rotation-arrow .arrow-head {
+    animation: fadeIn 0.3s ease-in-out forwards;
+    animation-iteration-count: 3;
+    animation-delay: 1.2s, 6.2s, 11.2s;
+  }
+
+  /* Enhance the label to be more noticeable */
+  .rotate-label {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    margin-top: 5px;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    animation: fadeLabel 15s linear;
+    animation-delay: 5.5s;
+    border-radius: 12px;
+    padding: 4px 8px;
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    width: auto;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  @keyframes fadeAndSlideTop {
+    0% { opacity: 0; transform: translateX(-70%); }
+    20%, 80% { opacity: 1; transform: translateX(-50%); }
+    100% { opacity: 0; transform: translateX(-30%); }
+  }
+
+  @keyframes fadeAndSlideBottom {
+    0% { opacity: 0; transform: translateX(-30%); }
+    20%, 80% { opacity: 1; transform: translateX(-50%); }
+    100% { opacity: 0; transform: translateX(-70%); }
+  }
+
+  /* New animation for flashing the arrow 3 times */
+  @keyframes flashArrow {
+    0%, 4% { opacity: 0; }
+    5%, 15% { opacity: 1; }
+    16%, 32% { opacity: 0; }
+    
+    33%, 37% { opacity: 0; }
+    38%, 48% { opacity: 1; }
+    49%, 65% { opacity: 0; }
+    
+    66%, 70% { opacity: 0; }
+    71%, 81% { opacity: 1; }
+    82%, 100% { opacity: 0; }
+  }
+
+  @keyframes drawArrow {
+    0% { stroke-dashoffset: 100; }
+    100% { stroke-dashoffset: 0; }
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeLabel {
+    0%, 4% { opacity: 0; }
+    5%, 15% { opacity: 1; }
+    16%, 32% { opacity: 0; }
+    
+    33%, 37% { opacity: 0; }
+    38%, 48% { opacity: 1; }
+    49%, 65% { opacity: 0; }
+    
+    66%, 70% { opacity: 0; }
+    71%, 81% { opacity: 1; }
+    82%, 100% { opacity: 0; }
+  }
+
+  /* Add cursor styles to indicate draggable object */
+  .prism-interactive-area {
+    cursor: grab;
+    z-index: 15; /* Increased from 5 to ensure it's higher than other elements */
+    background-color: transparent;
+    pointer-events: auto !important; /* Force pointer events to be enabled */
+  }
+  
+  .prism-interactive-area:active {
+    cursor: grabbing;
+  }
+  
+  /* Add a subtle pulsing glow effect on hover to indicate interactivity */
+  .prism-interactive-area:hover {
+    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+    animation: pulse-glow 2s infinite;
+  }
+  
+  @keyframes pulse-glow {
+    0% { background-size: 100% 100%; }
+    50% { background-size: 120% 120%; }
+    100% { background-size: 100% 100%; }
+  }
+
+  /* Mobile specific adjustments */
+  @media (max-width: 768px) {
+    /* Improve swipe indicators visibility */
+    .rotation-arrows {
+      z-index: 50; /* Ensure it's above other elements */
+    }
+    
+    .main-rotation-arrow {
+      width: 140px; /* Even smaller on mobile */
+      /* Position the arrow below the menu buttons */
+      top: auto; /* Reset top positioning */
+      bottom: 5vh; /* Position from bottom instead */
+      transform: translate(-50%, 0); /* Only center horizontally on mobile */
+    }
+  }
+</style>
+
+<script>
+  // Extend Window interface to include our custom properties
+  declare global {
+    interface Window {
+      prismaticScene?: {
+        prism?: {
+          rotation: {
+            x: number;
+            y: number;
+            [key: string]: any;
+          };
+          [key: string]: any;
+        };
+        canvas?: HTMLCanvasElement;
+        isUserInteracting?: () => boolean;
+        setInteraction?: (interacting: boolean) => void;
+        applyRotation?: (x: number, y: number) => void;
+        [key: string]: any;
+      };
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Setup initial rotation animation for the 3D object
+    setupInitialRotationAnimation();
+    
+    // Setup interaction hint functionality
+    setupInteractionHint();
+
+    // Ensure all text elements don't block interaction
+    enforcePointerEventsBehavior();
+    
+    // Setup direct interaction with the 3D prism
+    setupDirectPrismInteraction();
+  });
+  
+  // Function to ensure text elements don't block interaction with the 3D object
+  function enforcePointerEventsBehavior() {
+    // Select all elements that should not block pointer events
+    const textElements = document.querySelectorAll('.splash-title, .splash-content, .scroll-indicator');
+    
+    textElements.forEach(el => {
+      if (el instanceof HTMLElement) {
+        el.style.pointerEvents = 'none';
+      }
+    });
+    
+    // Make sure the prism background can receive events
+    const prismBackground = document.getElementById('prism-background');
+    if (prismBackground) {
+      prismBackground.style.pointerEvents = 'auto';
+    }
+    
+    // Make sure the AmorphousPrism canvas is receiving events
+    const canvas = document.getElementById('prism-bg-canvas');
+    if (canvas) {
+      canvas.style.pointerEvents = 'auto';
+    }
+  }
+  
+  // Setup direct control of the 3D prism through the prism-background element
+  function setupDirectPrismInteraction() {
+    const prismBackground = document.getElementById('prism-background');
+    if (!prismBackground) return;
+    
+    const isMobile = window.innerWidth < 768;
+    const rotationSpeed = isMobile ? 0.005 : 0.003;
+    let isInteracting = false;
+    let previousMousePosition = { x: 0, y: 0 };
+    
+    // Pointer down handler
+    function onPointerDown(event: PointerEvent | TouchEvent) {
+      event.preventDefault();
+      
+      // Update visual feedback
+      prismBackground.classList.remove('cursor-grab');
+      prismBackground.classList.add('cursor-grabbing');
+      
+      // Track interaction state
+      isInteracting = true;
+      
+      // Update global state if available
+      if (window.prismaticScene?.setInteraction) {
+        window.prismaticScene.setInteraction(true);
+      }
+      
+      // Get initial position
+      const clientX = 'clientX' in event ? event.clientX : (event as TouchEvent).touches[0].clientX;
+      const clientY = 'clientY' in event ? event.clientY : (event as TouchEvent).touches[0].clientY;
+      previousMousePosition = { x: clientX, y: clientY };
+      
+      // Add handlers
+      document.addEventListener('pointermove', onPointerMove);
+      document.addEventListener('pointerup', onPointerUp);
+      document.addEventListener('pointercancel', onPointerUp);
+      
+      console.log('Prism interaction started');
+    }
+    
+    // Pointer move handler
+    function onPointerMove(event: PointerEvent | TouchEvent) {
+      if (!isInteracting) return;
+      
+      // Skip default behavior
+      event.preventDefault();
+      
+      // Get current position
+      const clientX = 'clientX' in event ? event.clientX : (event as TouchEvent).touches[0].clientX;
+      const clientY = 'clientY' in event ? event.clientY : (event as TouchEvent).touches[0].clientY;
+      
+      // Calculate delta
+      const deltaX = clientX - previousMousePosition.x;
+      const deltaY = clientY - previousMousePosition.y;
+      
+      // Apply rotation via prismaticScene API
+      if (window.prismaticScene?.applyRotation) {
+        // Y axis rotation is controlled by X movement (horizontal)
+        // X axis rotation is controlled by Y movement (vertical)
+        window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
+      }
+      // Direct control fallback if API not available
+      else if (window.prismaticScene?.prism) {
+        window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
+        window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
+      }
+      
+      // Update previous position
+      previousMousePosition = { x: clientX, y: clientY };
+    }
+    
+    // Pointer up handler
+    function onPointerUp(event: PointerEvent | TouchEvent) {
+      event.preventDefault();
+      
+      // Update visual feedback
+      prismBackground.classList.remove('cursor-grabbing');
+      prismBackground.classList.add('cursor-grab');
+      
+      // Track interaction state
+      isInteracting = false;
+      
+      // Update global state if available - with delay to allow momentum
+      setTimeout(() => {
+        if (window.prismaticScene?.setInteraction) {
+          window.prismaticScene.setInteraction(false);
+        }
+      }, 800);
+      
+      // Remove handlers
+      document.removeEventListener('pointermove', onPointerMove);
+      document.removeEventListener('pointerup', onPointerUp);
+      document.removeEventListener('pointercancel', onPointerUp);
+      
+      console.log('Prism interaction ended');
+    }
+    
+    // Add event listeners for both mouse and touch
+    prismBackground.addEventListener('pointerdown', onPointerDown);
+    prismBackground.addEventListener('touchstart', onPointerDown as EventListener);
+    
+    // Add hover effects
+    prismBackground.addEventListener('mouseover', () => {
+      if (prismBackground) {
+        prismBackground.classList.add('cursor-grab');
+      }
+    });
+    
+    prismBackground.addEventListener('mouseout', () => {
+      if (!isInteracting && prismBackground) {
+        prismBackground.classList.remove('cursor-grab');
+        prismBackground.classList.remove('cursor-grabbing');
+      }
+    });
+  }
+  
+  // Function to handle interaction hint appearance and reappearance
+  function setupInteractionHint() {
+    const prismBackground = document.getElementById('prism-background');
+    const rotationArrows = document.querySelector('.rotation-arrows');
+    const mainArrow = document.querySelector('.main-rotation-arrow');
+    let hasInteracted = false;
+    
+    // Track if user has interacted with the object
+    if (prismBackground) {
+      prismBackground.addEventListener('pointerdown', () => {
+        hasInteracted = true;
+        console.log('User interacted with 3D object');
+      }, { passive: true });
+    }
+    
+    // Show arrow again after delay if no interaction
+    function showArrowsAgain() {
+      if (!hasInteracted && rotationArrows && mainArrow) {
+        // Reset animations by cloning and replacing the arrow
+        const arrowClone = mainArrow.cloneNode(true);
+        
+        if (mainArrow.parentNode) {
+          mainArrow.parentNode.replaceChild(arrowClone, mainArrow);
+          
+          // Schedule another check
+          setTimeout(showArrowsAgain, 20000); // Wait a bit longer than the full animation duration + new delay
+        }
+      }
+    }
+    
+    // Start checking after initial animations finish
+    setTimeout(showArrowsAgain, 20000); // Wait for the first 3 flashes to complete (15s animation + 5s delay)
+  }
+
+  // Function to add initial rotation animation to the 3D object
+  function setupInitialRotationAnimation() {
+    // Get the prism-background element which contains the 3D object
+    const prismBackground = document.getElementById('prism-background');
+    
+    if (!prismBackground) return;
+    
+    // Wait a bit after page load before starting animation
+    setTimeout(() => {
+      // Access the scene and object (with optional chaining for safety)
+      const prismaticScene = window.prismaticScene;
+      
+      if (!prismaticScene?.prism) return;
+      
+      // Store original rotation to restore later
+      const originalRotation = {
+        x: prismaticScene.prism.rotation.x,
+        y: prismaticScene.prism.rotation.y,
+      };
+      
+      // Initial position
+      let currentStep = 0;
+      const totalSteps = 180; // 3 seconds @ 60fps (increased duration)
+      const amplitude = 0.8; // Maximum rotation angle in radians (increased amplitude)
+      
+      // Flag to track if user has interacted with object
+      let userInteracted = false;
+      
+      // Add listener to detect user interaction
+      prismBackground.addEventListener('pointerdown', () => {
+        userInteracted = true;
+      }, { passive: true });
+      
+      // Animation function - modified for more pronounced movement
+      function animateInitialRotation() {
+        if (userInteracted || currentStep >= totalSteps || !prismaticScene?.prism) {
+          // Stop the animation if user interacted or we're done
+          if (currentStep >= totalSteps && prismaticScene?.prism) {
+            // Restore original rotation
+            prismaticScene.prism.rotation.y = originalRotation.y;
+          }
+          return;
+        }
+        
+        // Calculate rotation based on sine wave for smooth back and forth
+        // Using different frequencies for more natural movement
+        const progress = currentStep / totalSteps;
+        
+        // More pronounced movement with two full rotations
+        const rotationOffset = amplitude * Math.sin(progress * Math.PI * 2);
+        
+        // Apply rotation with optional chaining for safety
+        if (prismaticScene?.prism) {
+          prismaticScene.prism.rotation.y = originalRotation.y + rotationOffset;
+          
+          // Add a slight tilt variation
+          prismaticScene.prism.rotation.x = originalRotation.x + (Math.sin(progress * Math.PI * 3) * 0.15);
+        }
+        
+        // Increment step
+        currentStep++;
+        
+        // Continue animation
+        requestAnimationFrame(animateInitialRotation);
+      }
+      
+      // Start the animation
+      animateInitialRotation();
+      
+    }, 800); // Start sooner after load
+  }
+</script> 

@@ -1,6 +1,10 @@
 ---
-// Remove the problematic astro-icon import
-// import { Icon } from "astro-icon";
+// Import new modular components
+import SplashTitle from './SplashTitle.astro';
+import SplashContent from './SplashContent.astro';
+import SplashPrism from './SplashPrism.astro';
+import SplashActionButtons from './SplashActionButtons.astro';
+import SplashScrollIndicator from './SplashScrollIndicator.astro';
 
 const widths = [450, 800];
 const sizes = "(min-width: 640px) 42vw, 67vw";
@@ -8,329 +12,41 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
 
 <section class="relative h-full bg-transparent pb-0 md:pb-0">
   <div class="absolute inset-0 overflow-hidden">
-    <!-- Remove static background pattern -->
-
-    <!-- Add Three.js canvas here but ensure it doesn't block prism interaction -->
+    <!-- Canvas for Three.js animation -->
     <canvas id="splash-animation-canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
+
+    <!-- 3D Prism component -->
+    <SplashPrism />
   </div>
 
   <div class="relative z-10 flex flex-col items-center justify-center min-h-[75vh] gap-4 md:gap-6 pt-0 pb-10 md:pb-12 pointer-events-none">
-    <!-- "Create Design Build" centered in viewport -->
-    <div class="splash-title flex flex-col items-center gap-1 pointer-events-none mt-6 md:mt-8 px-4">
-      <div class="gradient-text text-center font-extrabold tracking-tighter text-5xl md:text-7xl browser-optimized-text">
-        <div class="title-word pointer-events-none">Create</div>
-        <div class="title-word pointer-events-none">Design</div>
-        <div class="title-word pointer-events-none">Build</div>
-      </div>
-    </div>
+    <!-- Title component -->
+    <SplashTitle />
 
-    <!-- Content section below the title -->
-    <div class="splash-content w-full max-w-2xl text-center mt-3 md:mt-4 browser-optimized-text pointer-events-none px-5 mx-auto">
-      <div class="text-white text-lg md:text-xl leading-relaxed">
-        <p class="mb-1 content-item">Transforming ideas into</p>
-        <p class="text-primary text-2xl md:text-3xl font-bold mb-2 md:mb-3 content-item">Digital Solutions</p>
-        <div class="flex flex-col items-center md:flex-row md:flex-wrap justify-center gap-2 md:gap-3 mb-5 md:mb-6">
-          <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
-            <div class="check-circle">
-              <!-- SVG Check Circle -->
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-            </div>
-            <p class="text-center">Custom Business Applications</p>
-          </div>
-          <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
-            <div class="check-circle">
-              <!-- SVG Check Circle -->
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-            </div>
-            <p class="text-center">Modern Web & Mobile Development</p>
-          </div>
-          <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
-            <div class="check-circle">
-              <!-- SVG Check Circle -->
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-            </div>
-            <p class="text-center">Strategic Technology Consulting</p>
-          </div>
-          <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
-            <div class="check-circle">
-              <!-- SVG Check Circle -->
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-              </svg>
-            </div>
-            <p class="text-center">UI/UX Design Excellence</p>
-          </div>
-        </div>
+    <!-- Content component -->
+    <SplashContent />
 
-        <!-- Call to action buttons -->
-        <div class="flex flex-wrap justify-center gap-4 mt-3">
-          <a href="#features" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto">
-            <!-- SVG Code Tags -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-            </svg>
-            Our Services
-          </a>
-          <a href="#process" class="bg-transparent border border-teal-400 hover:bg-teal-900/20 text-teal-300 font-medium py-2 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto">
-            <!-- SVG Chart Timeline -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
-            Our Process
-          </a>
-        </div>
-      </div>
-    </div>
-
-    <!-- Scroll indicator - correctly centered -->
-    <div class="scroll-indicator content-item absolute left-0 right-0 mx-auto text-center flex flex-col items-center justify-center" style="bottom: 5vh;" id="scroll-for-more">
-      <div class="scroll-indicator-container backdrop-blur-sm bg-black/10 rounded-full px-5 py-2">
-        <p class="text-white/80 text-sm mb-1">Scroll for more</p>
-        <div class="animate-bounce">
-          <!-- SVG Chevron Down -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-7 md:w-7 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
-      </div>
-    </div>
+    <!-- Scroll indicator component -->
+    <SplashScrollIndicator />
   </div>
 
-  <!-- Remove the section transition element -->
-  <!-- <div class="section-transition absolute bottom-0 left-0 w-full h-32 pointer-events-none"></div> -->
+  <!-- Action buttons component -->
+  <SplashActionButtons />
 </section>
 
 <style>
-  /* Base styling for gradient text */
-  .gradient-text {
-    background: linear-gradient(45deg, #8162ff, #00e599);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-  }
-
-  /* Browser optimizations */
-  .browser-optimized-text {
-    /* Force proper stacking context in all browsers */
-    transform: translateZ(0);
-    will-change: transform, opacity;
-
-    /* Prevent flickering */
-    backface-visibility: hidden;
-
-    /* Improve text rendering */
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  /* Firefox-specific optimizations */
-  @-moz-document url-prefix() {
-    .browser-optimized-text {
-      /* Firefox benefits from these settings */
-      transform: none !important; /* Avoid hardware acceleration for better text rendering */
-      filter: none !important; /* Filters are expensive in Firefox */
-    }
-
-    .gradient-text {
-      /* Alternative approach for Firefox that's less GPU intensive */
-      background: linear-gradient(45deg, #8162ff, #00e599);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      color: #8162ff; /* Fallback */
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
-  }
-
-  /* Chrome-specific fixes */
-  @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
-    .browser-optimized-text {
-      /* Chrome benefits from hardware acceleration but needs it consistently applied */
-      transform: translateZ(0);
-      z-index: 30 !important;
-      position: relative;
-    }
-
-    .gradient-text {
-      /* Enhance visibility in Chrome */
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
-    }
-
-    .title-word {
-      /* Make text more visible against the prism background */
-      text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    }
-  }
-
-  /* Mobile specific adjustments */
-  @media (max-width: 768px) {
-    /* Brighten text for better visibility on mobile */
-    .gradient-text {
-      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.5));
-    }
-
-    /* Improve scroll indicator visibility */
-    .scroll-indicator {
-      width: 100%;
-      text-align: center;
-      padding-bottom: 1rem;
-    }
-    
-    .scroll-indicator p {
-      font-weight: 500;
-      color: rgba(255, 255, 255, 0.9);
-    }
-  }
-
-  /* Title and content animation optimizations */
-  .title-word, .content-item, .check-circle {
-    opacity: 0;
-    will-change: opacity, transform;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .title-word, .content-item, .check-circle {
-      opacity: 1 !important;
-      transform: none !important;
-    }
-
-    .gradient-text {
-      animation: none;
-    }
-  }
-
   /* Add a special rule to ensure text elements don't block pointer events */
   .pointer-events-none {
     pointer-events: none !important;
   }
-
-  /* Improve scroll indicator visibility */
-  .scroll-indicator {
-    width: 100%;
-    text-align: center;
-    padding-bottom: 1rem;
-    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.3));
-    z-index: 20; /* Ensure it's above the transition element */
-  }
   
-  .scroll-indicator-container {
-    display: inline-flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+  /* Additional styling to ensure interactive elements are accessible */
+  #prism-bg-canvas, #prism-background {
+    pointer-events: auto !important;
   }
-  
-  .scroll-indicator p {
-    font-weight: 500;
-    color: rgba(255, 255, 255, 0.9);
-  }
-  
-  /* Section transition - commented out to remove separation
-  .section-transition {
-    background: linear-gradient(to bottom, transparent, rgba(10, 10, 20, 0.15) 50%, rgba(10, 10, 20, 0.3));
-    z-index: 5;
-  }
-  */
 </style>
 
 <script>
-  // Title words appearance staggered animation
-  function animateSplashScreen() {
-    if (typeof window === 'undefined') return;
-
-    // Title words animation
-    const titleWords = document.querySelectorAll('.title-word');
-    const titleObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          titleWords.forEach((word, index) => {
-            const el = word as HTMLElement;
-            setTimeout(() => {
-              el.style.transition = 'opacity 0.7s ease, transform 0.7s ease';
-              el.style.opacity = '1';
-              el.style.transform = 'translateY(0)';
-            }, 300 + (index * 150));
-          });
-          titleObserver.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (titleWords.length > 0) {
-      titleWords.forEach(word => {
-        (word as HTMLElement).style.opacity = '0';
-        (word as HTMLElement).style.transform = 'translateY(20px)';
-      });
-      titleObserver.observe(titleWords[0].parentElement as HTMLElement);
-    }
-
-    // Content items animation
-    const contentItems = document.querySelectorAll('.content-item');
-    const contentObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          contentItems.forEach((item, index) => {
-            const el = item as HTMLElement;
-            setTimeout(() => {
-              el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-              el.style.opacity = '1';
-              el.style.transform = 'translateY(0)';
-            }, 600 + (index * 150));
-          });
-          contentObserver.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (contentItems.length > 0) {
-      contentItems.forEach(item => {
-        (item as HTMLElement).style.opacity = '0';
-        (item as HTMLElement).style.transform = 'translateY(20px)';
-      });
-      contentObserver.observe(contentItems[0] as HTMLElement);
-    }
-
-    // Check circles animation
-    const checkCircles = document.querySelectorAll('.check-circle');
-    const checkObserver = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          checkCircles.forEach((circle, index) => {
-            const el = circle as HTMLElement;
-            setTimeout(() => {
-              el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-              el.style.opacity = '1';
-              el.style.transform = 'scale(1)';
-            }, 800 + (index * 100));
-          });
-          checkObserver.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (checkCircles.length > 0) {
-      checkCircles.forEach(circle => {
-        (circle as HTMLElement).style.opacity = '0';
-        (circle as HTMLElement).style.transform = 'scale(0)';
-      });
-      checkObserver.observe(checkCircles[0].parentElement as HTMLElement);
-    }
-  }
-
   // More efficient scroll interaction with throttling
   function setupScrollInteraction() {
     if (typeof window === 'undefined') return;
@@ -375,10 +91,7 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
 
   // Wait for the DOM to be fully loaded
   document.addEventListener('DOMContentLoaded', () => {
-    // Initialize animations
-    animateSplashScreen();
-
     // Setup scroll interaction on all devices (mobile friendly version)
     setupScrollInteraction();
   });
-</script>
+</script> 
