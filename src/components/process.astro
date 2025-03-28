@@ -48,7 +48,7 @@ const processSteps = [
           processSteps.map((step, index) => (
             <div class={`process-step flex flex-col md:flex-row gap-8 items-center ${index % 2 === 1 ? 'md:flex-row-reverse' : ''}`} data-index={index}>
               <div class="flex-1 md:text-right">
-                <div class={`process-card bg-offset border border-default p-6 rounded-lg ${index % 2 === 1 ? 'md:ml-auto' : 'md:mr-auto'}`}>
+                <div class={`process-card p-6 rounded-lg ${index % 2 === 1 ? 'md:ml-auto' : 'md:mr-auto'}`}>
                   <h3 class="text-xl font-bold mb-2">{step.title}</h3>
                   <p class="text-offset text-sm">{step.description}</p>
                 </div>
@@ -77,12 +77,13 @@ const processSteps = [
   
   .process-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: rgba(30, 30, 30, 0.2);
   }
   
   .process-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.3);
-    border-color: var(--color-primary);
+    box-shadow: 0 10px 25px -10px rgba(0, 0, 0, 0.2);
+    background: rgba(40, 40, 60, 0.3);
   }
   
   .process-icon {

@@ -75,7 +75,7 @@ const projects = [
             </a>
           </div>
           
-          <div class="project-card lg:w-2/3 border border-default bg-offset p-6 rounded-lg">
+          <div class="project-card lg:w-2/3 p-6 rounded-lg">
             <div class="space-y-4">
               <div class="project-section" data-section="challenge">
                 <h4 class="font-bold mb-1">The Challenge</h4>
@@ -156,11 +156,12 @@ const projects = [
   
   .project-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: rgba(30, 30, 30, 0.2);
   }
   
   .project-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px -15px rgba(0, 0, 0, 0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.2);
   }
   
   .project-tag {
@@ -259,28 +260,6 @@ const projects = [
   
   // Add background ripple effect to project cards
   function addCardRippleEffect() {
-    const cards = document.querySelectorAll('.project-card');
-    
-    cards.forEach(card => {
-      card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left; // x position within the element
-        const y = e.clientY - rect.top; // y position within the element
-        
-        // Create ripple effect at mouse position
-        const ripple = document.createElement('div');
-        ripple.className = 'ripple';
-        ripple.style.left = `${x}px`;
-        ripple.style.top = `${y}px`;
-        card.appendChild(ripple);
-        
-        // Remove the ripple after animation completes
-        setTimeout(() => {
-          ripple.remove();
-        }, 1000);
-      });
-    });
-    
     // Add ripple styles
     const style = document.createElement('style');
     style.textContent = `
@@ -289,21 +268,29 @@ const projects = [
         overflow: hidden;
       }
       
-      .ripple {
-        position: absolute;
-        width: 5px;
-        height: 5px;
-        background: radial-gradient(circle, rgba(96, 165, 250, 0.4) 0%, rgba(96, 165, 250, 0) 70%);
-        border-radius: 50%;
-        transform: scale(0);
-        animation: ripple 1s linear;
-        pointer-events: none;
+      .project-card:hover {
+        background: rgba(40, 40, 50, 0.6);
       }
       
-      @keyframes ripple {
-        to {
-          transform: scale(50);
-          opacity: 0;
+      .project-card:hover::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.1),
+          transparent
+        );
+        animation: shimmer 2s infinite;
+      }
+      
+      @keyframes shimmer {
+        100% {
+          left: 100%;
         }
       }
     `;

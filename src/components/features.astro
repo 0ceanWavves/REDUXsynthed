@@ -44,59 +44,57 @@ const features: Array<FeatureItem> = [
 ---
 
 <ContentSection title="What We Offer" id="features">
-  <Fragment slot="lead">
-    We deliver <span class="text-primary">comprehensive solutions</span> that merge
-    <span class="text-primary">technical excellence</span> with
-    <span class="text-primary">creative design</span>, always tailored to your specific needs.
-  </Fragment>
-  <ul class="grid max-w-6xl grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 service-cards">
-    {
-      features.map(({ title, description, icon }, index) => (
-        <li class="service-card" data-index={index}>
-          <div class="service-card-inner flex flex-col items-center gap-4 border border-default bg-offset p-6 h-full">
-            <div class="icon-container h-16 w-16 rounded-full border-2 border-current p-3">
-              <div class="icon-3d-wrapper">
-                <div class="icon-3d-face icon-3d-front">
-                  <Icon name={icon} class="h-full w-full service-icon" />
-                </div>
-                <div class="icon-3d-face icon-3d-back">
-                  <span class="number-indicator">{index + 1}</span>
+  <div class="features-wrapper w-full">
+    <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full">
+      {
+        features.map(({ title, description, icon }, index) => (
+          <li class="service-card" data-index={index}>
+            <div class="service-card-inner flex flex-col items-center gap-4 p-6 rounded-lg">
+              <div class="icon-container h-16 w-16 rounded-full border-2 border-current p-3">
+                <div class="icon-3d-wrapper">
+                  <div class="icon-3d-face icon-3d-front">
+                    <Icon name={icon} class="h-full w-full service-icon" />
+                  </div>
+                  <div class="icon-3d-face icon-3d-back">
+                    <span class="number-indicator">{index + 1}</span>
+                  </div>
                 </div>
               </div>
+              <p class="text-center font-extrabold text-xl">{title}</p>
+              <p class="text-center text-offset text-sm">{description}</p>
             </div>
-            <p class="text-center font-extrabold text-xl">{title}</p>
-            <p class="text-center text-offset text-sm">{description}</p>
-          </div>
-        </li>
-      ))
-    }
-  </ul>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
 </ContentSection>
 
 <style>
+  .features-wrapper {
+    position: relative;
+    padding: 2rem 1rem;
+  }
+
   .service-card {
     perspective: 1000px;
-    transform-style: preserve-3d;
     opacity: 0;
     transform: translateY(20px);
   }
 
   .service-card-inner {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease;
     transform-style: preserve-3d;
     position: relative;
-    border-radius: 10px;
-    overflow: hidden;
+    background: transparent;
+    border: none;
   }
 
   .icon-container {
     position: relative;
     transform-style: preserve-3d;
     animation: float 6s ease-in-out infinite;
-    border-radius: 50%;
-    overflow: visible;
     background: transparent;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   }
   
   .icon-3d-wrapper {
@@ -104,8 +102,7 @@ const features: Array<FeatureItem> = [
     height: 100%;
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    animation: rotate3d 12s infinite linear;
+    transition: transform 0.8s;
   }
   
   .icon-3d-face {
@@ -120,12 +117,10 @@ const features: Array<FeatureItem> = [
   
   .icon-3d-front {
     color: var(--color-primary);
-    background: radial-gradient(ellipse at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
     transform: translateZ(1px);
   }
   
   .icon-3d-back {
-    background: radial-gradient(ellipse at center, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
     transform: rotateY(180deg);
   }
   
@@ -137,145 +132,53 @@ const features: Array<FeatureItem> = [
 
   @keyframes float {
     0%, 100% {
-      transform: translateY(0px) rotateZ(0deg);
+      transform: translateY(0px);
     }
     50% {
-      transform: translateY(-10px) rotateZ(5deg);
-    }
-  }
-  
-  @keyframes rotate3d {
-    0% {
-      transform: rotateY(0deg) rotateX(10deg);
-    }
-    50% {
-      transform: rotateY(180deg) rotateX(-10deg);
-    }
-    100% {
-      transform: rotateY(360deg) rotateX(10deg);
+      transform: translateY(-10px);
     }
   }
 
-  @keyframes pulse {
-    0%, 100% {
-      transform: scale(1);
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
-    }
-    50% {
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
-    }
-  }
-  
   /* Service card hover effect */
   .service-card-inner:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    background: rgba(20, 20, 30, 0.2);
   }
   
   .service-card-inner:hover .icon-3d-wrapper {
-    animation-play-state: paused;
     transform: rotateY(180deg);
   }
 </style>
 
 <script>
-  // Tilt effect
-  function applyTiltEffect() {
-    const cards = document.querySelectorAll('.service-card-inner');
-    
-    cards.forEach(card => {
-      card.addEventListener('mousemove', (e: Event) => {
-        const mouseEvent = e as MouseEvent;
-        const rect = card.getBoundingClientRect();
-        const x = mouseEvent.clientX - rect.left; // x position within the element
-        const y = mouseEvent.clientY - rect.top; // y position within the element
-        
-        // Calculate rotation based on mouse position
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        const rotateX = (centerY - y) / 15;
-        const rotateY = (x - centerX) / 15;
-        
-        // Apply the rotation and add a subtle "lift" effect
-        (card as HTMLElement).style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-        (card as HTMLElement).style.boxShadow = `0 10px 30px -10px rgba(0, 0, 0, 0.3), 
-                                0 ${Math.abs(rotateX) * 0.5}px ${Math.abs(rotateY) * 0.5}px rgba(96, 165, 250, 0.2), 
-                                0 -${Math.abs(rotateX) * 0.5}px ${Math.abs(rotateY) * 0.5}px rgba(74, 222, 128, 0.2)`;
-      });
-      
-      card.addEventListener('mouseleave', () => {
-        // Reset transforms when mouse leaves
-        (card as HTMLElement).style.transform = '';
-        (card as HTMLElement).style.boxShadow = '';
-      });
-    });
-  }
-
   // Entrance animation with intersection observer
   function setupEntranceAnimation() {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        // If the card is visible
         if (entry.isIntersecting) {
           const card = entry.target;
           const dataIndex = (card as HTMLElement).dataset.index || '0';
           const index = parseInt(dataIndex, 10);
           
-          // Add the animation classes after a staggered delay
           setTimeout(() => {
             (card as HTMLElement).style.transition = 'opacity 0.6s ease, transform 0.6s ease';
             (card as HTMLElement).style.opacity = '1';
             (card as HTMLElement).style.transform = 'translateY(0)';
-            
-            // Apply a random rotation to each icon
-            const icon = card.querySelector('.service-icon');
-            if (icon) {
-              const direction = index % 2 === 0 ? 1 : -1;
-              (icon as HTMLElement).style.animation = `rotate ${4 + index}s linear infinite ${direction === 1 ? '' : 'reverse'}`;
-            }
           }, 100 * index);
           
-          // Stop observing once the animation is applied
           observer.unobserve(card);
         }
       });
     }, { threshold: 0.1 });
 
-    // Observe all service cards
     document.querySelectorAll('.service-card').forEach((card) => {
       observer.observe(card);
     });
   }
 
-  // Add hover effect to icons
-  function setupIconEffects() {
-    const icons = document.querySelectorAll('.icon-container');
-    
-    icons.forEach((icon, index) => {
-      // Offset the floating animation for each icon
-      (icon as HTMLElement).style.animationDelay = `${index * 0.5}s`;
-      
-      // Add a pulse effect on hover
-      icon.addEventListener('mouseenter', () => {
-        (icon as HTMLElement).style.animation = 'none';
-        (icon as HTMLElement).offsetHeight; // Trigger reflow
-        (icon as HTMLElement).style.animation = 'pulse 1s ease-in-out infinite';
-      });
-      
-      icon.addEventListener('mouseleave', () => {
-        (icon as HTMLElement).style.animation = 'none';
-        (icon as HTMLElement).offsetHeight; // Trigger reflow
-        (icon as HTMLElement).style.animation = `float 6s ease-in-out infinite ${index * 0.5}s`;
-      });
-    });
-  }
-
   // Run once the DOM is fully loaded
   document.addEventListener('DOMContentLoaded', () => {
-    applyTiltEffect();
     setupEntranceAnimation();
-    setupIconEffects();
   });
 </script>
 

@@ -1,0 +1,76 @@
+---
+import AmorphousPrism from "./AmorphousPrism.astro";
+import Splash from "./splash.astro";
+---
+
+<!-- HeroSection.astro - Encapsulates the entire hero section of the homepage -->
+<section class="hero-section">
+  <div class="relative min-h-screen">
+    <!-- Amorphous prism container -->
+    <div id="prism-background" class="absolute top-0 left-0 w-full h-screen pointer-events-auto" 
+         style="z-index: 15; transform: translateZ(0); will-change: transform; cursor: grab;">
+      <AmorphousPrism />
+    </div>
+    
+    <!-- Splash content with higher z-index to appear over prism but not block interaction -->
+    <div class="relative z-30 pointer-events-none" style="transform: translateZ(0.1px);">
+      <Splash />
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-section {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: transparent;
+  }
+  
+  /* Make sure the hero takes up full viewport height */
+  .hero-section > div {
+    min-height: 100vh;
+    position: relative;
+    background: transparent;
+  }
+  
+  @media (max-width: 768px) {
+    /* Mobile-specific adjustments */
+    #prism-background {
+      transform: scale(0.85) translateZ(0);
+    }
+  }
+</style>
+
+<script>
+  // Hero-specific interactions
+  document.addEventListener('DOMContentLoaded', () => {
+    const prismBackground = document.getElementById('prism-background');
+    const heroSection = document.querySelector('.hero-section');
+    
+    if (prismBackground && heroSection) {
+      // Log visibility for debugging
+      console.log('Hero section initialized');
+      console.log('Prism background visibility:', window.getComputedStyle(prismBackground).visibility);
+      console.log('Prism background display:', window.getComputedStyle(prismBackground).display);
+      
+      // Add a slight parallax effect on scroll
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          window.requestAnimationFrame(() => {
+            const scrollPos = window.scrollY;
+            // Only apply effect for first 500px of scrolling
+            if (scrollPos < 500) {
+              const scale = 1 - (scrollPos * 0.0001); // Subtle scale
+              const yOffset = scrollPos * 0.1; // Subtle movement
+              prismBackground.style.transform = `scale(${scale}) translateY(${yOffset}px) translateZ(0)`;
+            }
+            ticking = false;
+          });
+          ticking = true;
+        }
+      });
+    }
+  });
+</script> 

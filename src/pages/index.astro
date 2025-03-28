@@ -2,12 +2,10 @@
 import "@fontsource-variable/inter";
 import Features from "~/components/features.astro";
 import Footer from "~/components/footer.astro";
-import Intro from "~/components/intro.astro";
 import Process from "~/components/process.astro";
 import Projects from "~/components/projects.astro";
-import Splash from "~/components/splash.astro";
-import AmorphousPrism from "~/components/AmorphousPrism.astro";
-import FlowBackground from "~/components/FlowBackground.astro";
+import HeroSection from "~/components/HeroSection.astro";
+import FlowBackgroundController from "~/components/FlowBackgroundController.astro";
 import "~/styles/index.css";
 
 const { generator, site } = Astro;
@@ -60,41 +58,46 @@ const description =
 		</script>
 	</head>
   <body
-    class="h-full overflow-x-hidden bg-default text-default text-base selection:bg-secondary selection:text-white"
+    class="h-full overflow-x-hidden text-default text-base selection:bg-secondary selection:text-white bg-[#0a0a1a]"
   >
-    <!-- Remove wave canvas as it's causing visual clashes -->
-    <!-- <canvas id="wave-canvas" class="fixed top-0 left-0 w-full h-full -z-20 opacity-60 transition-opacity duration-700" style="display: block;"></canvas> -->
-
-    <!-- Flow background to provide liquid texture around the prism -->
-    <FlowBackground />
+    <!-- Flow background with customizable settings - Full opacity -->
+    <FlowBackgroundController 
+      opacity={1.0}
+      zIndex={0}
+      colorMode="default"
+      animationIntensity="medium"
+      responsive={true}
+      enableStars={true}
+      enableNebula={true}
+      enablePulse={true}
+      enableCenter={true}
+    />
+    
+    <!-- Decorative wave effect for bottom of page - Adjusted for mobile -->
+    <div class="wave-container fixed bottom-0 left-0 w-full h-[70vh] md:h-[70vh] pointer-events-none z-10 opacity-80"></div>
+    
+    <!-- Dark overlay to ensure consistent background darkness -->
+    <div class="fixed inset-0 bg-[#0a0a1a]/60 z-5 pointer-events-none"></div>
     
     <!-- Navigation initially at bottom, moves to top on scroll -->
-    <nav id="main-nav" class="fixed bottom-0 left-0 w-full z-50 bg-black/70 backdrop-blur-md py-4 px-6 transition-all duration-500">
+    <nav id="main-nav" class="fixed bottom-0 left-0 w-full z-50 bg-black/70 backdrop-blur-md py-3 md:py-4 px-4 md:px-6 transition-all duration-500">
       <div class="max-w-screen-xl mx-auto flex justify-between items-center">
-        <a href="/" class="text-xl font-bold text-white">Synthed</a>
-        <div class="flex items-center gap-6">
-          <a href="#features" class="text-sm text-white hover:text-blue-300 transition-colors">Services</a>
-          <a href="#projects" class="text-sm text-white hover:text-blue-300 transition-colors">Projects</a>
-          <a href="#contact" class="text-sm text-white hover:text-blue-300 transition-colors">Contact</a>
+        <a href="/" class="text-lg md:text-xl font-bold text-white">Synthed</a>
+        <div class="flex items-center gap-3 md:gap-6">
+          <a href="#features" class="text-xs md:text-sm text-white hover:text-blue-300 transition-colors">Services</a>
+          <a href="#projects" class="text-xs md:text-sm text-white hover:text-blue-300 transition-colors">Projects</a>
+          <a href="#contact" class="text-xs md:text-sm text-white hover:text-blue-300 transition-colors">Contact</a>
         </div>
       </div>
     </nav>
     
-    <!-- Hero section with prism positioned at top - eliminate empty space -->
-    <div class="relative min-h-screen">
-      <!-- Amorphous prism moved up to top of viewport -->
-      <div id="prism-background" class="absolute top-0 left-0 w-full h-screen pointer-events-auto" style="z-index: 15; transform: translateZ(0); will-change: transform;">
-        <AmorphousPrism />
-      </div>
-      
-      <!-- Splash content with higher z-index to appear over prism -->
-      <div class="relative z-30" style="transform: translateZ(0.1px);">
-        <Splash />
-      </div>
-    </div>
+    <!-- Hero section with prism and splash content -->
+    <HeroSection />
     
-    <!-- Main content with higher z-index to appear above backgrounds -->
-    <div class="relative z-40 space-y-24 px-8 py-16 mt-12 bg-black/50 backdrop-blur-sm">
+    <!-- Main content without its own background or overlay -->
+    <div class="relative z-30 px-4 md:px-8 py-4 md:py-6 mx-auto w-full content-wrapper"
+        style="margin-top: 0; margin-bottom: 0;"
+    >
       <Features />
       <Process />
       <Projects />
@@ -105,6 +108,20 @@ const description =
     <div id="cursor-glow" class="hidden md:block"></div>
 
 <style>
+  /* Remove diagonal strobing lines */
+  .content-wrapper::before {
+    content: none !important;
+  }
+  
+  .content-wrapper::after {
+    content: none !important;
+  }
+  
+  body::before,
+  body::after {
+    content: none !important;
+  }
+  
   /* Custom cursor effect */
   #cursor-glow {
     position: fixed;
@@ -118,6 +135,82 @@ const description =
     transition: opacity 0.3s ease;
     mix-blend-mode: screen;
     will-change: transform, opacity;
+  }
+  
+  /* Wave container styling - Mobile optimized */
+  .wave-container {
+    background: linear-gradient(to top, rgba(10, 10, 26, 0.6), transparent);
+    overflow: hidden;
+    filter: drop-shadow(0 0 25px rgba(129, 98, 255, 0.25)) drop-shadow(0 0 35px rgba(0, 229, 153, 0.15));
+  }
+  
+  .wave-container::before,
+  .wave-container::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-repeat: repeat-x;
+    background-size: 100% 100%;
+    width: 100%;
+    height: 40%;
+    opacity: 0.3;
+    animation: waveAnimation 12s linear infinite;
+    mix-blend-mode: screen;
+  }
+  
+  .wave-container::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%238162ff' d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' opacity='.25'%3E%3C/path%3E%3C/svg%3E");
+    animation-duration: 20s;
+  }
+  
+  .wave-container::after {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%2300e599' d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z' opacity='.25'%3E%3C/path%3E%3C/svg%3E");
+    bottom: -20px;
+    animation-duration: 15s;
+    animation-direction: reverse;
+  }
+  
+  @keyframes waveAnimation {
+    0% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(-50%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
+  
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .wave-container::before,
+    .wave-container::after {
+      height: 30%; /* Smaller waves on mobile */
+    }
+    
+    .wave-container::before {
+      animation-duration: 25s; /* Slower animation on mobile */
+    }
+    
+    .wave-container::after {
+      animation-duration: 18s; /* Slower animation on mobile */
+    }
+    
+    /* Reduce parallax intensity on mobile */
+    @keyframes waveAnimation {
+      0% {
+        transform: translateX(0);
+      }
+      50% {
+        transform: translateX(-25%);
+      }
+      100% {
+        transform: translateX(-50%);
+      }
+    }
   }
   
   /* Center the "Scroll for more" text */
@@ -134,19 +227,17 @@ const description =
       display: none;
     }
     
-    /* Remove reference to wave-canvas since we removed it */
-    /*
-    #wave-canvas {
-      display: none;
-    }
-    */
-    
     #prism-background {
       display: none !important;
     }
     
     #flow-bg-canvas {
       display: none !important;
+    }
+    
+    .wave-container::before,
+    .wave-container::after {
+      animation: none;
     }
   }
 
@@ -168,38 +259,6 @@ const description =
   document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM Content Loaded');
     
-    // Check and log the visibility status of both elements
-    const waveCanvas = document.getElementById('wave-canvas') as HTMLCanvasElement;
-    const prismBackground = document.getElementById('prism-background');
-    
-    // Remove wave canvas initialization since we've disabled it
-    /* 
-    if (waveCanvas) {
-      console.log('Wave canvas found, initializing');
-      console.log('Wave canvas visibility:', window.getComputedStyle(waveCanvas).visibility);
-      console.log('Wave canvas display:', window.getComputedStyle(waveCanvas).display);
-      console.log('Wave canvas opacity:', window.getComputedStyle(waveCanvas).opacity);
-      
-      // Make sure canvas is properly sized and visible
-      waveCanvas.width = window.innerWidth;
-      waveCanvas.height = window.innerHeight;
-      waveCanvas.style.display = 'block';
-      
-      const wave = new Wave(waveCanvas);
-      requestAnimationFrame(wave.animate);
-    } else {
-      console.error('Wave canvas element not found during initialization!');
-    }
-    */
-    
-    if (prismBackground) {
-      console.log('Prism background found');
-      console.log('Prism background visibility:', window.getComputedStyle(prismBackground).visibility);
-      console.log('Prism background display:', window.getComputedStyle(prismBackground).display);
-    } else {
-      console.error('Prism background element not found!');
-    }
-    
     // Init cursor effect (desktop only)
     if (!isMobile) {
       const cursorGlow = document.getElementById('cursor-glow');
@@ -216,30 +275,15 @@ const description =
     
     // Handle navbar scrolling behavior
     handleNavbarScroll();
-
-    // Browser detection for cross-browser optimizations
-    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-    const isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1 && 
-                    navigator.userAgent.toLowerCase().indexOf('edge') === -1;
     
-    // Fix text visibility issues in Chrome
-    if (isChrome) {
-      // Force repaint to ensure text renders properly
-      setTimeout(() => {
-        const splash = document.querySelector('.splash-title');
-        if (splash) {
-          // Slightly nudge the element to force a repaint
-          splash.classList.add('chrome-fix');
-        }
-      }, 500);
-    }
-    
-    // Optimize rendering in Firefox
-    if (isFirefox) {
-      // Reduce animation complexity for better performance
-      if (prismBackground) {
-        prismBackground.style.willChange = 'auto'; // Disable will-change optimization which can be expensive
-      }
+    // Add parallax effect to wave container
+    const waveContainer = document.querySelector('.wave-container');
+    if (waveContainer) {
+      window.addEventListener('scroll', () => {
+        const scrollPosition = window.scrollY;
+        const parallaxAmount = scrollPosition * 0.15;
+        (waveContainer as HTMLElement).style.transform = `translateY(${parallaxAmount}px)`;
+      });
     }
   });
   

@@ -147,8 +147,8 @@
           // Rotate to reduce axial bias
           mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
           
-          // Reduced to just 2 octaves
-          for (int i = 0; i < 2; ++i) {
+          // Use 3 octaves for more detail
+          for (int i = 0; i < 3; ++i) {
             v += a * noise(x);
             x = rot * x * 2.0 + shift;
             a *= 0.5;
@@ -156,51 +156,140 @@
           return v;
         }
         
+        // New function for creating starfield
+        float stars(vec2 p, float seed) {
+          float v = 0.0;
+          
+          // Varied star sizes
+          float size1 = 500.0;
+          float size2 = 1000.0;
+          float size3 = 2000.0;
+          
+          float t1 = floor(p.x * size1) + floor(p.y * size1);
+          float t2 = floor(p.x * size2) + floor(p.y * size2);
+          float t3 = floor(p.x * size3) + floor(p.y * size3);
+          
+          if(hash(t1 + seed) > 0.996) {
+            v += 1.0 * (0.7 + 0.3 * sin(time * 3.0 + t1));
+          }
+          
+          if(hash(t2 + seed) > 0.998) {
+            v += 0.6 * (0.7 + 0.3 * sin(time * 2.0 + t2));
+          }
+          
+          if(hash(t3 + seed) > 0.999) {
+            v += 0.4 * (0.7 + 0.3 * sin(time * 1.0 + t3));
+          }
+          
+          return v * v * v;
+        }
+        
+        // New function for nebula effect
+        vec3 nebula(vec2 uv, float seed) {
+          vec2 p = uv * 4.0;
+          
+          // Create swirling patterns
+          float speed = time * 0.05;
+          vec2 turbulence = vec2(
+            fbm(p + vec2(speed, speed * 0.5)),
+            fbm(p + vec2(-speed * 0.7, speed * 0.3))
+          );
+          
+          // Layer different FBM patterns with turbulence
+          float n1 = fbm(p + turbulence + seed);
+          float n2 = fbm(p + turbulence * 2.0 - seed);
+          float n3 = fbm(p * 0.5 + turbulence * 0.5 + time * 0.1);
+          
+          // Combine patterns with varying intensities
+          float nebulaPattern = n1 * 0.5 + n2 * 0.3 + n3 * 0.2;
+          
+          // Create color gradient based on the pattern
+          vec3 nebulaColor = mix(
+            color3,
+            mix(color2, color1, n2),
+            nebulaPattern
+          );
+          
+          // Make areas darker
+          nebulaColor *= nebulaPattern * 0.8;
+          
+          return nebulaColor;
+        }
+        
         void main() {
           vec2 uv = vUv;
           
-          // Time-based animation
+          // Center coordinate for radial effect
+          vec2 center = vec2(0.5);
+          float dist = length(uv - center);
+          
+          // Time-based animation with multiple frequencies for pulsing
           float t = time * 0.2;
           
-          // Create flowing liquid effect with just one main noise layer
-          vec2 p1 = uv + vec2(0.0, t * 0.1);
+          // Create pulsing wave effect that radiates from center
+          float pulseSpeed1 = 0.3;
+          float pulseSpeed2 = 0.5;
+          float pulseSpeed3 = 0.7;
           
-          // Single noise layer
-          float finalNoise = fbm(p1 * 3.0);
-          finalNoise = (finalNoise * 0.5 + 0.5); // Normalize to 0-1 range
+          // Multiple pulse waves with different frequencies
+          float pulse1 = sin(dist * 10.0 - t * pulseSpeed1 * 2.0) * 0.5 + 0.5;
+          float pulse2 = sin(dist * 15.0 - t * pulseSpeed2 * 3.0) * 0.5 + 0.5;
+          float pulse3 = sin(dist * 5.0 - t * pulseSpeed3) * 0.5 + 0.5;
           
-          // Create subtle distortion
-          vec2 distortedUV = uv;
-          distortedUV.x += finalNoise * 0.03;
+          // Generate noise for organic feel
+          vec2 noiseCoord = uv * 3.0 + vec2(t * 0.1, t * 0.05);
+          float noisePattern = fbm(noiseCoord);
           
-          // Final flowing pattern - simplified for one main horizontal flow
-          float flowPattern = fbm(distortedUV * 2.5 + vec2(t * 0.25, 0));
+          // Add directional flow
+          vec2 flowDir = vec2(cos(t*0.1), sin(t*0.1)) * 0.02;
+          vec2 distortedUV = uv + flowDir * noisePattern;
+          float flowNoise = fbm(distortedUV * 4.0 + t * 0.2);
           
-          // Create horizontal band effect
-          float yPos = abs(uv.y - 0.5) * 2.0; // Distance from center horizontal line
-          float band = smoothstep(0.8, 0.95, 1.0 - yPos); // Single band in the middle
+          // Combine pulses and noise for final effect
+          float finalPattern = pulse1 * 0.3 + pulse2 * 0.3 + pulse3 * 0.2 + flowNoise * 0.4;
+          finalPattern = smoothstep(0.2, 0.8, finalPattern);
           
-          // Apply band effect to flow pattern
-          flowPattern = flowPattern * band;
-          flowPattern = smoothstep(0.1, 0.5, flowPattern); // Add contrast
+          // Create color gradient based on the pattern
+          vec3 color;
+          if (finalPattern < 0.4) {
+            float t = finalPattern / 0.4;
+            color = mix(color3, color2, t * colorBlend);
+          } else if (finalPattern < 0.7) {
+            float t = (finalPattern - 0.4) / 0.3;
+            color = mix(color2, color1, t * colorBlend);
+          } else {
+            float t = (finalPattern - 0.7) / 0.3;
+            color = mix(color1, vec3(1.0), t * 0.7 * colorBlend);
+          }
           
-          // Create color gradient based on noise value - simplified for one band
-          vec3 color = mix(color3, mix(color2, color1, flowPattern), flowPattern * colorBlend);
+          // Add subtle pulsing glow to entire page
+          float globalPulse = sin(t * 0.5) * 0.5 + 0.5;
+          color = mix(color, mix(color1, color2, sin(t * 0.3) * 0.5 + 0.5), globalPulse * 0.15);
+          
+          // Generate star field that covers the entire area
+          float starsValue = stars(uv, 1.0);
+          
+          // Generate nebula-like texture for the background areas
+          vec3 nebulaColor = nebula(uv, 5.0);
           
           // Add focus effect in center (for prism visibility)
-          float distance = length(uv - vec2(0.5));
-          
-          // Create a larger hole in the center for the prism to be more visible
-          float centerHole = smoothstep(0.18, 0.4, distance); 
+          float centerHole = smoothstep(0.0, 0.4, dist); 
           
           // Add vignette effect
-          float vignette = 1.0 - smoothstep(0.4, 1.1, distance * 1.8);
+          float vignette = 1.0 - smoothstep(0.4, 1.1, dist * 1.8);
           color *= vignette;
           
-          // Create varying opacity for more ethereal look
-          float alpha = centerHole * (0.6 + flowPattern * 0.3) * 0.75; // Slightly increased overall opacity
+          // Transition between main effect and nebula based on distance
+          float nebulaFactor = smoothstep(0.3, 0.8, dist);
+          vec3 finalColor = mix(color, nebulaColor, nebulaFactor * 0.8);
           
-          gl_FragColor = vec4(color, alpha);
+          // Add stars consistently across the entire background
+          finalColor += starsValue * vec3(0.9, 0.95, 1.0);
+          
+          // Vary alpha based on pattern and distance
+          float alpha = mix(centerHole * (0.5 + finalPattern * 0.4), 0.7, nebulaFactor * 0.3) * 0.8;
+          
+          gl_FragColor = vec4(finalColor, alpha);
         }
       `
     });

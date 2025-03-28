@@ -1,0 +1,341 @@
+---
+/**
+ * FlowBackgroundController.astro
+ * A configurable controller for the flow background animation
+ */
+
+interface Props {
+  // Visual settings
+  opacity?: number;          // Background opacity from 0-1
+  zIndex?: number;           // Z-index for layering
+  colorMode?: 'default' | 'vibrant' | 'subtle'; // Different color schemes
+  animationIntensity?: 'low' | 'medium' | 'high'; // Animation intensity/complexity
+  responsive?: boolean;      // Whether to adapt for mobile/Firefox
+
+  // Control flags
+  enableStars?: boolean;     // Enable/disable stars
+  enableNebula?: boolean;    // Enable/disable nebula effect
+  enablePulse?: boolean;     // Enable/disable pulse waves
+  enableCenter?: boolean;    // Enable/disable center focus
+}
+
+// Default props
+const {
+  opacity = 0.95,
+  zIndex = 0,
+  colorMode = 'default',
+  animationIntensity = 'medium',
+  responsive = true,
+  enableStars = true,
+  enableNebula = true,
+  enablePulse = true,
+  enableCenter = true
+} = Astro.props;
+
+// Stringify settings for passing to client script
+const controllerSettings = JSON.stringify({
+  opacity,
+  zIndex,
+  colorMode,
+  animationIntensity,
+  responsive,
+  enableStars,
+  enableNebula,
+  enablePulse,
+  enableCenter
+});
+---
+
+<div id="flow-bg-controller" class="flow-background-controller" data-settings={controllerSettings}>
+  <canvas id="flow-bg-canvas" class="fixed top-0 left-0 w-full h-full" style={`opacity: ${opacity}; z-index: ${zIndex}; pointer-events: none;`}></canvas>
+</div>
+
+<script>
+  import * as THREE from 'three';
+  import { createNoise4D } from 'simplex-noise';
+  import { flowBackgroundColors } from '../styles/tokens/colors';
+  import { flowAnimationConfig } from '../utils/animations/motion';
+  import { flowBackgroundShader, commonVertexShader } from '../utils/animations/shaders';
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log("FlowBackgroundController initialized");
+    
+    // Get controller and canvas
+    const controller = document.getElementById('flow-bg-controller') as HTMLElement | null;
+    const canvas = document.getElementById('flow-bg-canvas') as HTMLCanvasElement | null;
+    
+    if (!controller || !canvas) {
+      console.error("FlowBackground controller or canvas not found!");
+      return;
+    }
+    
+    // Parse settings from data attribute
+    const settings = JSON.parse(controller.dataset.settings || '{}');
+    console.log("FlowBackground settings:", settings);
+    
+    // Browser detection for optimizations
+    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    const isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1 && 
+                    navigator.userAgent.toLowerCase().indexOf('edge') === -1;
+    const isMobile = window.innerWidth < 768;
+    
+    console.log('FlowBackground browser detection:', { isFirefox, isChrome, isMobile });
+    
+    // Allow FlowBackground in Firefox for testing, but with reduced quality if responsive mode
+    const enableInFirefox = true;
+    if (isFirefox && !enableInFirefox && settings.responsive) {
+      console.log("FlowBackground disabled for Firefox (responsive mode)");
+      canvas.style.display = 'none';
+      return;
+    }
+    
+    // --- Configuration ---
+    // Get colors based on colorMode
+    const getColorSet = (mode) => {
+      switch(mode) {
+        case 'vibrant':
+          return {
+            background: new THREE.Color("#0a0a1a"),
+            accent1: new THREE.Color("#9152ff"),    // More vibrant purple
+            accent2: new THREE.Color("#00f5a9"),    // Brighter teal
+            accent3: new THREE.Color("#ffffff") 
+          };
+        case 'subtle':
+          return {
+            background: new THREE.Color("#0a0a1a"),
+            accent1: new THREE.Color("#6142c4"),    // More muted purple
+            accent2: new THREE.Color("#00b079"),    // More muted teal
+            accent3: new THREE.Color("#f0f0ff")
+          };
+        default:
+          return {
+            background: new THREE.Color(flowBackgroundColors.background),
+            accent1: new THREE.Color(flowBackgroundColors.accent1),
+            accent2: new THREE.Color(flowBackgroundColors.accent2),
+            accent3: new THREE.Color(flowBackgroundColors.accent3)
+          };
+      }
+    };
+    
+    const colors = getColorSet(settings.colorMode);
+    
+    // Get animation settings based on intensity
+    const getAnimationSettings = (intensity) => {
+      switch(intensity) {
+        case 'low':
+          return {
+            flowSpeed: isFirefox ? 0.005 : 0.01,
+            flowScale: 2.0,
+            colorBlend: 0.8
+          };
+        case 'high':
+          return {
+            flowSpeed: isFirefox ? 0.015 : 0.03,
+            flowScale: 4.0,
+            colorBlend: 1.0
+          };
+        default: // 'medium'
+          return {
+            flowSpeed: flowAnimationConfig.speeds.default,
+            flowScale: flowAnimationConfig.scales.flowScale,
+            colorBlend: flowAnimationConfig.colorBlend
+          };
+      }
+    };
+    
+    const animSettings = getAnimationSettings(settings.animationIntensity);
+    
+    // Apply responsive adjustments if enabled
+    if (settings.responsive) {
+      const adjustments = flowAnimationConfig.getBrowserAdjustments(isFirefox, isMobile);
+      animSettings.flowSpeed = adjustments.flowSpeed;
+    }
+    
+    // --- Setup Canvas Renderer ---
+    console.log("Initializing flow background");
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: !(isFirefox && settings.responsive),
+      premultipliedAlpha: false,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isFirefox ? 1 : 2));
+    renderer.setClearColor(0x000000, 0);
+    renderer.setClearAlpha(0);
+    
+    // --- Create Scene ---
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(
+      -window.innerWidth / 2, 
+      window.innerWidth / 2, 
+      window.innerHeight / 2, 
+      -window.innerHeight / 2, 
+      0.1, 
+      1000
+    );
+    camera.position.z = 10;
+    
+    // --- Noise Generator ---
+    const noise4D = createNoise4D();
+    
+    // --- Flow Liquid Plane ---
+    // Create a plane with adaptive detail level
+    const planeSegments = isFirefox ? 50 : 100;
+    const planeGeometry = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight, planeSegments, planeSegments);
+    
+    // Build shader code with feature toggles
+    let fragmentShader = flowBackgroundShader.fragmentShader;
+    
+    // Add custom code to smooth out the transition between sections
+    fragmentShader = fragmentShader.replace(
+      // Find the line where vignette is calculated
+      /float vignette = 1.0 - smoothstep\(0.4, 1.1, dist \* 1.8\);/,
+      // Replace with improved vignette + vertical fade towards bottom
+      `float vignette = 1.0 - smoothstep(0.4, 1.1, dist * 1.8);
+      
+      // Add vertical fade near bottom of viewport to smooth section transitions
+      float verticalFade = 1.0 - smoothstep(0.5, 0.95, uv.y);
+      vignette = min(vignette, mix(1.0, verticalFade, 0.7));`
+    );
+    
+    // Modify the nebula transition to avoid hard edges
+    fragmentShader = fragmentShader.replace(
+      /float nebulaFactor = smoothstep\(0.3, 0.8, dist\);/,
+      `float nebulaFactor = smoothstep(0.3, 0.8, dist);
+      // Adjust nebula factor to be stronger at bottom of screen
+      nebulaFactor = mix(nebulaFactor, smoothstep(0.0, 1.0, pow(uv.y, 0.8)), 0.4);`
+    );
+    
+    // Apply feature toggles by modifying the shader
+    if (!settings.enableStars) {
+      // Replace star calculation with empty function
+      fragmentShader = fragmentShader.replace(/float starsValue = stars\(.*?\);/, 'float starsValue = 0.0;');
+    }
+    
+    if (!settings.enableNebula) {
+      // Skip nebula calculation
+      fragmentShader = fragmentShader.replace(/vec3 nebulaColor = nebula\(.*?\);/, 'vec3 nebulaColor = vec3(0.0);');
+    }
+    
+    if (!settings.enablePulse) {
+      // Disable pulse waves by setting them to constant values
+      fragmentShader = fragmentShader.replace(
+        /float pulse1 = sin\(.*?\);/, 
+        'float pulse1 = 0.5;'
+      ).replace(
+        /float pulse2 = sin\(.*?\);/, 
+        'float pulse2 = 0.5;'
+      ).replace(
+        /float pulse3 = sin\(.*?\);/, 
+        'float pulse3 = 0.5;'
+      );
+    }
+    
+    if (!settings.enableCenter) {
+      // Remove center hole
+      fragmentShader = fragmentShader.replace(
+        /float centerHole = smoothstep\(.*?\);/, 
+        'float centerHole = 1.0;'
+      );
+    }
+    
+    // Custom shader material for the flowing liquid
+    const flowMaterial = new THREE.ShaderMaterial({
+      transparent: true,
+      blending: THREE.NormalBlending,
+      uniforms: {
+        time: { value: 0 },
+        resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+        color1: { value: colors.accent1 },
+        color2: { value: colors.accent2 },
+        color3: { value: colors.background },
+        colorBlend: { value: animSettings.colorBlend }
+      },
+      vertexShader: commonVertexShader,
+      fragmentShader: fragmentShader
+    });
+
+    const flowPlane = new THREE.Mesh(planeGeometry, flowMaterial);
+    scene.add(flowPlane);
+    
+    console.log("Flow background initialized");
+
+    // --- Animation ---
+    let time = 0;
+    let animationId: number | null = null;
+    let frameCount = 0;
+
+    function animate() {
+      // Throttle to 30fps to save resources
+      frameCount++;
+      // More aggressive throttling for Firefox
+      if ((isFirefox && frameCount % 3 !== 0) || (!isFirefox && frameCount % 2 !== 0)) {
+        animationId = requestAnimationFrame(animate);
+        return;
+      }
+      
+      animationId = requestAnimationFrame(animate);
+
+      // Update time for shader
+      time += animSettings.flowSpeed;
+      (flowMaterial.uniforms.time as { value: number }).value = time;
+
+      // Render scene
+      renderer.render(scene, camera);
+    }
+
+    // --- Handle Window Resize ---
+    function onWindowResize() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      // Update camera
+      camera.left = -width / 2;
+      camera.right = width / 2;
+      camera.top = height / 2;
+      camera.bottom = -height / 2;
+      camera.updateProjectionMatrix();
+
+      // Update renderer
+      renderer.setSize(width, height);
+      
+      // Update material uniforms
+      (flowMaterial.uniforms.resolution as { value: THREE.Vector2 }).value.set(width, height);
+      
+      // Scale existing plane
+      flowPlane.scale.set(width / flowPlane.geometry.parameters.width, 
+                          height / flowPlane.geometry.parameters.height, 
+                          1);
+    }
+    window.addEventListener('resize', onWindowResize);
+
+    // --- Pause rendering when not visible ---
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      } else if (!document.hidden && !animationId) {
+        animate();
+      }
+    });
+
+    // --- Start Animation ---
+    animate();
+    console.log("FlowBackground animation started");
+
+    // --- Cleanup ---
+    document.addEventListener('astro:before-swap', () => {
+      // Clean up resources when navigating away
+      if (animationId) cancelAnimationFrame(animationId);
+      window.removeEventListener('resize', onWindowResize);
+      
+      // Dispose THREE.js objects
+      planeGeometry.dispose();
+      flowMaterial.dispose();
+      renderer.dispose();
+      console.log("FlowBackground cleaned up");
+    });
+  });
+</script> 

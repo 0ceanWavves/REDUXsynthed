@@ -1,20 +1,20 @@
 ---
-// @ts-ignore - Icon component is available at runtime but TypeScript doesn't recognize it
-import { Icon } from "astro-icon";
+// Remove the problematic astro-icon import
+// import { Icon } from "astro-icon";
 
 const widths = [450, 800];
 const sizes = "(min-width: 640px) 42vw, 67vw";
 ---
 
 <section class="relative h-full bg-transparent pb-0 md:pb-0">
-  <div class="absolute inset-0 overflow-hidden bg-gradient-to-b from-gray-900/70 to-black/70">
+  <div class="absolute inset-0 overflow-hidden">
     <!-- Remove static background pattern -->
 
     <!-- Add Three.js canvas here but ensure it doesn't block prism interaction -->
     <canvas id="splash-animation-canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none"></canvas>
   </div>
 
-  <div class="relative z-10 flex flex-col items-center justify-center min-h-[85vh] gap-4 md:gap-6 pt-0 pb-14 md:pb-16 pointer-events-none">
+  <div class="relative z-10 flex flex-col items-center justify-center min-h-[75vh] gap-4 md:gap-6 pt-0 pb-10 md:pb-12 pointer-events-none">
     <!-- "Create Design Build" centered in viewport -->
     <div class="splash-title flex flex-col items-center gap-1 pointer-events-none mt-6 md:mt-8 px-4">
       <div class="gradient-text text-center font-extrabold tracking-tighter text-5xl md:text-7xl browser-optimized-text">
@@ -32,25 +32,37 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
         <div class="flex flex-col items-center md:flex-row md:flex-wrap justify-center gap-2 md:gap-3 mb-5 md:mb-6">
           <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
             <div class="check-circle">
-              <Icon name="mdi:check-circle" class="h-5 w-5 text-blue-400" />
+              <!-- SVG Check Circle -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
             </div>
             <p class="text-center">Custom Business Applications</p>
           </div>
           <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
             <div class="check-circle">
-              <Icon name="mdi:check-circle" class="h-5 w-5 text-blue-400" />
+              <!-- SVG Check Circle -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
             </div>
             <p class="text-center">Modern Web & Mobile Development</p>
           </div>
           <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
             <div class="check-circle">
-              <Icon name="mdi:check-circle" class="h-5 w-5 text-blue-400" />
+              <!-- SVG Check Circle -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
             </div>
             <p class="text-center">Strategic Technology Consulting</p>
           </div>
           <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto">
             <div class="check-circle">
-              <Icon name="mdi:check-circle" class="h-5 w-5 text-blue-400" />
+              <!-- SVG Check Circle -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+              </svg>
             </div>
             <p class="text-center">UI/UX Design Excellence</p>
           </div>
@@ -59,10 +71,18 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
         <!-- Call to action buttons -->
         <div class="flex flex-wrap justify-center gap-4 mt-3">
           <a href="#features" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto">
-            <Icon name="mdi:code-tags" class="h-5 w-5" /> Our Services
+            <!-- SVG Code Tags -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            Our Services
           </a>
           <a href="#process" class="bg-transparent border border-teal-400 hover:bg-teal-900/20 text-teal-300 font-medium py-2 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto">
-            <Icon name="mdi:chart-timeline-variant" class="h-5 w-5" /> Our Process
+            <!-- SVG Chart Timeline -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            Our Process
           </a>
         </div>
       </div>
@@ -70,12 +90,20 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
 
     <!-- Scroll indicator - correctly centered -->
     <div class="scroll-indicator content-item absolute left-0 right-0 mx-auto text-center flex flex-col items-center justify-center" style="bottom: 5vh;" id="scroll-for-more">
-      <p class="text-white/80 text-sm mb-1">Scroll for more</p>
-      <div class="animate-bounce">
-        <Icon name="mdi:chevron-down" class="h-6 w-6 md:h-7 md:w-7 text-purple-500" />
+      <div class="scroll-indicator-container backdrop-blur-sm bg-black/10 rounded-full px-5 py-2">
+        <p class="text-white/80 text-sm mb-1">Scroll for more</p>
+        <div class="animate-bounce">
+          <!-- SVG Chevron Down -->
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-7 md:w-7 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- Remove the section transition element -->
+  <!-- <div class="section-transition absolute bottom-0 left-0 w-full h-32 pointer-events-none"></div> -->
 </section>
 
 <style>
@@ -184,6 +212,36 @@ const sizes = "(min-width: 640px) 42vw, 67vw";
   .pointer-events-none {
     pointer-events: none !important;
   }
+
+  /* Improve scroll indicator visibility */
+  .scroll-indicator {
+    width: 100%;
+    text-align: center;
+    padding-bottom: 1rem;
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.3));
+    z-index: 20; /* Ensure it's above the transition element */
+  }
+  
+  .scroll-indicator-container {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .scroll-indicator p {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  /* Section transition - commented out to remove separation
+  .section-transition {
+    background: linear-gradient(to bottom, transparent, rgba(10, 10, 20, 0.15) 50%, rgba(10, 10, 20, 0.3));
+    z-index: 5;
+  }
+  */
 </style>
 
 <script>
