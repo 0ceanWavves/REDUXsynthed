@@ -2,17 +2,17 @@
 // SplashTitle.astro - Component for the main title
 ---
 
-<div class="splash-title flex flex-col items-center gap-1 pointer-events-none mt-6 md:mt-8 px-4" style="z-index: 999; position: relative;">
+<div class="splash-title flex flex-col items-center gap-1 pointer-events-none mt-6 md:mt-8 px-4" style="position: relative; z-index: 999;">
   <div class="gradient-text text-center font-extrabold tracking-tighter text-5xl md:text-7xl browser-optimized-text">
-    <div class="title-word pointer-events-none" style="opacity: 1; transform: none;">Create</div>
-    <div class="title-word pointer-events-none" style="opacity: 1; transform: none;">Design</div>
-    <div class="title-word pointer-events-none" style="opacity: 1; transform: none;">Build</div>
+    <div class="title-word pointer-events-none">Create</div>
+    <div class="title-word pointer-events-none">Design</div>
+    <div class="title-word pointer-events-none">Build</div>
   </div>
   <!-- Shadow elements for each word -->
   <div class="title-shadows absolute">
-    <div class="title-shadow" data-index="0" style="opacity: 0.3; transform: scale(1);"></div>
-    <div class="title-shadow" data-index="1" style="opacity: 0.3; transform: scale(1);"></div>
-    <div class="title-shadow" data-index="2" style="opacity: 0.3; transform: scale(1);"></div>
+    <div class="title-shadow" data-index="0"></div>
+    <div class="title-shadow" data-index="1"></div>
+    <div class="title-shadow" data-index="2"></div>
   </div>
 </div>
 
@@ -52,8 +52,8 @@
     background: radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 70%);
     border-radius: 50%;
     left: 0;
-    opacity: 0.3;
-    transform: scale(1);
+    opacity: 0;
+    transform: scale(0);
     transform-origin: center;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   }
@@ -130,13 +130,15 @@
     }
   }
 
-  /* Force title words to be visible */
+  /* Title animation optimizations */
   .title-word {
-    opacity: 1 !important;
-    transform: none !important;
+    opacity: 0;
+    will-change: opacity, transform;
+    transform: translateY(-100px) scale(1.2);
     position: relative;
     display: block;
-    pointer-events: none;
+    pointer-events: none; /* Ensure this is still here if needed */
+    z-index: 999;
   }
 
   /* Add shake animation keyframes */
@@ -170,25 +172,127 @@
 </style>
 
 <script>
+  // Title words appearance staggered animation with slam-down effect
+  function animateTitleWords() {
+    if (typeof window === 'undefined') return;
+    console.log("animateTitleWords: Function called");
+
+    const titleWords = document.querySelectorAll('.title-word');
+    const titleShadows = document.querySelectorAll('.title-shadow');
+    console.log(`animateTitleWords: Found ${titleWords.length} title words`);
+
+    // Reset title words to initial state to ensure animation plays
+    titleWords.forEach((word, index) => {
+      const el = word as HTMLElement;
+      // Reset to initial state for animation
+      el.style.opacity = '0';
+      el.style.transform = `translateY(${-120 - (index * 20)}px) scale(${1.2 + (index * 0.1)})`;
+    });
+
+    const titleObserver = new IntersectionObserver(
+      (entries) => {
+        console.log("animateTitleWords: Observer triggered", entries[0].isIntersecting);
+        if (entries[0].isIntersecting) {
+          console.log("animateTitleWords: Element is intersecting, starting animation...");
+          titleWords.forEach((word, index) => {
+            const el = word as HTMLElement;
+            const shadow = titleShadows[index] as HTMLElement;
+            console.log(`animateTitleWords: Animating word ${index}`);
+            
+            // Apply the slam down effect with slight delay between words
+            setTimeout(() => {
+              // Apply a more dramatic "slam down" effect with bounce
+              el.style.transition = 'opacity 0.3s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.475)';
+              el.style.opacity = '1';
+              el.style.transform = 'translateY(0) scale(1)';
+              
+              // Animate shadow on impact
+              setTimeout(() => {
+                shadow.style.opacity = '1';
+                shadow.style.transform = 'scale(1.5)';
+                
+                // Fade out shadow after impact
+                setTimeout(() => {
+                  shadow.style.opacity = '0.3';
+                  shadow.style.transform = 'scale(1)';
+                }, 200);
+              }, 450);
+              
+              // Add shake effect after landing
+              setTimeout(() => {
+                el.classList.add('shake');
+                
+                // Remove shake class after animation completes
+                setTimeout(() => {
+                  el.classList.remove('shake');
+                }, 400);
+              }, 500);
+            }, 300 + (index * 250)); // Bigger delay between words for dramatic staggered effect
+          });
+          
+          titleObserver.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (titleWords.length > 0) {
+      console.log("animateTitleWords: Observing the first title word");
+      titleObserver.observe(titleWords[0] as HTMLElement);
+    } else {
+      console.error("animateTitleWords: No title words found to observe!");
+    }
+    
+    // FALLBACK: If IntersectionObserver doesn't trigger, force the animation after a delay
+    setTimeout(() => {
+      if (titleWords[0] instanceof HTMLElement && titleWords[0].style.opacity === '0') {
+        console.log("animateTitleWords: Fallback animation triggered");
+        titleWords.forEach((word, index) => {
+          const el = word as HTMLElement;
+          const shadow = titleShadows[index] as HTMLElement;
+          
+          setTimeout(() => {
+            el.style.transition = 'opacity 0.3s ease, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.475)';
+            el.style.opacity = '1';
+            el.style.transform = 'translateY(0) scale(1)';
+            
+            setTimeout(() => {
+              shadow.style.opacity = '1';
+              shadow.style.transform = 'scale(1.5)';
+              
+              setTimeout(() => {
+                shadow.style.opacity = '0.3';
+                shadow.style.transform = 'scale(1)';
+              }, 200);
+            }, 450);
+            
+            setTimeout(() => {
+              el.classList.add('shake');
+              
+              setTimeout(() => {
+                el.classList.remove('shake');
+              }, 400);
+            }, 500);
+          }, 300 + (index * 250));
+        });
+      }
+    }, 1000);
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     console.log("SplashTitle: DOMContentLoaded event fired");
-    
-    // Ensure title words are visible regardless of animation state
-    const titleWords = document.querySelectorAll('.title-word');
-    titleWords.forEach((word, index) => {
-      if (word instanceof HTMLElement) {
-        word.style.opacity = '1';
-        word.style.transform = 'none';
-      }
-    });
-    
-    // Ensure shadows are visible
-    const titleShadows = document.querySelectorAll('.title-shadow');
-    titleShadows.forEach((shadow, index) => {
-      if (shadow instanceof HTMLElement) {
-        shadow.style.opacity = '0.3';
-        shadow.style.transform = 'scale(1)';
-      }
-    });
+    animateTitleWords();
   });
+
+  // Add listener for Astro's page swaps too, just in case
+  document.addEventListener('astro:page-load', () => {
+    console.log("SplashTitle: astro:page-load event fired");
+    animateTitleWords();
+  });
+  
+  // Need to handle page refreshes too - run the animation after a small delay
+  if (document.readyState === 'complete') {
+    console.log("SplashTitle: Page already loaded, running animation directly");
+    setTimeout(animateTitleWords, 500);
+  }
 </script>
