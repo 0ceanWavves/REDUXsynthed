@@ -519,7 +519,15 @@
     
     // --- User interaction handlers ---
     function onPointerDown(event: PointerEvent | TouchEvent) {
-      event.preventDefault();
+      // Check if it's a touch event and we're on mobile
+      const isTouchEvent = 'touches' in event;
+      
+      // Only prevent default for mouse events, not touch events on mobile
+      // This allows mobile scrolling to work normally
+      if (!isTouchEvent || !isMobile) {
+        event.preventDefault();
+      }
+      
       console.log("Pointer down detected on prism canvas");
       
       isUserInteracting = true;
@@ -532,23 +540,29 @@
       
       previousMousePosition = { x: clientX, y: clientY };
       
-      // Add document-level event listeners
-      document.addEventListener('pointermove', onPointerMove, { passive: false });
-      document.addEventListener('pointerup', onPointerUp, { passive: false });
-      document.addEventListener('pointercancel', onPointerUp, { passive: false });
+      // Add document-level event listeners with passive: true for touch events on mobile
+      document.addEventListener('pointermove', onPointerMove, { passive: isMobile && isTouchEvent });
+      document.addEventListener('pointerup', onPointerUp, { passive: isMobile && isTouchEvent });
+      document.addEventListener('pointercancel', onPointerUp, { passive: isMobile && isTouchEvent });
       
       // Add touch-specific events
-      if ('touches' in event && canvas) {
-        canvas.addEventListener('touchmove', onPointerMove as EventListener, { passive: false });
-        canvas.addEventListener('touchend', onPointerUp as EventListener, { passive: false });
-        canvas.addEventListener('touchcancel', onPointerUp as EventListener, { passive: false });
+      if (isTouchEvent && canvas) {
+        canvas.addEventListener('touchmove', onPointerMove as EventListener, { passive: isMobile });
+        canvas.addEventListener('touchend', onPointerUp as EventListener, { passive: true });
+        canvas.addEventListener('touchcancel', onPointerUp as EventListener, { passive: true });
       }
     }
     
     function onPointerMove(event: PointerEvent | TouchEvent) {
       if (!isUserInteracting) return;
       
-      event.preventDefault();
+      // Check if it's a touch event and we're on mobile
+      const isTouchEvent = 'touches' in event;
+      
+      // Only prevent default for mouse events or non-mobile touch events
+      if (!isTouchEvent || !isMobile) {
+        event.preventDefault();
+      }
       
       // Get coordinates
       const clientX = 'clientX' in event ? event.clientX : (event.touches[0].clientX);
@@ -558,15 +572,43 @@
       const deltaX = clientX - previousMousePosition.x;
       const deltaY = clientY - previousMousePosition.y;
       
-      // Update rotation velocity
-      rotationVelocity.y = deltaX * userRotationSpeed;
-      rotationVelocity.x = -deltaY * userRotationSpeed;
+      // On mobile with touch events, check if this looks like a scroll attempt
+      if (isMobile && isTouchEvent && Math.abs(deltaY) > Math.abs(deltaX) * 1.5) {
+        // This looks like a vertical scroll attempt, release the interaction
+        isUserInteracting = false;
+        morphingPausedByUser = false;
+        
+        // Clean up event listeners
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerUp);
+        
+        if (canvas) {
+          canvas.removeEventListener('touchmove', onPointerMove as EventListener);
+          canvas.removeEventListener('touchend', onPointerUp as EventListener);
+          canvas.removeEventListener('touchcancel', onPointerUp as EventListener);
+        }
+        
+        return;
+      }
+      
+      // Update rotation velocity - reduced on mobile
+      const mobileFactor = isMobile ? 0.5 : 1.0;
+      rotationVelocity.y = deltaX * userRotationSpeed * mobileFactor;
+      rotationVelocity.x = -deltaY * userRotationSpeed * mobileFactor;
       
       previousMousePosition = { x: clientX, y: clientY };
     }
     
     function onPointerUp(event: PointerEvent | TouchEvent) {
-      event.preventDefault();
+      // Check if it's a touch event and we're on mobile
+      const isTouchEvent = 'touches' in event;
+      
+      // Only prevent default for mouse events or non-mobile
+      if (!isTouchEvent || !isMobile) {
+        event.preventDefault();
+      }
+      
       if (!isUserInteracting) return; // Prevent multi-fires
       
       isUserInteracting = false;
@@ -600,8 +642,11 @@
     
     // --- Set up event listeners ---
     if (canvas) {
-      // Ensure canvas can receive events
+      // Ensure canvas can receive events but allow scrolling on mobile
       canvas.style.pointerEvents = 'auto';
+      
+      // On mobile, limit the interactive height to avoid blocking scrolling
+      const canvasHeight = isMobile ? '70vh' : '100%';
       
       // Force canvas to be visible and interactive
       canvas.style.cssText += `; 
@@ -609,16 +654,16 @@
         top: 0;
         left: 0;
         width: 100%;
-        height: 100%;
+        height: ${canvasHeight};
         z-index: 5;
         pointer-events: auto !important;
         visibility: visible !important;
         opacity: 1 !important;
       `;
       
-      // Add event listeners
-      canvas.addEventListener('pointerdown', onPointerDown, { passive: false });
-      canvas.addEventListener('touchstart', onPointerDown as EventListener, { passive: false });
+      // Add event listeners - use passive for better scroll performance on mobile
+      canvas.addEventListener('pointerdown', onPointerDown, { passive: isMobile });
+      canvas.addEventListener('touchstart', onPointerDown as EventListener, { passive: isMobile });
       
       // Cursor hover effects
       canvas.addEventListener('mouseover', () => {
