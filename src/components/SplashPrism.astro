@@ -3,23 +3,18 @@
 ---
 
 <div class="prism-container relative">
-  <!-- Add a draggable indicator div with custom cursor over the 3D object -->
-  
-  <!-- Make sure the background div has a low z-index -->
-  <div id="prism-background" class="prism-interactive-area absolute inset-0 cursor-grab active:cursor-grabbing" style="z-index: 6;">
+  <!-- Expanded interactive area to cover entire viewport and placed at higher z-index -->
+  <div id="prism-background" class="prism-interactive-area absolute inset-0 cursor-grab active:cursor-grabbing" style="z-index: 20;">
     <div class="interactivity-hint absolute inset-0 flex items-center justify-center pointer-events-none">
       <div class="bg-gradient-to-r from-transparent via-white/5 to-transparent w-full h-20 animate-pulse-slow"></div>
     </div>
   </div>
 
-  <!-- Add swipe indicators to show object is interactive - REPOSITIONED -->
+  <!-- Add swipe indicators to show object is interactive -->
   <div class="rotation-arrows pointer-events-none">
-    <!-- Only one arrow with increased size - INVERTED DIRECTION -->
     <div class="curved-arrow main-rotation-arrow">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50" class="arrow-svg">
-        <!-- INVERTED: Changed path direction and flipped horizontally -->
         <path d="M10,25 Q50,0 90,25" class="arrow-path" />
-        <!-- INVERTED: Changed arrow head position and direction -->
         <polygon points="85,20 95,25 85,30" class="arrow-head" />
       </svg>
       <div class="rotate-label">Rotate Me!</div>
@@ -31,7 +26,7 @@
   .prism-container {
     position: absolute;
     inset: 0;
-    z-index: 5; /* Keep this moderate */
+    z-index: 5;
   }
 
   /* Add slow pulsing animation for interactivity hint */
@@ -52,7 +47,7 @@
     height: 100%;
     top: 0;
     left: 0;
-    z-index: 7; /* Just above prism but below text */
+    z-index: 30; /* Higher z-index but still below text content */
     pointer-events: none;
   }
 
@@ -66,13 +61,11 @@
 
   .main-rotation-arrow {
     position: absolute;
-    /* MOVED HIGHER: Positioned higher on the prism */
     top: 40%; 
     left: 50%;
     transform: translate(-50%, -50%);
-    /* CHANGED: New animation that just flashes briefly at start */
     animation: initialFlashArrow 8s ease-out;
-    z-index: 7;
+    z-index: 30;
   }
 
   /* Add a background to make the arrow more visible */
@@ -84,26 +77,23 @@
 
   .arrow-path, .arrow-head {
     stroke: white;
-    stroke-width: 3; /* Slightly thinner stroke */
+    stroke-width: 3;
     fill: none;
     stroke-linecap: round;
     stroke-dasharray: 100;
     stroke-dashoffset: 100;
-    /* MORE TRANSPARENCY: Reduced opacity */
     stroke-opacity: 0.6;
     animation: drawArrow 1.5s ease-in-out forwards;
   }
 
   .arrow-head {
     fill: white;
-    /* MORE TRANSPARENCY: Reduced opacity */
     fill-opacity: 0.6;
     opacity: 0;
     animation: fadeIn 0.3s ease-in-out forwards;
     animation-delay: 1.2s;
   }
 
-  /* CHANGED: New simplified animations */
   .main-rotation-arrow .arrow-path {
     animation: drawArrow 1.5s ease-in-out forwards;
     animation-delay: 1s;
@@ -125,26 +115,24 @@
     margin-top: 5px;
     text-shadow: 0 0 8px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.5);
     opacity: 0;
-    /* CHANGED: Single animation that fades in then out */
     animation: fadeLabel 8s ease-out;
     animation-delay: 1.5s;
     border-radius: 12px;
     padding: 4px 8px;
-    background-color: rgba(0, 0, 0, 0.2); /* More transparent */
+    background-color: rgba(0, 0, 0, 0.2);
     backdrop-filter: blur(4px);
     width: auto;
     left: 50%;
     transform: translateX(-50%);
   }
 
-  /* CHANGED: New animation for brief initial flash */
   @keyframes initialFlashArrow {
     0%, 10% { opacity: 0; }
-    15%, 25% { opacity: 0.7; } /* Peak opacity 0.7 instead of 1 */
+    15%, 25% { opacity: 0.7; }
     30%, 40% { opacity: 0.3; }
-    45%, 55% { opacity: 0.7; } /* Second flash */
+    45%, 55% { opacity: 0.7; }
     60%, 70% { opacity: 0.3; }
-    75%, 85% { opacity: 0.7; } /* Third flash */
+    75%, 85% { opacity: 0.7; }
     100% { opacity: 0; }
   }
 
@@ -155,29 +143,28 @@
 
   @keyframes fadeIn {
     to {
-      opacity: 0.7; /* Max opacity 0.7 instead of 1 */
+      opacity: 0.7;
     }
   }
 
-  /* CHANGED: Simplified label animation */
   @keyframes fadeLabel {
     0%, 5% { opacity: 0; }
-    10%, 30% { opacity: 0.7; } /* Max opacity 0.7 */
+    10%, 30% { opacity: 0.7; }
     100% { opacity: 0; }
   }
 
-  /* Add cursor styles to indicate draggable object */
+  /* CRITICAL: Make interactive area cover the entire viewport with high priority for events */
   .prism-interactive-area {
     cursor: grab;
-    z-index: 6; /* CHANGED: Lower z-index to be behind text but above canvas */
+    z-index: 20; /* Higher z-index than before, but still below text */
     background-color: transparent;
     pointer-events: auto !important; /* Force pointer events to be enabled */
-    position: fixed; /* Change to fixed to cover entire viewport */
+    position: fixed; /* Fixed position to cover entire viewport */
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
-    touch-action: none;
+    width: 100vw; /* Full viewport width */
+    height: 100vh; /* Full viewport height */
+    touch-action: none; /* Prevent default touch behaviors */
   }
   
   .prism-interactive-area:active {
@@ -198,17 +185,15 @@
 
   /* Mobile specific adjustments */
   @media (max-width: 768px) {
-    /* Improve swipe indicators visibility */
     .rotation-arrows {
-      z-index: 7; /* Ensure it's above other elements but below text */
+      z-index: 30;
     }
     
     .main-rotation-arrow {
-      width: 140px; /* Even smaller on mobile */
-      /* CHANGED: Match desktop position */
+      width: 140px;
       top: 40%; 
       left: 50%;
-      transform: translate(-50%, -50%); /* Center horizontally and vertically */
+      transform: translate(-50%, -50%);
     }
   }
 </style>
@@ -239,25 +224,33 @@
     // Setup initial rotation animation for the 3D object
     setupInitialRotationAnimation();
 
-    // REMOVED: setupInteractionHint - No longer needed since we don't want cycling arrows
-
     // Ensure all text elements don't block interaction
     enforcePointerEventsBehavior();
     
     // Setup direct interaction with the 3D prism
     setupDirectPrismInteraction();
     
-    // Fix z-index for prism background
+    // Fix z-index for prism background and ensure it gets pointer events
     const prismBackground = document.getElementById('prism-background');
     if (prismBackground) {
-      prismBackground.style.zIndex = '6';
+      prismBackground.style.zIndex = '20';
+      prismBackground.style.pointerEvents = 'auto';
+      
+      // Force all parent elements to pass through pointer events
+      let parent = prismBackground.parentElement;
+      while (parent && parent !== document.body) {
+        if (parent instanceof HTMLElement) {
+          parent.style.pointerEvents = 'auto';
+        }
+        parent = parent.parentElement;
+      }
     }
   });
   
   // Function to ensure text elements don't block interaction with the 3D object
   function enforcePointerEventsBehavior() {
-    // Select all elements that should not block pointer events
-    const textElements = document.querySelectorAll('.splash-title, .splash-content, .scroll-indicator');
+    // ENHANCED: Select all possible text and content elements
+    const textElements = document.querySelectorAll('.splash-title, .title-word, .gradient-text, .splash-content, .content-item, .check-circle, p, h1, h2, h3, h4, h5, h6, .text-primary');
     
     textElements.forEach(el => {
       if (el instanceof HTMLElement) {
@@ -265,18 +258,24 @@
       }
     });
     
+    // Make sure buttons and links still receive pointer events
+    const interactiveElements = document.querySelectorAll('a, button, .button, [role="button"]');
+    interactiveElements.forEach(el => {
+      if (el instanceof HTMLElement) {
+        el.style.pointerEvents = 'auto';
+      }
+    });
+    
     // Make sure the prism background can receive events
     const prismBackground = document.getElementById('prism-background');
     if (prismBackground) {
       prismBackground.style.pointerEvents = 'auto';
-      prismBackground.style.zIndex = '6'; // Ensure lower z-index
     }
     
     // Make sure the AmorphousPrism canvas is receiving events
     const canvas = document.getElementById('prism-bg-canvas');
     if (canvas) {
       canvas.style.pointerEvents = 'auto';
-      canvas.style.zIndex = '5'; // Ensure lowest z-index
     }
   }
   
@@ -285,15 +284,83 @@
     const prismBackground = document.getElementById('prism-background');
     if (!prismBackground) return;
     
-    // Ensure proper z-index
-    prismBackground.style.zIndex = '6';
+    // CRITICAL: Ensure proper z-index and pointer events
+    prismBackground.style.zIndex = '20';
+    prismBackground.style.pointerEvents = 'auto';
     
     const isMobile = window.innerWidth < 768;
     const rotationSpeed = isMobile ? 0.005 : 0.003;
     let isInteracting = false;
     let previousMousePosition = { x: 0, y: 0 };
     
-    // Pointer down handler
+    // ENHANCED: Also add listener to document for cases where events might not reach prismBackground
+    function setupGlobalFallbackInteraction() {
+      let isGlobalInteracting = false;
+      
+      document.addEventListener('pointerdown', function(event) {
+        // Only handle if target is not already an interactive element
+        const target = event.target as HTMLElement;
+        const isAlreadyInteractive = target.tagName === 'A' || 
+                                     target.tagName === 'BUTTON' || 
+                                     target.classList.contains('button') ||
+                                     target.hasAttribute('role') && target.getAttribute('role') === 'button';
+                                     
+        if (isAlreadyInteractive) return;
+        
+        isGlobalInteracting = true;
+        previousMousePosition = { x: event.clientX, y: event.clientY };
+        
+        // Update global state if available
+        if (window.prismaticScene?.setInteraction) {
+          window.prismaticScene.setInteraction(true);
+        }
+        
+        const onGlobalPointerMove = function(moveEvent: PointerEvent) {
+          if (!isGlobalInteracting) return;
+          
+          // Calculate delta
+          const deltaX = moveEvent.clientX - previousMousePosition.x;
+          const deltaY = moveEvent.clientY - previousMousePosition.y;
+          
+          // Apply rotation via prismaticScene API
+          if (window.prismaticScene?.applyRotation) {
+            window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
+          }
+          // Direct control fallback if API not available
+          else if (window.prismaticScene?.prism) {
+            window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
+            window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
+          }
+          
+          // Update previous position
+          previousMousePosition = { x: moveEvent.clientX, y: moveEvent.clientY };
+        };
+        
+        const onGlobalPointerUp = function() {
+          isGlobalInteracting = false;
+          
+          // Update global state if available
+          setTimeout(() => {
+            if (window.prismaticScene?.setInteraction) {
+              window.prismaticScene.setInteraction(false);
+            }
+          }, 800);
+          
+          document.removeEventListener('pointermove', onGlobalPointerMove);
+          document.removeEventListener('pointerup', onGlobalPointerUp);
+        };
+        
+        document.addEventListener('pointermove', onGlobalPointerMove);
+        document.addEventListener('pointerup', onGlobalPointerUp);
+      });
+    }
+    
+    // Only set up global fallback if we're not on a mobile device
+    if (!isMobile) {
+      setupGlobalFallbackInteraction();
+    }
+    
+    // Pointer down handler for direct prism interaction
     function onPointerDown(event: PointerEvent | TouchEvent) {
       event.preventDefault();
       
