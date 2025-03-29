@@ -1,0 +1,72 @@
+---
+// src/layouts/MainLayout.astro
+// Defines the main HTML structure, includes common head, nav, footer, etc.
+
+import CommonHead from '~/components/CommonHead.astro';
+import Navigation from '~/components/Navigation.astro';
+import Footer from '~/components/footer.astro';
+import BackgroundDecorations from '~/components/BackgroundDecorations.astro';
+import LoadingScreen from '~/components/LoadingScreen.astro'; // Keep loading screen here
+
+// Import base styles needed for the layout shell itself
+import "~/styles/index.css"; // Base styles
+import "~/styles/mobile-fixes.css"; // Base mobile fixes
+
+// Import page-specific styles (can be overridden by page using the layout)
+import "~/styles/index-page.css"; // Styles specific to pages using this layout
+
+// Props for CommonHead can be passed down from the page using this layout
+export interface Props {
+  title?: string;
+  description?: string;
+  image?: URL | string;
+}
+
+const { title, description, image } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="h-full motion-safe:scroll-smooth" data-theme="dark">
+  <head>
+    <CommonHead title={title} description={description} image={image} />
+    <!-- Include layout-specific CSS overrides or additions if needed -->
+    <style>
+      /* Styles specific to the MainLayout structure itself */
+      body {
+        /* Ensure body takes full height */
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      main {
+        flex-grow: 1; /* Allow main content to fill available space */
+      }
+    </style>
+  </head>
+  <body class="h-full overflow-x-hidden text-default text-base selection:bg-secondary selection:text-white bg-[#0a0a1a]">
+    <!-- Loading screen appears first -->
+    <LoadingScreen />
+
+    <!-- Background decorations (waves, overlay, gradient) -->
+    <BackgroundDecorations />
+
+    <!-- Navigation -->
+    <Navigation />
+
+    <!-- Main content area - Pages will inject content here -->
+    <main class="relative z-10"> <!-- Ensure main content is above background decorations -->
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <Footer />
+
+    <!-- Cursor effect element (placed here for simplicity, controlled by JS) -->
+    <div id="cursor-glow" class="hidden md:block"></div>
+
+    <!-- Page-specific scripts (can be added via slot or imported by page) -->
+    <!-- Example: <script src="/src/scripts/index-page.js"></script> -->
+    <!-- It's generally better to let the specific page using the layout import its own scripts -->
+
+  </body>
+</html> 

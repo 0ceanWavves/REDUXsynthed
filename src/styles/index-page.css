@@ -1,0 +1,129 @@
+/* src/styles/index-page.css */
+/* Styles specific to the index page layout and components */
+
+/* Import base styles first */
+@import url("./index.css");
+@import url("./mobile-fixes.css");
+/* Add brightness adjustments (if not linked in head) */
+/* @import url("/brightness-adjustments.css"); */
+
+/* Global index page styles (previously in <style> tag) */
+
+/* Force title words to be visible */
+.title-word {
+  opacity: 1 !important;
+}
+
+/* Remove diagonal strobing lines if they were present (safety) */
+.content-wrapper::before,
+.content-wrapper::after,
+body::before,
+body::after {
+  content: none !important;
+}
+
+/* Custom cursor effect */
+#cursor-glow {
+  position: fixed;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(129, 98, 255, 0.4) 0%, rgba(129, 98, 255, 0) 70%);
+  pointer-events: none;
+  z-index: 9999; /* Highest z-index */
+  opacity: 0; /* Initially hidden, shown by JS */
+  transition: opacity 0.3s ease;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+/* Center the "Scroll for more" text (if applicable to any component used) */
+[id*="scroll-for-more"] {
+  text-align: center !important;
+  width: 100% !important;
+  left: 0 !important;
+  right: 0 !important;
+  margin: 0 auto !important;
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  #cursor-glow {
+    display: none;
+  }
+  #prism-background,
+  #flow-bg-canvas {
+    /* Keep backgrounds visible but stop animations if needed */
+     animation: none !important; /* Example: Stop any CSS animations */
+     /* JS should handle stopping canvas animations */
+  }
+}
+
+/* Chrome-specific fixes (if needed beyond component styles) */
+@media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
+  .chrome-fix {
+    /* Example: Force text compositing */
+    transform: translateZ(0.5px) !important;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+  }
+}
+
+/* Styling for content sections */
+.content-wrapper {
+  position: relative; /* Needed for z-index stacking */
+  background: transparent;
+  overflow: visible; /* Allow potential overflows like shadows */
+  z-index: 10; /* Ensure content is above background elements */
+}
+
+/* Enhanced section wrappers */
+.section-wrapper {
+  position: relative;
+  width: 100%;
+  scroll-margin-top: 80px; /* Adjust based on fixed nav height */
+  overflow: visible;
+  padding-top: 4rem; /* Add padding to prevent overlap with previous section/nav */
+  padding-bottom: 4rem; /* Add spacing between sections */
+}
+
+/* Add scroll-based section identifier (active state managed by JS) */
+.section-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0; /* Position on the left edge */
+  width: 4px;
+  height: 0%; /* Start with zero height */
+  background: linear-gradient(to bottom, var(--color-accent, #8162ff), transparent); /* Use accent color */
+  z-index: 15; /* Above content */
+  transition: height 0.5s ease-in-out;
+  border-radius: 2px;
+}
+
+/* Active section indicator */
+.section-wrapper.active::before {
+  height: 100%; /* Full height when active */
+}
+
+/* Fix for 3D interaction - CRITICAL */
+/* These ensure the canvas elements themselves are interactive */
+#prism-bg-canvas {
+  pointer-events: auto !important;
+  z-index: 5 !important; /* Below hero content but interactive */
+}
+
+#prism-background {
+  pointer-events: auto !important;
+  z-index: 6 !important; /* Above canvas, below hero text */
+}
+
+/* Ensure text doesn't block interaction with background elements */
+/* These elements should not capture pointer events */
+.splash-title, .title-word, .gradient-text, .splash-content, .content-item, .check-circle {
+  pointer-events: none !important;
+}
+
+/* But allow buttons within those containers to be clickable */
+.buttons-container a {
+  pointer-events: auto !important;
+} 

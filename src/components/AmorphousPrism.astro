@@ -35,6 +35,10 @@
     try {
       console.log("Loading dependencies...");
       THREE = await import('three');
+      // Make THREE globally accessible for other scripts
+      // Use type assertion to avoid TypeScript errors
+      (window as any).THREE = THREE;
+      
       createNoise4D = (await import('simplex-noise')).createNoise4D;
       console.log("Dependencies loaded successfully");
       isLoading = false;
@@ -214,15 +218,25 @@
           renderer.setClearAlpha(0.1);
           
           // --- Geometry Setup for Morphing ---
-          // 1. Define the target shapes (Platonic Solids)
+          // 1. Define the target shapes (Rounded Low-Poly)
           const targetGeometries = [
-            new THREE.TetrahedronGeometry(1.0, 0),    // Target 0
-            new THREE.BoxGeometry(1.6, 1.6, 1.6),     // Target 1
-            new THREE.OctahedronGeometry(1.1, 0),     // Target 2
-            new THREE.DodecahedronGeometry(1.2, 0),   // Target 3
-            new THREE.IcosahedronGeometry(1.1, 0)     // Target 4
+            // Low-poly sphere (radius, widthSegments, heightSegments)
+            new THREE.SphereGeometry(1.2, 8, 6),          // Target 0: Quite blocky sphere
+
+            // Slightly more detailed sphere
+            new THREE.SphereGeometry(1.15, 12, 10),       // Target 1: Smoother sphere
+
+            // Subdivided Icosahedron (becomes more spherical with detail) (radius, detail)
+            new THREE.IcosahedronGeometry(1.3, 1),        // Target 2: Sphere-like polyhedron
+
+            // Low-poly Torus (donut) (radius, tubeRadius, radialSegments, tubularSegments)
+            new THREE.TorusGeometry(0.8, 0.4, 10, 16),    // Target 3: Low-poly donut
+
+            // Low-poly Capsule (radius, length, capSegments, radialSegments)
+            new THREE.CapsuleGeometry(0.7, 0.8, 6, 12)   // Target 4: Low-poly capsule
           ];
-          const platonicNames = ["Tetrahedron", "Cube", "Octahedron", "Dodecahedron", "Icosahedron"];
+          // Update names for logging/debugging (optional but helpful)
+          const platonicNames = ["LowSphere", "MidSphere", "IcoSphere", "Torus", "Capsule"];
           
           // 2. Create the Base Geometry (subdivided sphere for consistent vertex count)
           const baseGeometry = new THREE.SphereGeometry(1.1, 32, 16); // Radius, WidthSegments, HeightSegments
@@ -323,7 +337,7 @@
           scene.add(prism);
           
           // --- NEW: Create Particle Atmosphere ---
-          const particleCount = isFirefox ? 200 : (isMobile ? 350 : 500); // Increased particle count on mobile for better gooey effect
+          const particleCount = isFirefox ? 340 : (isMobile ? 420 : 600);
           const particleGeometry = new THREE.BufferGeometry();
           const particlePositions = new Float32Array(particleCount * 3);
           const particleSizes = new Float32Array(particleCount);
@@ -922,6 +936,7 @@
             prism: prism,
             renderer: renderer,
             canvas: canvas,
+            THREE: THREE, // Add reference to THREE for rotation fix script
             isUserInteracting: () => isUserInteracting,
             setInteraction: (interacting) => {
               isUserInteracting = interacting;

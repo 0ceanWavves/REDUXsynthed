@@ -1,0 +1,23 @@
+/* Mobile Chrome Scrolling Fixes */
+html.chrome {
+  height: -webkit-fill-available;
+  overscroll-behavior: none;
+}
+
+body.chrome {
+  height: -webkit-fill-available;
+  position: relative;
+  overscroll-behavior-y: none;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fix for any elements that might be blocking scrolling */
+.wave-container, 
+#prism-background, 
+#flow-bg-canvas,
+.section-transition-gradient,
+canvas {
+  pointer-events: none !important;
+  touch-action: none !important;
+}

@@ -2,59 +2,30 @@
 // SplashContent.astro - Component for the content section
 ---
 
-<div class="splash-content w-full max-w-2xl text-center mt-3 md:mt-4 browser-optimized-text pointer-events-none px-5 mx-auto" style="z-index: 90;">
-  <div class="text-white text-lg md:text-xl leading-relaxed pointer-events-none">
-    <p class="mb-1 content-item pointer-events-none" style="opacity: 1; transform: none;">Transforming ideas into</p>
-    <p class="text-primary text-2xl md:text-3xl font-bold mb-2 md:mb-3 content-item pointer-events-none" style="opacity: 1; transform: none;">Digital Solutions</p>
+<div class="splash-content w-full max-w-2xl text-center mt-3 md:mt-4 browser-optimized-text px-5 mx-auto" style="z-index: 90;">
+  <div class="text-white text-lg md:text-xl leading-relaxed">
+    <!-- Removed duplicate Create Design Build text -->
     
-    <!-- Service items with better spacing - All with pointer-events-none -->
-    <div class="flex flex-col items-center md:flex-row md:flex-wrap justify-center gap-2 md:gap-3 mb-5 md:mb-6 pointer-events-none">
-      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto pointer-events-none" style="opacity: 1; transform: none;">
-        <div class="check-circle pointer-events-none" style="opacity: 1; transform: none;">
-          <!-- SVG Check Circle -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-        </div>
-        <p class="text-center pointer-events-none">Custom Business Applications</p>
-      </div>
-      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto pointer-events-none" style="opacity: 1; transform: none;">
-        <div class="check-circle pointer-events-none" style="opacity: 1; transform: none;">
-          <!-- SVG Check Circle -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-        </div>
-        <p class="text-center pointer-events-none">Modern Web & Mobile Development</p>
-      </div>
-      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto pointer-events-none" style="opacity: 1; transform: none;">
-        <div class="check-circle pointer-events-none" style="opacity: 1; transform: none;">
-          <!-- SVG Check Circle -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-        </div>
-        <p class="text-center pointer-events-none">Strategic Technology Consulting</p>
-      </div>
-      <div class="flex items-center justify-center gap-2 content-item w-full md:w-auto pointer-events-none" style="opacity: 1; transform: none;">
-        <div class="check-circle pointer-events-none" style="opacity: 1; transform: none;">
-          <!-- SVG Check Circle -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400 pointer-events-none" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-          </svg>
-        </div>
-        <p class="text-center pointer-events-none">UI/UX Design Excellence</p>
+    <p class="mb-1 content-item" style="opacity: 1; transform: none;">Transforming ideas into</p>
+    
+    <!-- Digital Solutions heading -->
+    <p class="text-primary text-2xl md:text-3xl font-bold mb-4 md:mb-5 content-item pointer-events-none digital-solutions-text" style="opacity: 1; transform: none;">Digital Solutions</p>
+    
+    <!-- Service bullet points -->
+    <div class="service-bullets my-4 mb-8">
+      <div class="bullet-item"><span class="bullet">○</span> Custom Business Applications</div>
+      <div class="bullet-item"><span class="bullet">○</span> Modern Web & Mobile Development</div>
+      <div class="row-bullets">
+        <div class="bullet-item"><span class="bullet">○</span> Strategic Technology Consulting</div>
+        <div class="bullet-item"><span class="bullet">○</span> UI/UX Design Excellence</div>
       </div>
     </div>
+    
+    <!-- Removed the action buttons as they are in SplashActionButtons component -->
   </div>
 </div>
 
 <style>
-  /* Make sure ALL elements have pointer-events: none */
-  .splash-content, .splash-content * {
-    pointer-events: none !important;
-  }
-
   /* Browser optimizations */
   .browser-optimized-text {
     /* Force proper stacking context in all browsers */
@@ -72,36 +43,24 @@
     /* Ensure content is visible above 3D elements */
     position: relative;
     z-index: 75;
-    pointer-events: none !important;
   }
 
-  /* Mobile specific adjustments */
-  @media (max-width: 768px) {
-    /* Move content to create more room around the 3D object */
-    .splash-content {
-      max-width: 100%;
-      opacity: 0.95;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-      pointer-events: none !important;
-    }
-    
-    /* Add text outline for better readability against 3D background */
-    .splash-content p {
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
-      pointer-events: none !important;
-    }
-    
-    .text-primary {
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
-      pointer-events: none !important;
-    }
+  /* Digital Solutions text styling */
+  .digital-solutions-text {
+    text-shadow: 0 0 15px rgba(0, 229, 153, 0.7);
+    animation: fadeInUp 0.8s ease-out both;
+    animation-delay: 0.7s;
   }
 
-  /* Override content item animation to ensure visibility */
-  .content-item, .check-circle {
-    opacity: 1 !important;
-    transform: none !important;
-    pointer-events: none !important;
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   /* Ensure text visibility */
@@ -109,32 +68,68 @@
     color: white !important;
     visibility: visible !important;
     opacity: 1 !important;
-    pointer-events: none !important;
   }
   
   .splash-content p {
     opacity: 1 !important;
-    pointer-events: none !important;
   }
   
   .text-primary {
     color: #00e599 !important;
     pointer-events: none !important;
   }
+  
+  /* Service bullets styling */
+  .service-bullets {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    animation: fadeIn 0.8s ease-out both;
+    animation-delay: 0.9s;
+  }
+
+  .bullet-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: white;
+    margin: 0.25rem 0;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+
+  .bullet {
+    color: white;
+    margin-right: 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .row-bullets {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    .row-bullets {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
 </style>
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     console.log("SplashContent: Content initialization");
-    
-    // Apply pointer-events: none to ALL elements in the splash content
-    const allElements = document.querySelectorAll('.splash-content, .splash-content *');
-    allElements.forEach(item => {
-      if (item instanceof HTMLElement) {
-        item.style.opacity = '1';
-        item.style.transform = 'none';
-        item.style.pointerEvents = 'none'; // Ensure all elements pass through clicks
-      }
-    });
   });
 </script>

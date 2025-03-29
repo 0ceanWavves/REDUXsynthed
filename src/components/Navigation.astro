@@ -1,0 +1,103 @@
+---
+// src/components/Navigation.astro
+// Main site navigation bar, adjusts position based on scroll.
+---
+<nav id="main-nav" class="fixed bottom-0 left-0 w-full z-50 bg-black/70 backdrop-blur-md py-3 md:py-4 px-4 md:px-6 transition-all duration-500">
+  <div class="max-w-screen-xl mx-auto flex justify-between items-center">
+    <a href="/" class="text-lg md:text-xl font-bold text-white">Synthed</a>
+    <div class="flex items-center gap-3 md:gap-6">
+      <a href="#features" data-nav-target="#features-section" class="nav-link text-xs md:text-sm text-white hover:text-blue-300 transition-colors">Services</a>
+      <a href="#process" data-nav-target="#process-section" class="nav-link text-xs md:text-sm text-white hover:text-blue-300 transition-colors">Process</a>
+      <a href="#projects" data-nav-target="#projects-section" class="nav-link text-xs md:text-sm text-white hover:text-blue-300 transition-colors">Projects</a>
+      <a href="#contact" data-nav-target="#contact-section" class="nav-link text-xs md:text-sm text-white hover:text-blue-300 transition-colors">Contact</a>
+    </div>
+  </div>
+</nav>
+
+<script>
+  // TypeScript declaration for window property
+  declare global {
+    interface Window {
+      updateNavHighlight: (sectionId: string) => void;
+    }
+  }
+
+  // Manages the navigation bar's position based on scroll depth.
+  function handleNavbarScroll() {
+    const navbar = document.getElementById('main-nav');
+    if (!navbar) return;
+
+    let lastScrollTop = 0;
+    // Threshold to switch nav position (e.g., 70% of viewport height)
+    const scrollThreshold = window.innerHeight * 0.7;
+
+    // Debounce function to limit scroll event frequency
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    const scrollHandler = () => {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+      // If scrolled down past threshold, move navbar to top
+      if (scrollTop > scrollThreshold) {
+        navbar.classList.remove('bottom-0');
+        navbar.classList.add('top-0');
+      }
+      // If near the top of the page, move navbar back to bottom
+      else if (scrollTop < 50) {
+        navbar.classList.remove('top-0');
+        navbar.classList.add('bottom-0');
+      }
+      // Optional: Hide nav on scroll down, show on scroll up (within certain bounds)
+      // Could be added here if desired.
+
+      lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; // For Mobile or negative scrolling
+    };
+
+    // Attach the debounced scroll handler
+    window.addEventListener('scroll', debounce(scrollHandler, 50), { passive: true });
+
+    // Initial check in case the page loads scrolled down
+    scrollHandler();
+  }
+
+  // Update the navigation highlights based on the currently active section ID.
+  function updateNavHighlight(activeSectionId) {
+    const navLinks = document.querySelectorAll('#main-nav a.nav-link');
+    if (!navLinks.length) return;
+
+    // Remove highlight from all links first
+    navLinks.forEach(link => {
+      link.classList.remove('text-blue-300');
+      link.classList.add('text-white'); // Default color
+    });
+
+    // Find the link corresponding to the active section
+    const activeLink = Array.from(navLinks).find(link => {
+      const targetId = link.getAttribute('data-nav-target');
+      // Ensure IDs match, including the '#' if present in one but not the other
+      return targetId === `#${activeSectionId}` || targetId === activeSectionId;
+    });
+
+    // Add highlight to the active link
+    if (activeLink) {
+      activeLink.classList.remove('text-white');
+      activeLink.classList.add('text-blue-300'); // Highlight color
+    }
+  }
+
+  // Expose updateNavHighlight globally or via custom event for index-page.js to call
+  window.updateNavHighlight = updateNavHighlight;
+
+  // Initialize navbar behavior when the DOM is ready
+  document.addEventListener('DOMContentLoaded', handleNavbarScroll);
+</script> 

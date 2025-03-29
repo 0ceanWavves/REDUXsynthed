@@ -2,6 +2,27 @@
 document.addEventListener('DOMContentLoaded', function() {
   console.log("Running interaction fix script");
   
+  // Check if THREE is defined - if not, don't continue with 3D-specific fixes
+  if (typeof window.THREE === 'undefined') {
+    console.log("THREE is not defined. 3D interaction fixes will be skipped.");
+    
+    // Still apply basic fixes that don't require THREE
+    document.querySelectorAll('.splash-title, .title-word, .gradient-text, .splash-content, .content-item, .check-circle').forEach(el => {
+      if (el instanceof HTMLElement) {
+        el.style.pointerEvents = 'none'; 
+      }
+    });
+    
+    // Make buttons interactive
+    document.querySelectorAll('.buttons-container a').forEach(el => {
+      if (el instanceof HTMLElement) {
+        el.style.pointerEvents = 'auto';
+      }
+    });
+    
+    return;
+  }
+  
   // IMPORTANT: Only apply this fix if AmorphousPrismFix.js is not available
   if (window.__prismTouchFixApplied) {
     console.log("AmorphousPrismFix detected - skipping old interaction fix");

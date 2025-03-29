@@ -2,6 +2,7 @@
 import AmorphousPrism from "./AmorphousPrism.astro";
 import Splash from "./splash.astro";
 import CrossBrowserFix from "./crossBrowserFix.astro";
+import InteractionHint from "./InteractionHint.astro";
 ---
 
 <!-- HeroSection.astro - Encapsulates the entire hero section of the homepage -->
@@ -13,6 +14,9 @@ import CrossBrowserFix from "./crossBrowserFix.astro";
       <AmorphousPrism />
     </div>
     
+    <!-- Move the interaction hint outside the prism container for proper positioning -->
+    <InteractionHint />
+    
     <!-- Splash content with higher z-index to appear over prism but not block interaction -->
     <div class="relative z-60 pointer-events-none" style="transform: translateZ(0.1px);">
       <Splash />
@@ -21,8 +25,33 @@ import CrossBrowserFix from "./crossBrowserFix.astro";
     <!-- Add cross-browser fix component -->
     <CrossBrowserFix />
     
-    <!-- Load the direct rotation fix script after the prism is loaded -->
-    <script src="/direct-rotation-fix.js" defer></script>
+    <!-- Modified to load the script safely with deferred execution and THREE check -->
+    <script>
+      // Wait for THREE to be available before loading the rotation fix script
+      document.addEventListener('DOMContentLoaded', function() {
+        // Create a function to check if THREE is ready
+        const checkThreeLoaded = function() {
+          // Fix TypeScript errors with proper type checking
+          const globalWindow = window as any; // Use type assertion for global objects
+          if (globalWindow.THREE || 
+              (typeof globalWindow.prismaticScene !== 'undefined' && globalWindow.prismaticScene.THREE)) {
+            // THREE is loaded, now we can load the rotation fix script
+            const script = document.createElement('script');
+            script.src = '/direct-rotation-fix.js';
+            script.async = true;
+            document.body.appendChild(script);
+            console.log('THREE detected, loading rotation fix script');
+          } else {
+            // THREE not loaded yet, check again in a moment
+            console.log('Waiting for THREE to be available before loading rotation fix...');
+            setTimeout(checkThreeLoaded, 500);
+          }
+        };
+        
+        // Start checking for THREE
+        setTimeout(checkThreeLoaded, 1000);
+      });
+    </script>
   </div>
 </section>
 

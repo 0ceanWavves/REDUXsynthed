@@ -1,595 +1,77 @@
 ---
 import "@fontsource-variable/inter";
-import Features from "~/components/features.astro";
-import Footer from "~/components/footer.astro";
-import Process from "~/components/process.astro";
-import Projects from "~/components/projects.astro";
-import HeroSection from "~/components/HeroSection.astro";
-import FlowBackgroundController from "~/components/FlowBackgroundController.astro";
-import LoadingScreen from "~/components/LoadingScreen.astro";
-import SectionDivider from "~/components/SectionDivider.astro";
-import "~/styles/index.css";
+import MainLayout from '~/layouts/MainLayout.astro';
+import HeroSection from '~/components/HeroSection.astro';
+import Features from '~/components/features.astro';
+import Process from '~/components/process.astro';
+import Projects from '~/components/projects.astro';
+import SectionDivider from '~/components/SectionDivider.astro';
+import FlowBackgroundController from '~/components/FlowBackgroundController.astro'; // Interactive background
 
-const { generator, site } = Astro;
-const image = new URL("social.jpg", site);
-const description =
-  "Transform your ideas into reality with Synthed. We specialize in custom application development, modern web solutions, and strategic technology consulting tailored to your business needs.";
+// Define meta data for this specific page
+const title = "Synthed - Custom Software & Application Development";
+const description = "Transform your ideas into reality with Synthed. We specialize in custom application development, modern web solutions, and strategic technology consulting tailored to your business needs.";
+const image = "/social.jpg"; // Path relative to public folder
+
+// ID mapping for sections used by navigation and intersection observer
+const sections = [
+  { id: 'features-section', component: Features },
+  { id: 'process-section', component: Process },
+  { id: 'projects-section', component: Projects },
+  // Add contact section if it becomes a component
+  // { id: 'contact-section', component: Contact }
+];
 ---
 
-<!doctype html>
-<html lang="en" class="h-full motion-safe:scroll-smooth" data-theme="dark">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" href="/synthedlogo.svg" type="image/svg+xml" />
-		<meta name="generator" content={generator} />
+<MainLayout title={title} description={description} image={image}>
 
-    <title>Synthed - Custom Software & Application Development</title>
-    <meta name="description" content={description} />
-		
-		<!-- Preload critical assets -->
-		<link rel="preload" href="/synthedlogo.svg" as="image" />
-		
-		<!-- social media -->
-		<meta property="og:title" content="Synthed - Custom Software & Application Development" />
-		<meta property="og:type" content="website" />
-		<meta property="og:description" content={description} />
-		<meta property="og:image" content={image} />
-		<meta property="og:url" content={site} />
-		<meta name="twitter:card" content="summary_large_image" />
-		
-		<!-- Add brightness adjustments CSS -->
-		<link rel="stylesheet" href="/brightness-adjustments.css" />
-		
-		<!-- initialize theme -->
-		<script is:inline>
-			const themeSaved = localStorage.getItem("theme");
+  <!-- Interactive Flow Background specific to this page's layout -->
+  <FlowBackgroundController
+    opacity={1.0}
+    zIndex={0} 
+    colorMode="vibrant"
+    animationIntensity="medium"
+    responsive={true}
+    enableStars={true}
+    enableNebula={true}
+    enablePulse={true}
+    enableCenter={true}
+  />
 
-			if (themeSaved) {
-				document.documentElement.dataset.theme = themeSaved;
-			} else {
-				const prefersDark = window.matchMedia(
-					"(prefers-color-scheme: dark)",
-				).matches;
-				document.documentElement.dataset.theme = prefersDark ? "dark" : "light";
-			}
+  <!-- Hero section -->
+  <HeroSection />
 
-			window
-				.matchMedia("(prefers-color-scheme: dark)")
-				.addEventListener("change", (event) => {
-					if (!localStorage.getItem("theme")) {
-						document.documentElement.dataset.theme = event.matches
-							? "dark"
-							: "light";
-					}
-				});
-		</script>
-		
-		<!-- Browser detection and specific fixes -->
-		<script is:inline>
-		  // Detect Firefox and load Firefox-specific fixes
-		  if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-		    console.log("Firefox detected, loading specific fixes");
-		    
-		    // Create and append Firefox-specific script
-		    const firefoxScript = document.createElement('script');
-		    firefoxScript.src = '/firefox-fix.js';
-		    document.head.appendChild(firefoxScript);
-		    
-		    // Add Firefox class to html element
-		    document.documentElement.classList.add('firefox');
-		  }
-		  
-		  // Detect Chrome/iOS and add appropriate classes
-		  const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
-		  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-		               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-		               
-		  if (isChrome) {
-		    document.documentElement.classList.add('chrome');
-		  }
-		  
-		  if (isIOS) {
-		    document.documentElement.classList.add('ios');
-		  }
-		</script>
-		
-		<!-- Emergency fix for z-index issues -->
-		<script src="/fix-zindex.js" is:inline></script>
-		
-		<!-- Fix for interaction issues -->
-		<script src="/fix-interaction.js" is:inline></script>
-    
-    <!-- Extra safety script to ensure title words remain visible -->
-    <script src="/ensure-title-visibility.js" is:inline></script>
-		
-		<!-- Add browser-specific CSS -->
-		<style is:inline>
-		  /* Firefox-specific styles */
-		  html.firefox #prism-bg-canvas,
-		  html.firefox #prism-background {
-		    user-select: none !important;
-		    -moz-user-select: none !important;
-		    pointer-events: auto !important;
-		  }
-		  
-		  /* Chrome/iOS-specific styles */
-		  html.chrome #prism-bg-canvas,
-		  html.chrome #prism-background,
-		  html.ios #prism-bg-canvas,
-		  html.ios #prism-background {
-		    touch-action: none !important;
-		    -webkit-user-select: none !important;
-		    pointer-events: auto !important;
-		  }
-		</style>
-	</head>
-  <body
-    class="h-full overflow-x-hidden text-default text-base selection:bg-secondary selection:text-white bg-[#0a0a1a]"
-  >
-    <!-- Add the Loading Screen component -->
-    <LoadingScreen />
-    
-    <!-- Flow background with customizable settings - Full opacity and vibrant colors for brightness -->
-    <FlowBackgroundController 
-      opacity={1.0}
-      zIndex={0}
-      colorMode="vibrant"
-      animationIntensity="medium"
-      responsive={true}
-      enableStars={true}
-      enableNebula={true}
-      enablePulse={true}
-      enableCenter={true}
-    />
-    
-    <!-- Decorative wave effect for bottom of page - Adjusted for mobile -->
-    <div class="wave-container fixed bottom-0 left-0 w-[100vw] h-[150vh] md:h-[150vh] pointer-events-none z-5 opacity-90"></div>
-    
-    <!-- Add a transition gradient between hero and content sections -->
-    <div class="section-transition-gradient fixed w-full pointer-events-none z-2" data-astro-cid-j7pv25f6=""></div>
-    
-    <!-- Dark overlay to ensure consistent background darkness - Reduced opacity -->
-    <div class="fixed inset-0 bg-[#0a0a1a]/40 z-5 pointer-events-none"></div>
-    
-    <!-- Navigation initially at bottom, moves to top on scroll -->
-    <nav id="main-nav" class="fixed bottom-0 left-0 w-full z-50 bg-black/70 backdrop-blur-md py-3 md:py-4 px-4 md:px-6 transition-all duration-500">
-      <div class="max-w-screen-xl mx-auto flex justify-between items-center">
-        <a href="/" class="text-lg md:text-xl font-bold text-white">Synthed</a>
-        <div class="flex items-center gap-3 md:gap-6">
-          <a href="#features" class="text-xs md:text-sm text-white hover:text-blue-300 transition-colors">Services</a>
-          <a href="#projects" class="text-xs md:text-sm text-white hover:text-blue-300 transition-colors">Projects</a>
-          <a href="#contact" class="text-xs md:text-sm text-white hover:text-blue-300 transition-colors">Contact</a>
+  <!-- Main content wrapper -->
+  <div class="relative z-30 px-4 md:px-8 py-4 md:py-8 mx-auto w-full content-wrapper"
+       style="margin-top: 0; margin-bottom: 0;">
+
+    <!-- Dynamically render sections -->
+    {sections.map((section, index) => (
+      <>
+        <div class="section-wrapper" id={section.id}>
+          <section.component />
         </div>
-      </div>
-    </nav>
-    
-    <!-- Hero section with prism and splash content -->
-    <HeroSection />
-    
-    <!-- Main content with improved styling for smoother transitions -->
-    <div class="relative z-30 px-4 md:px-8 py-4 md:py-8 mx-auto w-full content-wrapper"
-        style="margin-top: 0; margin-bottom: 0;"
-    >
-      <!-- First section - Features/What We Offer -->
-      <div class="section-wrapper" id="features-section">
-        <Features />
-      </div>
-      
-      <!-- Section divider -->
-      <SectionDivider />
-      
-      <!-- Second section - Process/Our Approach -->
-      <div class="section-wrapper" id="process-section">
-        <Process />
-      </div>
-      
-      <!-- Section divider -->
-      <SectionDivider />
-      
-      <!-- Third section - Projects -->
-      <div class="section-wrapper" id="projects-section">
-        <Projects />
-      </div>
-    </div>
-    
-    <Footer />
-    
-    <!-- Cursor effect only on desktop -->
-    <div id="cursor-glow" class="hidden md:block"></div>
+        {/* Add a divider after each section except the last one */}
+        {index < sections.length - 1 && <SectionDivider />}
+      </>
+    ))}
 
-<style>
-  /* Force title words to be visible */
-  .title-word {
-    opacity: 1 !important;
-  }
+  </div>
 
-  /* Remove diagonal strobing lines */
-  .content-wrapper::before {
-    content: none !important;
-  }
-  
-  .content-wrapper::after {
-    content: none !important;
-  }
-  
-  body::before,
-  body::after {
-    content: none !important;
-  }
-  
-  /* Custom cursor effect */
-  #cursor-glow {
-    position: fixed;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(129, 98, 255, 0.4) 0%, rgba(129, 98, 255, 0) 70%);
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    mix-blend-mode: screen;
-    will-change: transform, opacity;
-  }
-  
-  /* Wave container styling - Simplified and slowed down */
-  .wave-container {
-    position: fixed;
-    width: 100vw;
-    left: 0;
-    right: 0;
-    background: linear-gradient(to top, rgba(10, 15, 40, 0.85), rgba(15, 35, 60, 0.4), transparent);
-    overflow: hidden;
-    filter: drop-shadow(0 0 40px rgba(0, 52, 89, 0.5)); 
-    transform: scaleY(1);
-    transform-origin: bottom;
-  }
-  
-  body {
-    overflow-x: hidden; /* Prevent horizontal scrolling */
-  }
-  
-  .wave-container::before,
-  .wave-container::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-repeat: repeat-x;
-    background-size: 200% 100%; /* Wider SVG coverage */
-    width: 200%; /* Extended width for full coverage */
-    height: 70vh; /* Much taller waves for more impact */
-    opacity: 0.45; /* More visible */
-    animation: waveAnimation 80s linear infinite; /* Much slower for ominous effect */
-    mix-blend-mode: screen;
-  }
-  
-  /* Enhanced SVG paths for smoother, more visible waves */
-  .wave-container::before {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%23084663' fill-opacity='0.7' d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z'%3E%3C/path%3E%3C/svg%3E");
-    animation-duration: 120s; /* Extremely slow */
-    bottom: -15px;
-  }
-  
-  .wave-container::after {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%23063752' fill-opacity='0.5' d='M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z'%3E%3C/path%3E%3C/svg%3E");
-    bottom: -35px; /* Offset to create layered effect */
-    animation-duration: 90s; /* Extremely slow */
-    animation-direction: reverse;
-  }
-  
-  @keyframes waveAnimation {
-    0% {
-      transform: translateX(0) scaleY(1.05);
-    }
-    50% {
-      transform: translateX(-25%) scaleY(1);
-    }
-    100% {
-      transform: translateX(-50%) scaleY(1.05);
-    }
-  }
-  
-  /* Mobile optimizations */
-  @media (max-width: 768px) {
-    .wave-container::before,
-    .wave-container::after {
-      height: 50vh; /* Smaller waves on mobile but still large */
-    }
-    
-    .wave-container::before {
-      animation-duration: 100s; /* Still very slow on mobile */
-    }
-    
-    .wave-container::after {
-      animation-duration: 80s; /* Still very slow on mobile */
-    }
-  }
-  
-  /* Center the "Scroll for more" text */
-  [id*="scroll-for-more"] {
-    text-align: center !important;
-    width: 100% !important;
-    left: 0 !important;
-    right: 0 !important;
-    margin: 0 auto !important;
-  }
-  
-  @media (prefers-reduced-motion: reduce) {
-    #cursor-glow {
-      display: none;
-    }
-    
-    #prism-background {
-      display: none !important;
-    }
-    
-    #flow-bg-canvas {
-      display: none !important;
-    }
-    
-    .wave-container::before,
-    .wave-container::after {
-      animation: none;
-    }
-  }
+</MainLayout>
 
-  /* Chrome-specific fixes */
-  @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
-    .chrome-fix {
-      /* Force text to be on top with proper compositing */
-      transform: translateZ(0.5px) !important;
-      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
-    }
-  }
+<!-- Import the page-specific JavaScript -->
+<script src="../scripts/index-page.js"></script>
 
-  /* Section transition gradient */
-  .section-transition-gradient {
-    height: 25vh;
-    bottom: 0;
-    background: linear-gradient(to bottom, 
-                rgba(10, 10, 30, 0) 0%, 
-                rgba(10, 20, 40, 0.3) 50%,
-                rgba(15, 25, 50, 0.5) 100%);
-    mix-blend-mode: normal;
-    pointer-events: none !important; /* Ensure pointer events are disabled */
-    z-index: 2 !important; /* Force lower z-index */
-  }
-  
-  /* Better styling for content sections */
-  .content-wrapper {
-    position: relative;
-    background: transparent;
-    overflow: visible;
-  }
-  
-  /* Enhanced section wrappers */
-  .section-wrapper {
-    position: relative;
-    width: 100%;
-    scroll-margin-top: 80px;
-    overflow: visible;
-  }
-  
-  /* Add scroll-based section identifier */
-  .section-wrapper::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 0; /* Start with zero height */
-    background: linear-gradient(to bottom, var(--color-primary), transparent);
-    z-index: 5;
-    transition: height 0.5s ease;
-  }
-  
-  /* Active section indicator */
-  .section-wrapper.active::before {
-    height: 100%; /* Full height when active */
-  }
-  
-  /* Fix for 3D interaction - CRITICAL, these must be !important */
-  #prism-bg-canvas {
-    pointer-events: auto !important;
-    z-index: 5 !important;
-  }
-  
-  #prism-background {
-    pointer-events: auto !important;
-    z-index: 6 !important;
-  }
-  
-  /* Firefox-specific 3D styles - will only apply to Firefox */
-  html.firefox #prism-bg-canvas, 
-  html.firefox #prism-background {
-    user-select: none !important;
-    -moz-user-select: none !important;
-  }
-  
-  /* Chrome/iOS-specific 3D styles - will only apply to Chrome/iOS */
-  html.chrome #prism-bg-canvas,
-  html.chrome #prism-background,
-  html.ios #prism-bg-canvas,
-  html.ios #prism-background {
-    touch-action: none !important;
-  }
-  
-  /* Ensure text doesn't block interaction */
-  .splash-title, .title-word, .gradient-text, .splash-content, .content-item, .check-circle {
-    pointer-events: none !important;
-  }
-  
-  /* But let buttons be clickable */
-  .buttons-container a {
-    pointer-events: auto !important;
-  }
-</style>
-
-<script>
-  // Initialize for all devices
-  const isMobile = window.innerWidth < 768;
-  const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-  const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  
-  console.log("Browser detection:", { isFirefox, isChrome, isIOS, isMobile });
-  
-  // Handle initial setup on page load
-  document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM Content Loaded');
-    
-    // Ensure 3D elements can be interacted with
-    const canvas = document.getElementById('prism-bg-canvas');
-    if (canvas) {
-      canvas.style.pointerEvents = 'auto';
-      canvas.style.zIndex = '5';
-      
-      // Apply browser-specific styles
-      if (isFirefox) {
-        canvas.style.userSelect = 'none';
-        canvas.style.mozUserSelect = 'none';
-      } else {
-        canvas.style.touchAction = 'none';
-      }
-      
-      console.log('Canvas interaction enabled');
-    }
-    
-    const prismBg = document.getElementById('prism-background');
-    if (prismBg) {
-      prismBg.style.pointerEvents = 'auto';
-      prismBg.style.zIndex = '6';
-      
-      // Apply browser-specific styles
-      if (isFirefox) {
-        prismBg.style.userSelect = 'none';
-        prismBg.style.mozUserSelect = 'none';
-      } else {
-        prismBg.style.touchAction = 'none';
-      }
-      
-      console.log('Prism background interaction enabled');
-    }
-    
-    // Init cursor effect (desktop only)
-    if (!isMobile) {
-      const cursorGlow = document.getElementById('cursor-glow');
-      if (!cursorGlow) return;
-      
-      cursorGlow.style.opacity = '1';
-      
-      document.addEventListener('mousemove', (e) => {
-        requestAnimationFrame(() => {
-          cursorGlow.style.transform = `translate(${e.clientX - 25}px, ${e.clientY - 25}px)`;
-        });
-      });
-    }
-    
-    // Handle navbar scrolling behavior
-    handleNavbarScroll();
-    
-    // Setup section identification when scrolling
-    setupSectionScrollTracking();
-    
-    // Force title words to be visible (additional safety measure)
-    setTimeout(() => {
-      document.querySelectorAll('.title-word').forEach(word => {
-        if (word instanceof HTMLElement) {
-          word.style.opacity = '1';
-          word.style.transform = 'translateY(0) scale(1)';
-        }
-      });
-    }, 1000);
-  });
-  
-  // Track which section is currently visible
-  function setupSectionScrollTracking() {
-    const sections = document.querySelectorAll('.section-wrapper');
-    
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        // If section is at least 40% visible
-        if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
-          // Add active class to this section
-          entry.target.classList.add('active');
-          
-          // Update scroll indicator in navbar
-          updateNavHighlight(entry.target.id);
-        } else {
-          // Remove active class
-          entry.target.classList.remove('active');
-        }
-      });
-    }, { 
-      threshold: [0.2, 0.4, 0.6, 0.8], // Check at multiple thresholds
-      rootMargin: '-10% 0px -10% 0px' // Slightly offset top and bottom
-    });
-    
-    // Observe all section wrappers
-    sections.forEach(section => {
-      observer.observe(section);
-    });
-  }
-  
-  // Update the navigation highlights based on current section
-  function updateNavHighlight(sectionId) {
-    const navLinks = document.querySelectorAll('#main-nav a');
-    
-    // Map section wrapper IDs to nav link hrefs
-    const sectionToNavMap = {
-      'features-section': '#features',
-      'process-section': '#process',
-      'projects-section': '#projects'
-    };
-    
-    // Get the corresponding nav link href
-    const targetHref = sectionToNavMap[sectionId];
-    
-    if (targetHref) {
-      // Remove highlight from all links
-      navLinks.forEach(link => {
-        link.classList.remove('text-blue-300');
-        link.classList.add('text-white');
-      });
-      
-      // Add highlight to active link
-      const activeLink = Array.from(navLinks).find(link => link.getAttribute('href') === targetHref);
-      if (activeLink) {
-        activeLink.classList.remove('text-white');
-        activeLink.classList.add('text-blue-300');
-      }
-    }
-  }
-  
-  // Navbar scroll behavior
-  function handleNavbarScroll() {
-    const navbar = document.getElementById('main-nav');
-    if (!navbar) return;
-    
-    let lastScrollTop = 0;
-    const scrollThreshold = window.innerHeight * 0.7; // 70% of viewport height
-    
-    window.addEventListener('scroll', () => {
-      const scrollTop = window.scrollY;
-      
-      // If we've scrolled down past threshold, move navbar to top
-      if (scrollTop > scrollThreshold) {
-        navbar.classList.remove('bottom-0');
-        navbar.classList.add('top-0');
-      } 
-      // If we're near the top of the page, move navbar to bottom
-      else if (scrollTop < 50) {
-        navbar.classList.remove('top-0');
-        navbar.classList.add('bottom-0');
-      }
-      
-      lastScrollTop = scrollTop;
-    });
-  }
-</script>
-</body>
-</html>
+<!--
+  Removed from here and moved to respective components/files:
+  - <!doctype html>, <html>, <head>, <body> tags -> MainLayout.astro
+  - Meta tags, links, theme script, browser detection -> CommonHead.astro
+  - <nav> element and its JS -> Navigation.astro
+  - Wave container, gradient, overlay divs and styles -> BackgroundDecorations.astro
+  - Large <style> block -> index-page.css (imported by MainLayout)
+  - Large <script> block -> index-page.js (imported above)
+  - LoadingScreen -> MainLayout.astro
+  - Footer -> MainLayout.astro
+  - Cursor glow div -> MainLayout.astro
+-->

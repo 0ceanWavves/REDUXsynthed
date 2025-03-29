@@ -1,0 +1,189 @@
+---
+// src/components/CommonHead.astro
+// Contains common head elements, meta tags, scripts, and styles for initialization.
+
+// Props definition (can be extended as needed)
+export interface Props {
+  title?: string;
+  description?: string;
+  image?: URL | string; // Allow string for fallback or direct paths
+}
+
+const {
+  title = "Synthed - Custom Software & Application Development",
+  description = "Transform your ideas into reality with Synthed. We specialize in custom application development, modern web solutions, and strategic technology consulting tailored to your business needs.",
+  image = "/social.jpg", // Default social image path
+} = Astro.props;
+
+const { generator, site } = Astro;
+
+// Ensure image URL is absolute if possible
+const absoluteImageURL = image instanceof URL ? image : (site ? new URL(image, site) : image);
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="/synthedlogo.svg" type="image/svg+xml" />
+<meta name="generator" content={generator} />
+
+<title>{title}</title>
+<meta name="description" content={description} />
+
+<!-- Critical CSS -->
+<link rel="stylesheet" href="/title-animation.css" />
+<link rel="stylesheet" href="/brightness-adjustments.css" />
+
+<!-- Open Graph / Social Media -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={absoluteImageURL} />
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={Astro.url} />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={absoluteImageURL} />
+
+<!-- Favicon -->
+<link rel="icon" href="/synthedlogo.svg" />
+
+<!-- Preload critical resources -->
+<link rel="preload" href="/synthedlogo.svg" as="image" />
+
+<!-- Since we've removed the 3D section, we won't be needing Three.js -->
+<script is:inline>
+  // Flag to indicate whether 3D features are enabled
+  window.THREE_ENABLED = false;
+</script>
+
+<!-- Only load Three.js and related scripts if needed -->
+<script>
+  // Only load Three.js dynamically if it's needed
+  // Use type assertion to fix TypeScript error
+  if ((window as any).THREE_ENABLED) {
+    // Load three-loader.js
+    const loaderScript = document.createElement('script');
+    loaderScript.type = 'module';
+    loaderScript.src = '/js/three-loader.js';
+    document.head.appendChild(loaderScript);
+    
+    // Load three-interaction-fix.js
+    const interactionFixScript = document.createElement('script');
+    interactionFixScript.src = '/js/three-interaction-fix.js';
+    interactionFixScript.defer = true;
+    document.head.appendChild(interactionFixScript);
+  }
+</script>
+
+<!-- Gooey Menu CSS and JS -->
+<link rel="stylesheet" href="/css/gooey-menu.css" />
+<link rel="stylesheet" href="/css/gooey-menu-textures.css" />
+<script src="/js/gooey-menu.js" defer></script>
+
+<!-- initialize theme -->
+<script is:inline>
+  const themeSaved = localStorage.getItem("theme");
+  if (themeSaved) {
+    document.documentElement.dataset.theme = themeSaved;
+  } else {
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.dataset.theme = prefersDark ? "dark" : "light";
+  }
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (event) => {
+    if (!localStorage.getItem("theme")) {
+      document.documentElement.dataset.theme = event.matches ? "dark" : "light";
+    }
+  });
+</script>
+
+<!-- Browser detection and specific fixes -->
+<script is:inline>
+  // Function to load script dynamically
+  function loadScript(src) {
+    const script = document.createElement('script');
+    script.src = src;
+    document.head.appendChild(script);
+  }
+
+  const userAgent = navigator.userAgent.toLowerCase();
+  const platform = navigator.platform;
+  const maxTouchPoints = navigator.maxTouchPoints || 0;
+
+  // Detect Firefox
+  if (userAgent.includes('firefox')) {
+    console.log("Firefox detected, loading specific fixes");
+    loadScript('/firefox-fix.js');
+    document.documentElement.classList.add('firefox');
+  }
+
+  // Detect Chrome/iOS/Mobile
+  const isChrome = userAgent.includes('chrome') && !userAgent.includes('edge');
+  const isIOS = /ipad|iphone|ipod/.test(userAgent) || (platform === 'MacIntel' && maxTouchPoints > 1);
+  const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+
+  if (isChrome) {
+    document.documentElement.classList.add('chrome');
+    if (isMobile) {
+      console.log("Chrome mobile detected, loading specific fixes");
+      loadScript('/mobile-scroll-fix.js');
+    }
+  }
+
+  if (isIOS) {
+    document.documentElement.classList.add('ios');
+  }
+  
+  // Add mobile class if mobile device
+  if (isMobile) {
+    document.documentElement.classList.add('mobile');
+  }
+</script>
+
+<!-- Emergency fix for z-index issues -->
+<script src="/fix-zindex.js" is:inline></script>
+
+<!-- Fix for interaction issues -->
+<script src="/fix-interaction.js" is:inline></script>
+
+<!-- Extra safety script to ensure title words remain visible -->
+<script src="/ensure-title-visibility.js" is:inline></script>
+
+<!-- Add browser-specific CSS -->
+<style is:inline>
+  /* Firefox-specific styles */
+  html.firefox #prism-bg-canvas,
+  html.firefox #prism-background {
+    user-select: none !important;
+    -moz-user-select: none !important;
+    pointer-events: auto !important; /* Keep interaction */
+  }
+
+  /* Chrome/iOS-specific styles */
+  html.chrome #prism-bg-canvas,
+  html.chrome #prism-background,
+  html.ios #prism-bg-canvas,
+  html.ios #prism-background {
+    touch-action: none !important;
+    -webkit-user-select: none !important;
+    pointer-events: auto !important; /* Keep interaction */
+  }
+
+  /* Ensure specific Chrome mobile fix allows scrolling */
+  html.chrome.mobile #prism-bg-canvas,
+  html.chrome.mobile #prism-background,
+  html.chrome.mobile #flow-bg-canvas {
+     pointer-events: none !important; /* Disable pointer events ONLY for chrome mobile to fix scrolling */
+     touch-action: auto !important; /* Allow default touch actions like scrolling */
+  }
+  
+  /* Fix for 3D objects in mobile view */
+  html.mobile .simple-3d-container canvas {
+    touch-action: none !important; /* Prevent page scrolling within canvas only */
+  }
+  
+  html.mobile .simple-3d-container {
+    pointer-events: auto !important; /* Enable interaction */
+    touch-action: none !important;   /* Prevent default touch behavior within container */
+  }
+</style>

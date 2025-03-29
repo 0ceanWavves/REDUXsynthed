@@ -1,0 +1,200 @@
+/* gooey-menu.css - Styling for the gooey menu component */
+
+/* Menu container positioning */
+.gooey-menu-container {
+    position: relative;
+    width: 400px;
+    height: 500px;
+    filter: url('#gooey');
+    margin: 0 auto;
+    z-index: 100;
+}
+
+/* Main Digital Solutions bubble in center */
+.gooey-menu-toggle {
+    background: radial-gradient(circle at center, #42eeff 0%, #0088ff 100%);
+    border-radius: 100%;
+    width: 140px;
+    height: 140px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 102;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transition: all 0.5s;
+    box-shadow: 0 0 20px rgba(66, 238, 255, 0.7);
+}
+
+.gooey-menu-toggle:hover {
+    box-shadow: 0 0 30px rgba(66, 238, 255, 0.9);
+}
+
+.gooey-menu-toggle span {
+    padding: 10px;
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 1.2;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    color: white;
+}
+
+/* Menu items styling - all smaller than main bubble */
+.gooey-menu-item {
+    background: radial-gradient(circle at center, #42eeff 0%, #0088ff 100%);
+    border-radius: 100%;
+    width: 90px;
+    height: 90px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.5s cubic-bezier(0.16, 1.01, 0.61, 1.2), opacity 0.5s ease;
+    z-index: 101;
+    opacity: 0;
+    box-shadow: 0 0 10px rgba(66, 238, 255, 0.7);
+}
+
+.gooey-menu-item span {
+    padding: 5px;
+    font-size: 10px;
+    font-weight: bold;
+    line-height: 1.1;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    color: white;
+    opacity: 0;
+    transition: opacity 0.5s ease 0.3s; /* Delay text fade-in */
+}
+
+/* All items start at center, then move out in an arc when menu opens */
+/* Arc layout for items */
+.menu-open .gooey-menu-item:nth-child(1) {
+    transform: translate(-50%, -50%) translateY(-160px) scale(1);
+    opacity: 1;
+    transition-delay: 0s;
+}
+
+.menu-open .gooey-menu-item:nth-child(2) {
+    transform: translate(-50%, -50%) translate(80px, -80px) scale(1);
+    opacity: 1;
+    transition-delay: 0.05s;
+}
+
+.menu-open .gooey-menu-item:nth-child(3) {
+    transform: translate(-50%, -50%) translate(160px, 0) scale(1);
+    opacity: 1;
+    transition-delay: 0.1s;
+}
+
+.menu-open .gooey-menu-item:nth-child(4) {
+    transform: translate(-50%, -50%) translate(80px, 80px) scale(1);
+    opacity: 1;
+    transition-delay: 0.15s;
+}
+
+.menu-open .gooey-menu-item:nth-child(5) {
+    transform: translate(-50%, -50%) translateY(160px) scale(1);
+    opacity: 1;
+    transition-delay: 0.2s;
+}
+
+.menu-open .gooey-menu-item:nth-child(6) {
+    transform: translate(-50%, -50%) translate(-80px, 80px) scale(1);
+    opacity: 1;
+    transition-delay: 0.25s;
+}
+
+/* Show text in menu items when open */
+.menu-open .gooey-menu-item span {
+    opacity: 1;
+}
+
+/* No checkmark icon in this design */
+.gooey-menu-item:before {
+    display: none;
+}
+
+/* Pulse animation for toggle button */
+.gooey-menu-toggle.clicked {
+    animation: gooey-pulse 0.5s;
+}
+
+@keyframes gooey-pulse {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.1); }
+    100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Mobile adaptations */
+@media (max-width: 768px) {
+    .gooey-menu-container {
+        width: 320px;
+        height: 400px;
+    }
+    
+    .gooey-menu-toggle {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .gooey-menu-item {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .gooey-menu-item span {
+        font-size: 8px;
+        padding: 2px;
+    }
+    
+    /* Smaller radius for mobile */
+    .menu-open .gooey-menu-item:nth-child(1) {
+        transform: translate(-50%, -50%) translateY(-120px) scale(1);
+    }
+
+    .menu-open .gooey-menu-item:nth-child(2) {
+        transform: translate(-50%, -50%) translate(60px, -60px) scale(1);
+    }
+
+    .menu-open .gooey-menu-item:nth-child(3) {
+        transform: translate(-50%, -50%) translate(120px, 0) scale(1);
+    }
+
+    .menu-open .gooey-menu-item:nth-child(4) {
+        transform: translate(-50%, -50%) translate(60px, 60px) scale(1);
+    }
+
+    .menu-open .gooey-menu-item:nth-child(5) {
+        transform: translate(-50%, -50%) translateY(120px) scale(1);
+    }
+
+    .menu-open .gooey-menu-item:nth-child(6) {
+        transform: translate(-50%, -50%) translate(-60px, 60px) scale(1);
+    }
+}
+
+/* Enhanced gooey effect for connections */
+.gooey-menu-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s;
+    background: radial-gradient(circle at center, rgba(66, 238, 255, 0.1) 0%, transparent 70%);
+}
+
+.menu-open .gooey-menu-container::after {
+    opacity: 1;
+}
