@@ -40,28 +40,29 @@ export function applyTouchEventFixes() {
         // CRITICAL: For Chrome, we need special handling to ensure both touch and mouse work
         // This flag helps us track which type of event initiated the interaction
         canvas.dataset.interactionType = 'none';
+        canvas.setAttribute('data-interaction-type', 'none'); // Force attribute to be set directly
         
         // Add touch event listeners specifically for Chrome
         const handleTouchStart = function(e) {
           e.preventDefault();
           console.log("Chrome touch event captured");
           canvas.dataset.interactionType = 'touch';
+          canvas.setAttribute('data-interaction-type', 'touch'); // Force attribute to be set directly
         };
         
         const handleTouchMove = function(e) {
-          // Only prevent default if this was a touch interaction
-          if (canvas.dataset.interactionType === 'touch') {
-            e.preventDefault();
-          }
+          e.preventDefault(); // Always prevent default for Chrome touch events
+          console.log("Chrome touch move with interaction type:", canvas.dataset.interactionType);
         };
         
-        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-        canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+        canvas.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
+        canvas.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
         
         // Handle mouse events separately from touch
         canvas.addEventListener('mousedown', function(e) {
           console.log("Chrome mouse event captured");
           canvas.dataset.interactionType = 'mouse';
+          canvas.setAttribute('data-interaction-type', 'mouse'); // Force attribute to be set directly
         });
       }
       
@@ -182,6 +183,9 @@ function setupTouchEvents(element, onStart, onMove, onEnd) {
   element.addEventListener('touchstart', function(e) {
     e.preventDefault();
     element.dataset.interactionType = 'touch';
+    element.setAttribute('data-interaction-type', 'touch'); // Force attribute to be set directly
+    
+    console.log("Touch start with type:", element.dataset.interactionType);
     
     if (e.touches.length > 0) {
       const touch = e.touches[0];
@@ -195,6 +199,8 @@ function setupTouchEvents(element, onStart, onMove, onEnd) {
     
     const handleTouchMove = function(moveEvent) {
       moveEvent.preventDefault();
+      
+      console.log("Touch move with type:", element.dataset.interactionType);
       
       if (moveEvent.touches.length > 0) {
         const touch = moveEvent.touches[0];
@@ -210,6 +216,7 @@ function setupTouchEvents(element, onStart, onMove, onEnd) {
     const handleTouchEnd = function(endEvent) {
       endEvent.preventDefault();
       element.dataset.interactionType = 'none';
+      element.setAttribute('data-interaction-type', 'none'); // Force attribute to be set directly
       
       onEnd({
         preventDefault: () => endEvent.preventDefault(),
@@ -220,9 +227,9 @@ function setupTouchEvents(element, onStart, onMove, onEnd) {
       document.removeEventListener('touchend', handleTouchEnd);
     };
     
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-    document.addEventListener('touchend', handleTouchEnd, { passive: false });
-  }, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
+  }, { passive: false, capture: true });
 }
 
 // Setup separate mouse events for Chrome/iOS

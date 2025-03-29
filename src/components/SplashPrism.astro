@@ -198,6 +198,47 @@
       transform: translate(-50%, -50%);
     }
   }
+
+  /* Prism container */
+  #prism-background {
+    touch-action: none !important;
+    -webkit-user-select: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+    user-select: none !important;
+    cursor: grab;
+  }
+  
+  #prism-background.cursor-grabbing {
+    cursor: grabbing;
+  }
+  
+  /* Interactivity hint */
+  .interactivity-hint {
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+  }
+  
+  /* Only show hint on devices that support hover */
+  @media (hover: hover) {
+    .prism-interactive-area:hover .interactivity-hint {
+      opacity: 0.7;
+    }
+  }
+  
+  /* Rotation arrows - subtle animation to indicate interactivity */
+  .rotation-arrows {
+    pointer-events: none;
+    opacity: 0.7;
+    animation: pulse 2s infinite ease-in-out;
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 0.5; transform: scale(0.95); }
+    50% { opacity: 0.8; transform: scale(1.05); }
+    100% { opacity: 0.5; transform: scale(0.95); }
+  }
 </style>
 
 <script>
@@ -241,6 +282,40 @@
 
     // Ensure all text elements don't block interaction
     enforcePointerEventsBehavior();
+    
+    // Chrome-specific grabbing fix
+    if (isChrome) {
+      // Force Chrome to recognize the prism as an interactive element
+      const prismBackground = document.getElementById('prism-background');
+      if (prismBackground) {
+        console.log("Applying Chrome-specific grabbing fix");
+        // Apply critical Chrome-specific styles
+        prismBackground.style.cssText = `
+          touch-action: none !important;
+          -webkit-user-select: none !important;
+          -webkit-touch-callout: none !important;
+          -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+          pointer-events: auto !important;
+          user-select: none !important;
+          cursor: grab;
+          z-index: 20;
+        `;
+        
+        // Force all parent elements to also not block events
+        let parent = prismBackground.parentElement;
+        while (parent && parent !== document.body) {
+          if (parent instanceof HTMLElement) {
+            parent.style.pointerEvents = 'auto';
+            parent.style.touchAction = 'none';
+          }
+          parent = parent.parentElement;
+        }
+        
+        // Set document-level style to prevent Chrome from handling touch events its own way
+        document.documentElement.style.touchAction = 'none';
+        document.documentElement.style.overscrollBehavior = 'none';
+      }
+    }
     
     // Setup direct interaction with the 3D prism - SKIP FOR FIREFOX
     if (!isFirefox) {
@@ -353,8 +428,13 @@
         
         console.log("Chrome mouse interaction started");
         
-        // Set the interaction type
+        // CRITICAL: Prevent default behavior to stop Chrome from doing its own handling
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Force set the interaction type
         prismBackground.dataset.interactionType = 'mouse';
+        prismBackground.setAttribute('data-interaction-type', 'mouse');
         
         // Update visual feedback
         prismBackground.classList.remove('cursor-grab');
@@ -372,8 +452,17 @@
         }
         
         const handleMouseMove = function(moveEvent) {
+          // CRITICAL: Prevent default behavior to stop Chrome's scrolling
+          moveEvent.preventDefault();
+          moveEvent.stopPropagation();
+          
           // Skip if not in a mouse interaction
-          if (prismBackground.dataset.interactionType !== 'mouse') return;
+          if (prismBackground.dataset.interactionType !== 'mouse') {
+            console.log("Mouse move ignored - wrong interaction type:", prismBackground.dataset.interactionType);
+            return;
+          }
+          
+          console.log("Processing mouse move");
           
           // Calculate delta
           const deltaX = moveEvent.clientX - previousMousePosition.x;
@@ -391,11 +480,18 @@
           previousMousePosition = { x: moveEvent.clientX, y: moveEvent.clientY };
         };
         
-        const handleMouseUp = function() {
+        const handleMouseUp = function(upEvent) {
+          // CRITICAL: Prevent default behavior
+          if (upEvent) {
+            upEvent.preventDefault();
+            upEvent.stopPropagation();
+          }
+          
           console.log("Chrome mouse interaction ended");
           
           // Reset the interaction type
           prismBackground.dataset.interactionType = 'none';
+          prismBackground.setAttribute('data-interaction-type', 'none');
           
           // Update visual feedback
           prismBackground.classList.remove('cursor-grabbing');
@@ -414,11 +510,14 @@
           // Remove handlers
           document.removeEventListener('mousemove', handleMouseMove);
           document.removeEventListener('mouseup', handleMouseUp);
+          document.removeEventListener('mouseleave', handleMouseUp);
         };
         
-        // Add document-level event listeners
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
+        // Add document-level event listeners with capture: true to ensure events are caught
+        document.addEventListener('mousemove', handleMouseMove, { capture: true });
+        document.addEventListener('mouseup', handleMouseUp, { capture: true });
+        // Also handle mouse leaving the window
+        document.addEventListener('mouseleave', handleMouseUp, { capture: true });
       };
       
       // --- TOUCH HANDLER ---
@@ -427,8 +526,11 @@
         
         console.log("Chrome touch interaction started");
         
-        // Set the interaction type
+        // Set the interaction type AND force it to the element's dataset
         prismBackground.dataset.interactionType = 'touch';
+        
+        // Force the attribute to be set directly (belt and suspenders approach)
+        prismBackground.setAttribute('data-interaction-type', 'touch');
         
         // Track interaction state
         isInteracting = true;
@@ -447,8 +549,13 @@
         const handleTouchMove = function(moveEvent) {
           moveEvent.preventDefault();
           
-          // Skip if not in a touch interaction
-          if (!isInteracting || prismBackground.dataset.interactionType !== 'touch') return;
+          // Only check isInteracting and log what's happening for debugging
+          if (!isInteracting) {
+            console.log("Touch move ignored - not interacting");
+            return;
+          }
+          
+          console.log("Touch interaction type:", prismBackground.dataset.interactionType);
           
           if (moveEvent.touches.length > 0) {
             const touch = moveEvent.touches[0];
@@ -493,14 +600,14 @@
           document.removeEventListener('touchend', handleTouchEnd);
         };
         
-        // Add document-level event listeners with passive: false
-        document.addEventListener('touchmove', handleTouchMove, { passive: false });
-        document.addEventListener('touchend', handleTouchEnd, { passive: false });
+        // Add document-level event listeners with passive: false and capture: true
+        document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+        document.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
       };
       
       // Add initial event listeners
       prismBackground.addEventListener('mousedown', handleMouseDown);
-      prismBackground.addEventListener('touchstart', handleTouchStart, { passive: false });
+      prismBackground.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
       
     } else {
       // Non-Firefox, non-Chrome browsers (Safari, Edge, etc.)
