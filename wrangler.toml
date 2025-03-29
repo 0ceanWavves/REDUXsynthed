@@ -11,5 +11,19 @@ pages_build_output_dir = "dist"
 [site.static]
 include = ["dist"]
 
+# MIME type configurations
+[[site.static.mime]]
+type = "application/javascript"
+patterns = ["**/*.js"]
+
+[[site.static.mime]]
+type = "application/javascript"
+patterns = ["**/*.module.js"]
+
+[[site.static.mime]]
+type = "text/css"
+patterns = ["**/*.css"]
+
+# Environment-specific configurations
 [env.production]
 name = "synthed-website"

@@ -101,9 +101,35 @@
 </div>
 
 <!-- Preload Three.js dependency to improve loading time -->
-<link rel="preload" href="/node_modules/three/build/three.module.js" as="script" fetchpriority="high" />
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js" as="script" fetchpriority="high" crossorigin="anonymous" />
 
 <script>
+  // TypeScript declarations to fix linter errors
+  interface Window {
+    __AMORPHOUS_PRISM_LOADING?: boolean;
+    THREE?: any;
+    __FIREFOX_WEBGL2_HELPER?: (canvas: HTMLCanvasElement) => WebGL2RenderingContext | null;
+    removeWebGLErrorMessage?: () => void;
+  }
+
+  interface WebGLRendererOptions {
+    canvas: HTMLCanvasElement;
+    antialias?: boolean;
+    alpha?: boolean;
+    preserveDrawingBuffer?: boolean;
+    powerPreference?: string;
+    context?: WebGLRenderingContext | WebGL2RenderingContext;
+  }
+
+  // Fix for THREE.js uniform value typing
+  interface UniformValue {
+    value: any;
+    [key: string]: any;
+  }
+
+  // Fix for requestAnimationFrame typing
+  let animationId: number | null = null;
+
   // Ensure we have exclusive ownership of the THREE global
   if (window.__AMORPHOUS_PRISM_LOADING) {
     console.log("AmorphousPrism already loading, skipping duplicate initialization");
@@ -125,36 +151,63 @@
       };
     }
 
-    // Use dynamic imports (unchanged)
+    // Use dynamic imports
     let THREE;
     let createNoise4D;
     let isLoading = true;
     let isMobile = window.innerWidth < 768;
 
-    // Load dependencies (unchanged)
+    // Load dependencies with multiple fallback options
     const loadDependencies = async () => {
       try {
-        console.log("Loading dependencies...");
-        // Use the dynamically imported THREE variable directly
-        const threeModule = await import('three');
-        const THREE = threeModule.default || threeModule; // Handle potential default export differences
-        const simplexNoiseModule = await import('simplex-noise');
-        const createNoise4D = simplexNoiseModule.createNoise4D; // Ensure correct import
-        console.log("Dependencies loaded successfully");
-
-        // Make THREE globally available after loading
-        window.THREE = THREE;
-        // Remove the placeholder flag
-        delete window.THREE.__isPlaceholder;
-
-        // Dispatch a custom event
-        window.dispatchEvent(new CustomEvent('threeReady', { detail: { THREE } }));
-        console.log("Dispatched threeReady event.");
-        
-        isLoading = false;
-        return { THREE, createNoise4D };
+        console.log("Loading dependencies - first attempt...");
+        // Try CDN URL first
+        try {
+          const threeModule = await import('https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js');
+          const THREE = threeModule.default || threeModule;
+          const simplexNoiseModule = await import('https://cdn.jsdelivr.net/npm/simplex-noise@4.0.1/dist/esm/simplex-noise.js');
+          const createNoise4D = simplexNoiseModule.createNoise4D;
+          console.log("Dependencies loaded from CDN successfully");
+          
+          // Make THREE globally available after loading
+          window.THREE = THREE;
+          delete window.THREE.__isPlaceholder;
+          window.dispatchEvent(new CustomEvent('threeReady', { detail: { THREE } }));
+          isLoading = false;
+          return { THREE, createNoise4D };
+        } catch (cdnError) {
+          console.warn("Failed to load from CDN, trying unpkg fallback:", cdnError);
+          
+          // Try unpkg as fallback
+          const threeModule = await import('https://unpkg.com/three@0.154.0/build/three.module.js');
+          const THREE = threeModule.default || threeModule;
+          const simplexNoiseModule = await import('https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js');
+          const createNoise4D = simplexNoiseModule.createNoise4D;
+          console.log("Dependencies loaded from unpkg fallback");
+          
+          // Make THREE globally available after loading
+          window.THREE = THREE;
+          delete window.THREE.__isPlaceholder;
+          window.dispatchEvent(new CustomEvent('threeReady', { detail: { THREE } }));
+          isLoading = false;
+          return { THREE, createNoise4D };
+        }
       } catch (error) {
         console.error("Error loading dependencies:", error);
+        
+        // Last-resort fallback - try to use any existing THREE instance
+        if (window.THREE && !window.THREE.__isPlaceholder) {
+          console.log("Using existing THREE instance as fallback");
+          const THREE = window.THREE;
+          // Create a simple noise function since we couldn't load simplex-noise
+          const createNoise4D = () => {
+            return (x, y, z, w) => Math.sin(x + y + z + w) * 0.5 + 0.5;
+          };
+          window.dispatchEvent(new CustomEvent('threeReady', { detail: { THREE } }));
+          isLoading = false;
+          return { THREE, createNoise4D };
+        }
+        
         throw error;
       }
     };
@@ -665,6 +718,9 @@
       }
   `,
             fragmentShader: `
+                // Request OES_standard_derivatives extension for fwidth (required for wireframe)
+                #extension GL_OES_standard_derivatives : enable
+
                 // Varyings received from Vertex Shader
                 varying vec3 vBarycentric;
                 varying vec3 vNormal;
@@ -678,10 +734,20 @@
                 uniform float uWireframeThickness;
                 uniform float uFaceOpacity;
 
-                 // Function to calculate edge factor using barycentric coordinates
+                // Manual implementation of fwidth in case extension is not available
+                vec3 calculateFwidth(vec3 value) {
+                    #ifdef GL_OES_standard_derivatives
+                        return fwidth(value);
+                    #else
+                        // Fallback approximation (not as accurate but works)
+                        return vec3(0.02); // Fixed width value that works reasonably well
+                    #endif
+                }
+
+                // Function to calculate edge factor using barycentric coordinates
                 float edgeFactor(float thickness){
-                    // Calculate derivatives for screen-space thickness
-                    vec3 d = fwidth(vBarycentric);
+                    // Calculate derivatives for screen-space thickness using our safe function
+                    vec3 d = calculateFwidth(vBarycentric);
                     // Calculate smoothed minimum distance to edge
                     vec3 a3 = smoothstep(vec3(0.0), d * (1.0 + thickness * 20.0), vBarycentric); // Increase multiplier for sharper edges
                     // The factor is 1.0 on edges, 0.0 in the center
@@ -740,7 +806,13 @@
             transparent: true, // MUST be true for opacity effects
             side: THREE.DoubleSide, // Render both sides for a more robust wireframe effect
             // blending: THREE.AdditiveBlending, // Could try Additive for a glowier look, but Normal is safer
-             depthWrite: false, // Often needed with transparency, especially complex shapes
+            depthWrite: false, // Often needed with transparency, especially complex shapes
+            extensions: {
+                derivatives: true, // Explicitly request OES_standard_derivatives extension
+                fragDepth: false,
+                drawBuffers: false,
+                shaderTextureLOD: false
+            }
         });
         
         // DEBUG: Print vertex shader code to verify it's correct
@@ -841,7 +913,6 @@
 
 
         // --- Animation & Morphing State (Unchanged logic) ---
-        let animationId = null;
         let currentShapeIndex = 0;
         let targetShapeIndex = 1;
         let morphProgress = 0;
