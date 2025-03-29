@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Remove Container</title>
+  <style>
+    /* Target common container class names */
+    .service-bullets,
+    .crystal-container,
+    .service-container,
+    [class*="service-container"],
+    [class*="service-bullets"],
+    [class*="crystal-container"] {
+      /* Make container fully transparent */
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      
+      /* Ensure padding/margin is preserved */
+      padding: 8px !important;
+      
+      /* Ensure the container is still displayed */
+      display: flex !important;
+      flex-direction: column !important;
+    }
+
+    /* Make sure any background elements inside the container are hidden */
+    .service-bullets::before,
+    .crystal-container::before,
+    .service-container::before,
+    [class*="service-container"]::before,
+    [class*="service-bullets"]::before,
+    [class*="crystal-container"]::before,
+    .crystal-background {
+      display: none !important;
+      opacity: 0 !important;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // Simple script to apply our styles to the parent window
+    window.addEventListener('DOMContentLoaded', function() {
+      try {
+        // Get the parent window's document if this is in an iframe
+        const parentDoc = window.parent.document;
+        
+        // Create a style element
+        const style = document.createElement('style');
+        style.textContent = document.querySelector('style').textContent;
+        
+        // Add it to the parent document's head
+        parentDoc.head.appendChild(style);
+        console.log("Applied no-container styles to parent");
+      } catch (e) {
+        console.error("Could not apply styles to parent:", e);
+      }
+    });
+  </script>
+</body>
+</html>

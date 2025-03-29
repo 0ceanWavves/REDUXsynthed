@@ -55,12 +55,12 @@
   }
 
   .title-word-design {
-    background: linear-gradient(45deg, #44eeff, #8899ff);
+    background: linear-gradient(45deg, #ffffff, #f0f0ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     text-fill-color: transparent;
-    filter: drop-shadow(0 0 8px rgba(68, 238, 255, 0.7));
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
   }
 
   .title-word-build {
@@ -125,18 +125,22 @@
     }
   }
 
-  /* Animation keyframes - More exaggerated for visibility */
+  /* More dramatic slam animation keyframes */
   @keyframes slamDown {
     0% {
       opacity: 0;
-      transform: translateY(-120px) scale(1.3);
+      transform: translateY(-160px) scale(1.5);
     }
-    70% {
+    40% {
+      opacity: 0.8;
+      transform: translateY(20px) scale(0.9);
+    }
+    60% {
       opacity: 1;
-      transform: translateY(15px) scale(0.92);
+      transform: translateY(-10px) scale(1.05);
     }
-    85% {
-      transform: translateY(-5px) scale(1.05);
+    80% {
+      transform: translateY(5px) scale(0.98);
     }
     100% {
       opacity: 1;
@@ -154,7 +158,7 @@
       transform: scale(1.5);
     }
     100% {
-      opacity: 0.5; /* Increased from 0.3 */
+      opacity: 0.5;
       transform: scale(1);
     }
   }
@@ -165,11 +169,11 @@
       opacity: 1;
     }
     10%, 30%, 50%, 70% { 
-      transform: translateY(0) translateX(-4px); /* Increased from -2px */
+      transform: translateY(0) translateX(-4px);
       opacity: 1;
     }
     20%, 40%, 60% { 
-      transform: translateY(0) translateX(4px); /* Increased from 2px */
+      transform: translateY(0) translateX(4px);
       opacity: 1;
     }
     80% { 
@@ -221,30 +225,31 @@
 </style>
 
 <script>
-  // Single source of truth for title animations
+  // Enhanced title animation with more dramatic sequential effect
   function animateTitleWords() {
-    console.log("Animating title words");
+    console.log("Animating title words with sequential slam effect");
     
     // Get all title words
     const titleWords = document.querySelectorAll('.title-word');
     
-    // Apply animations with staggered timing
+    // Apply animations with more dramatic staggered timing
     titleWords.forEach((word, index) => {
       const el = word as HTMLElement;
       
       // Ensure initial state for animation
       el.style.opacity = '0';
-      el.style.transform = 'translateY(-120px) scale(1.3)';
+      el.style.transform = 'translateY(-160px) scale(1.5)';
       
-      // Apply the slam down animation with delay
+      // Apply the slam down animation with significant sequential delay
+      // First word at 300ms, second word at 1200ms, third word at 2100ms
       setTimeout(() => {
-        // Apply animation with stronger easing
-        el.style.animation = `slamDown 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.475) forwards`;
+        // Play a more dramatic slam animation
+        el.style.animation = `slamDown 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.475) forwards`;
         
         // Add completed class to ensure visibility after animation
         setTimeout(() => {
           el.classList.add('animation-complete');
-        }, 700); // Match animation duration
+        }, 800); // Match animation duration
         
         // Apply shake animation after slam completes
         setTimeout(() => {
@@ -257,16 +262,16 @@
             el.style.transform = 'translateY(0) scale(1)';
             el.style.visibility = 'visible';
           }, 500);
-        }, 800); // Increased from 500ms
+        }, 800);
         
         // Animate shadow with more intensity
         const shadow = document.querySelector(`.title-shadow[data-index="${index}"]`) as HTMLElement;
         if (shadow) {
           setTimeout(() => {
             shadow.style.animation = `shadowExpand 0.5s ease forwards`;
-          }, 350);
+          }, 500);
         }
-      }, 300 + (index * 350)); // Increased delay between words
+      }, 300 + (index * 900)); // Much larger delay between words for dramatic effect
     });
   }
   
@@ -290,8 +295,8 @@
   }
   
   // Apply the safety measure multiple times
-  setTimeout(ensureTitleVisibility, 3000);
   setTimeout(ensureTitleVisibility, 5000);
+  setTimeout(ensureTitleVisibility, 8000);
   
   // Start animation immediately - More reliable approach for mobile
   document.addEventListener('DOMContentLoaded', () => {

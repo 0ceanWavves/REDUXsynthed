@@ -42,6 +42,16 @@ const { title, description, image } = Astro.props;
         flex-grow: 1; /* Allow main content to fill available space */
       }
     </style>
+    <!-- CSP-safe animation script should be loaded first -->
+    <script src="/csp-safe-animation.js"></script>
+    <!-- Add our custom style injector script -->
+    <script src="/inject-style.js" defer></script>
+    <!-- Add title animator script -->
+    <script src="/title-animator.js" defer></script>
+    <!-- Add service items enhancer -->
+    <script src="/service-items-enhancer.js" defer></script>
+    <!-- Add script to remove outer box from service cards -->
+    <script src="/remove-outer-box.js" defer></script>
   </head>
   <body class="h-full overflow-x-hidden text-default text-base selection:bg-secondary selection:text-white bg-[#0a0a1a]">
     <!-- Loading screen appears first -->
@@ -69,4 +79,4 @@ const { title, description, image } = Astro.props;
     <!-- It's generally better to let the specific page using the layout import its own scripts -->
 
   </body>
-</html> 
+</html>

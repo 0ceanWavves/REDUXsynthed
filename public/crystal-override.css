@@ -1,0 +1,121 @@
+/* Crystal Override Styles - Updated to remove outer box from service cards */
+
+/* Remove outer box from service containers */
+.service-bullets,
+.crystal-container,
+[class*="service-bullets"],
+[class*="crystal-container"] {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 15px 0 !important;
+}
+
+/* Remove any background elements inside the container */
+.service-bullets::before,
+.crystal-container::before,
+[class*="service-bullets"]::before,
+[class*="crystal-container"]::before,
+.service-bullets .crystal-background,
+.crystal-container .crystal-background {
+  display: none !important;
+}
+
+/* Service card styling */
+.bullet-item,
+.crystal-bullet-item,
+[class*="bullet-item"],
+.enhanced-service-card {
+  background: rgba(74, 87, 255, 0.15) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 12px !important;
+  padding: 16px !important;
+  margin: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255, 255, 255, 0.1) !important;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  cursor: pointer !important;
+}
+
+.bullet-item:hover,
+.crystal-bullet-item:hover,
+[class*="bullet-item"]:hover,
+.enhanced-service-card:hover {
+  transform: translateY(-5px) scale(1.02) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3), inset 0 1px 3px rgba(255, 255, 255, 0.2) !important;
+  background: rgba(74, 87, 255, 0.25) !important;
+}
+
+/* Title animations still active */
+.title-word:nth-child(1),
+.impact-text span:nth-child(1) {
+  animation: floatDown 0.7s ease-out 0.2s forwards, float 5s ease-in-out 3s infinite !important;
+}
+
+.title-word:nth-child(2),
+.impact-text span:nth-child(2) {
+  animation: floatDown 0.7s ease-out 1.1s forwards, float 5s ease-in-out 4s infinite !important;
+}
+
+.title-word:nth-child(3),
+.impact-text span:nth-child(3) {
+  animation: floatDown 0.7s ease-out 2s forwards, float 5s ease-in-out 5s infinite !important;
+}
+
+@keyframes floatDown {
+  0% { 
+    opacity: 0;
+    transform: translateY(-100px) scale(1.5);
+  }
+  60% { 
+    opacity: 1;
+    transform: translateY(10px) scale(0.95);
+  }
+  80% { 
+    transform: translateY(-5px) scale(1.02);
+  }
+  100% { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Ensure buttons remain styled properly */
+.btn-primary,
+.btn-secondary,
+[class*="btn-"] {
+  transform: translateY(0);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2), 0 10px 10px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover,
+[class*="btn-"]:hover {
+  transform: translateY(-5px) scale(1.03) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 15px 15px -15px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Digital Solutions text still glows */
+.text-primary, 
+p.text-primary {
+  color: cyan !important;
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.8), 0 0 30px rgba(0, 255, 255, 0.4) !important;
+  animation: neonPulse 3s infinite alternate !important;
+  font-weight: 800 !important;
+  letter-spacing: 1px !important;
+}
+
+@keyframes neonPulse {
+  0% { text-shadow: 0 0 10px rgba(0, 255, 255, 0.7), 0 0 20px rgba(0, 255, 255, 0.5); }
+  100% { text-shadow: 0 0 15px rgba(0, 255, 255, 0.9), 0 0 30px rgba(0, 255, 255, 0.7), 0 0 45px rgba(0, 255, 255, 0.5); }
+}

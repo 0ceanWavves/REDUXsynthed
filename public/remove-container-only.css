@@ -1,0 +1,34 @@
+/* Simple CSS to remove only the outer container/frame around the service cards */
+
+/* Target common container class names */
+.service-bullets,
+.crystal-container,
+.service-container,
+[class*="service-container"],
+[class*="service-bullets"],
+[class*="crystal-container"] {
+  /* Make container fully transparent */
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  
+  /* Ensure padding/margin is preserved */
+  padding: 8px !important;
+  
+  /* Ensure the container is still displayed */
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* Make sure any background elements inside the container are hidden */
+.service-bullets::before,
+.crystal-container::before,
+.service-container::before,
+[class*="service-container"]::before,
+[class*="service-bullets"]::before,
+[class*="crystal-container"]::before,
+.crystal-background {
+  display: none !important;
+  opacity: 0 !important;
+}
