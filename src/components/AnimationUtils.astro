@@ -1,0 +1,85 @@
+---
+// AnimationUtils.astro - Shared animation utilities and styles
+---
+
+<style is:global>
+  /* Base styling with browser optimizations */
+  .browser-optimized-text {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    z-index: 75;
+  }
+
+  /* Global sparkle animation */
+  @keyframes sparkleAnim {
+    0% { transform: scale(0); opacity: 0; }
+    20% { transform: scale(1.2); opacity: 1; }
+    80% { transform: scale(0.8); opacity: 0.8; }
+    100% { transform: scale(0); opacity: 0; }
+  }
+
+  /* Common fade animations */
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* Ensure text visibility */
+  .splash-content {
+    color: white !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+  
+  .splash-content p {
+    opacity: 1 !important;
+  }
+  
+  .text-primary {
+    color: #00e599 !important;
+    pointer-events: none !important;
+  }
+</style>
+
+<script>
+  // This script loads before other animation scripts to ensure global animation state
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log("AnimationUtils: Initializing global animation utilities");
+    
+    // Add global sparkle animation keyframes dynamically if needed
+    const hasSparkleAnim = document.querySelector('style[data-sparkle-anim]');
+    if (!hasSparkleAnim) {
+      const style = document.createElement('style');
+      style.setAttribute('data-sparkle-anim', 'true');
+      style.textContent = `
+        @keyframes sparkleAnim {
+          0% { transform: scale(0); opacity: 0; }
+          20% { transform: scale(1.2); opacity: 1; }
+          80% { transform: scale(0.8); opacity: 0.8; }
+          100% { transform: scale(0); opacity: 0; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  });
+</script> 

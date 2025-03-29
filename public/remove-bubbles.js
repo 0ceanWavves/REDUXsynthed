@@ -164,15 +164,17 @@ document.addEventListener('DOMContentLoaded', function() {
         mutation.addedNodes.forEach(node => {
           // Check if node is an element and has gooey-related classes
           if (node.nodeType === 1) { // Element node
-            const element = node as HTMLElement;
-            const className = element.className || '';
-            
-            if (className.includes('gooey') || 
-                className.includes('bubble') || 
-                element.id.includes('gooey')) {
-              console.log("Observer found new gooey element, removing:", element);
-              element.remove();
-              foundGooey = true;
+            const element = node;
+            if (element.className && element.id) { // Make sure these properties exist
+              const className = element.className || '';
+              
+              if (className.includes('gooey') || 
+                  className.includes('bubble') || 
+                  element.id.includes('gooey')) {
+                console.log("Observer found new gooey element, removing:", element);
+                element.remove();
+                foundGooey = true;
+              }
             }
           }
         });

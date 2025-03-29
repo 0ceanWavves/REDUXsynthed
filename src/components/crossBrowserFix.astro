@@ -2,31 +2,40 @@
 // crossBrowserFix.astro - Component for handling cross-browser touch/pointer events
 ---
 
-<!-- This component doesn't render any visible content, it only adds the touch event fixes -->
-
 <script>
-  // Import the improved touch event fix functions
-  import { applyTouchEventFixes } from './touchEventFix.js';
-  import { applyPrismTouchFix } from './AmorphousPrismFix.js';
-  
+  // Import touch event fix functions
+  import { setupowserInteraction } from './touchEventFix.js';
+
   document.addEventListener('DOMContentLoaded', () => {
     // Detect browsers
     const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
     const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
     console.log("Browser detection:", { isFirefox, isChrome, isSafari, isIOS });
+
+    console.log("Applying standard touch fixes..."); 
     
-    // Apply browser-appropriate fixes to non-prism elements
-    console.log("Applying standard touch fixes for all browsers");
-    applyTouchEventFixes();
-    
-    // Apply specialized fix to prism canvas with delay to ensure it runs after prism init
-    console.log("Setting up prism touch fix with delay");
-    setTimeout(() => {
-      applyPrismTouchFix();
-    }, 2000); // Wait 2 seconds after DOM is loaded
+    // IMPORTANT: You need to decide WHICH element this standard fix applies to.
+    // 'setupowserInteraction' needs an element and optional callbacks.
+    // Example: Applying it to the whole document body (maybe not ideal?):
+    /*
+    const bodyElement = document.body; 
+    if (bodyElement) {
+        setupowserInteraction(bodyElement, {
+            // Optional callbacks if needed for general interactions
+            onStart: () => console.log("General interaction started on body"),
+            onMove: (data) => console.log("General move on body:", data.deltaX, data.deltaY),
+            onEnd: () => console.log("General interaction ended on body")
+        });
+    } else {
+        console.error("Document body not found for standard interaction setup.");
+    }
+    */
+   
+    // NOTE: The AmorphousPrism canvas interactions are now handled directly by internal handlers in AmorphousPrism.astro
+    console.log("Interaction handling now managed by integrated handlers in AmorphousPrism.astro");
   });
 </script>

@@ -1,0 +1,144 @@
+---
+// TitleImpactEffects.astro - Visual effects for title animation impacts
+---
+
+<div class="impact-elements">
+  <div class="impact-ripple" data-index="0"></div>
+  <div class="impact-ripple" data-index="1"></div>
+  <div class="impact-ripple" data-index="2"></div>
+  <div class="impact-shake"></div>
+  <div class="impact-flash"></div>
+  <!-- Added shockwave effects -->
+  <div class="impact-shockwave" data-index="0"></div>
+  <div class="impact-shockwave" data-index="1"></div>
+  <div class="impact-shockwave" data-index="2"></div>
+</div>
+
+<style>
+  /* Impact elements for enhanced slam effect */
+  .impact-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  /* Horizontal ripple effect that expands outward when a word lands */
+  .impact-ripple {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 3px; /* Thicker for more visibility */
+    background: linear-gradient(to right, 
+      rgba(0, 255, 170, 0), 
+      rgba(0, 255, 170, 0.8), 
+      rgba(0, 255, 170, 0));
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: center;
+    box-shadow: 0 0 10px rgba(0, 255, 170, 0.6); /* Added glow */
+  }
+  
+  /* Position each ripple under its corresponding word */
+  .impact-ripple[data-index="0"] {
+    top: calc(33% + 15px);
+  }
+  
+  .impact-ripple[data-index="1"] {
+    top: calc(66% + 15px);
+  }
+  
+  .impact-ripple[data-index="2"] {
+    top: calc(100% + 15px);
+  }
+  
+  /* Full-screen shake effect element */
+  .impact-shake {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+  }
+  
+  /* Flash effect when words land */
+  .impact-flash {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, 
+      rgba(0, 255, 170, 0.15) 0%, 
+      rgba(0, 0, 0, 0) 70%);
+    opacity: 0;
+  }
+  
+  /* New shockwave effect that radiates outward from impact point */
+  .impact-shockwave {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: radial-gradient(circle, 
+      rgba(0, 255, 170, 0.3) 0%, 
+      rgba(0, 255, 170, 0.1) 50%, 
+      rgba(0, 255, 170, 0) 70%);
+    opacity: 0;
+    transform: scale(0);
+    transform-origin: center;
+    left: calc(50% - 75px); /* Center horizontally */
+  }
+  
+  /* Position each shockwave at its corresponding word */
+  .impact-shockwave[data-index="0"] {
+    top: calc(33% - 75px); /* Center vertically around first word */
+  }
+  
+  .impact-shockwave[data-index="1"] {
+    top: calc(66% - 75px); /* Center vertically around second word */
+  }
+  
+  .impact-shockwave[data-index="2"] {
+    top: calc(100% - 75px); /* Center vertically around third word */
+  }
+</style>
+
+<script>
+  // Add extra impact effects via JavaScript
+  document.addEventListener('DOMContentLoaded', () => {
+    // Listen for animation events
+    document.addEventListener('wordImpact', (e) => {
+      const detail = e.detail;
+      if (detail && detail.index !== undefined) {
+        // Animate the corresponding shockwave
+        const shockwave = document.querySelector(`.impact-shockwave[data-index="${detail.index}"]`);
+        if (shockwave) {
+          animateShockwave(shockwave);
+        }
+      }
+    });
+    
+    // Function to animate shockwave
+    function animateShockwave(element) {
+      const keyframes = [
+        { opacity: 0, transform: 'scale(0)' },
+        { opacity: 0.7, transform: 'scale(0.5)', offset: 0.3 },
+        { opacity: 0.3, transform: 'scale(1.2)', offset: 0.6 },
+        { opacity: 0, transform: 'scale(1.5)' }
+      ];
+      
+      const options = {
+        duration: 600,
+        easing: 'cubic-bezier(0.22, 0.61, 0.36, 1)',
+        fill: 'forwards'
+      };
+      
+      element.animate(keyframes, options);
+    }
+  });
+</script>

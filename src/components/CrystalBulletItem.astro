@@ -1,0 +1,203 @@
+---
+// CrystalBulletItem.astro - Reusable component for crystalline bullet items
+interface Props {
+  icon: string;
+  text: string;
+  delay: number;
+}
+
+const { icon, text, delay } = Astro.props;
+---
+
+<div class="crystal-bullet-item" data-delay={delay}>
+  <div class="crystal-icon">
+    <Fragment set:html={icon} />
+  </div>
+  <div class="crystal-text">{text}</div>
+</div>
+
+<style>
+  /* Crystal bullet items */
+  .crystal-bullet-item {
+    display: flex;
+    align-items: center;
+    margin: 0.75rem 0;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    transform: translateY(20px);
+    opacity: 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .crystal-bullet-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(0) scale(1.02) !important;
+    box-shadow: 0 4px 15px rgba(74, 87, 255, 0.2);
+  }
+
+  /* Animation for each bullet item */
+  .crystal-bullet-item[data-delay="0"] {
+    animation: crystalFadeIn 0.6s ease-out 3.2s forwards;
+  }
+  .crystal-bullet-item[data-delay="1"] {
+    animation: crystalFadeIn 0.6s ease-out 3.4s forwards;
+  }
+  .crystal-bullet-item[data-delay="2"] {
+    animation: crystalFadeIn 0.6s ease-out 3.6s forwards;
+  }
+  .crystal-bullet-item[data-delay="3"] {
+    animation: crystalFadeIn 0.6s ease-out 3.8s forwards;
+  }
+
+  @keyframes crystalFadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Crystal icon styling */
+  .crystal-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, rgba(74, 87, 255, 0.2), rgba(0, 229, 153, 0.2));
+    border-radius: 50%;
+    margin-right: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .crystal-icon::before {
+    content: '';
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+    top: -25%;
+    left: -25%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .crystal-bullet-item:hover .crystal-icon::before {
+    opacity: 0.3;
+    animation: iconGlint 1.5s ease-out;
+  }
+
+  @keyframes iconGlint {
+    0% {
+      transform: rotate(-45deg) translateX(-100%);
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.3;
+    }
+    100% {
+      transform: rotate(-45deg) translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  .crystal-icon :global(.icon-glow) {
+    width: 1.25rem;
+    height: 1.25rem;
+    stroke: white;
+    filter: drop-shadow(0 0 3px #4a57ff);
+    transition: filter 0.3s ease, transform 0.3s ease;
+  }
+
+  .crystal-bullet-item:hover :global(.icon-glow) {
+    filter: drop-shadow(0 0 5px #00e599);
+    transform: scale(1.1);
+  }
+
+  /* Crystal text styling */
+  .crystal-text {
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    transition: text-shadow 0.3s ease;
+  }
+
+  .crystal-bullet-item:hover .crystal-text {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    .crystal-bullet-item {
+      padding: 0.4rem 0.75rem;
+    }
+    
+    .crystal-icon {
+      width: 2rem;
+      height: 2rem;
+      margin-right: 0.75rem;
+    }
+    
+    .crystal-text {
+      font-size: 0.85rem;
+    }
+  }
+</style>
+
+<script>
+  // Script to handle sparkle effect for this specific bullet item
+  document.addEventListener('DOMContentLoaded', () => {
+    // Function to create sparkle
+    function createSparkle(element) {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'sparkle';
+      
+      // Random position within the element
+      const posX = Math.random() * 100;
+      const posY = Math.random() * 100;
+      
+      // Apply styles
+      sparkle.style.cssText = `
+        position: absolute;
+        top: ${posY}%;
+        left: ${posX}%;
+        width: 4px;
+        height: 4px;
+        background: white;
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        z-index: 2;
+        animation: sparkleAnim 1.5s ease-in-out forwards;
+      `;
+      
+      // Add to element
+      element.appendChild(sparkle);
+      
+      // Remove after animation
+      setTimeout(() => {
+        sparkle.remove();
+      }, 1500);
+    }
+    
+    // Add sparkle effect on hover for this item
+    const item = document.currentScript?.parentElement;
+    if (item) {
+      item.addEventListener('mouseenter', () => {
+        // Create multiple sparkles
+        for (let i = 0; i < 5; i++) {
+          setTimeout(() => {
+            createSparkle(item);
+          }, i * 100);
+        }
+      });
+    }
+  });
+</script> 

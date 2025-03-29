@@ -2,8 +2,8 @@
 // SplashActionButtons.astro - Component for action buttons
 ---
 
-<div class="buttons-container fixed bottom-20 left-0 right-0 mx-auto z-30 w-full max-w-md flex justify-center gap-3 content-item" style="opacity: 1; transform: none;">
-  <!-- Only one set of buttons -->
+<div class="buttons-container fixed bottom-5 left-0 right-0 mx-auto z-30 w-full max-w-screen-lg flex justify-between px-4 md:px-16 content-item" style="opacity: 1; transform: none;">
+  <!-- Moved buttons apart to match the red arrows -->
   <a href="#features" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto shadow-lg btn-primary">
     <!-- SVG Code Tags -->
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -26,12 +26,16 @@
     transform: translateY(0) !important;
     transition: transform 0.5s ease;
     opacity: 1 !important;
+    /* Positioned much lower to match red arrows, adjusted downwards by 2 inches */
+    bottom: calc(10vh - 2in); 
   }
   
   .buttons-container a {
     backdrop-filter: blur(5px);
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    min-width: 160px; /* Ensure buttons have a decent size */
+    justify-content: center;
   }
   
   /* Hide buttons when scrolling down */
@@ -43,8 +47,15 @@
   @media (max-width: 768px) {
     /* Adjust buttons for mobile */
     .buttons-container {
-      bottom: 12vh; /* Position buttons lower on mobile to match the main view adjustment */
-      padding: 0 1rem;
+      /* Position buttons lower on mobile, adjusted downwards by 2 inches */
+      bottom: calc(8vh - 2in); 
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .buttons-container a {
+      width: 80%;
     }
   }
 

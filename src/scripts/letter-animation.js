@@ -43,6 +43,43 @@ document.addEventListener('DOMContentLoaded', () => {
               letter.style.transform = 'translateY(0) scale(1)';
             }, 100);
           }, 200);
+          
+          // Add flash of light effect
+          const flash = document.createElement('div');
+          flash.className = 'letter-flash';
+          flash.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0) 80%);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 2;
+          `;
+          
+          letter.style.position = 'relative';
+          letter.appendChild(flash);
+          
+          // Animate flash
+          flash.animate(
+            [
+              { opacity: 0 },
+              { opacity: 0.8 },
+              { opacity: 0 }
+            ],
+            {
+              duration: 400,
+              easing: 'ease-out'
+            }
+          );
+          
+          // Remove flash after animation
+          setTimeout(() => {
+            flash.remove();
+          }, 400);
+          
         }, index * 150); // 150ms delay between each letter
       });
     }, 300); // Delay before starting the animation

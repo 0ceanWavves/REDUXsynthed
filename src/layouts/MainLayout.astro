@@ -31,11 +31,39 @@ const { title, description, image } = Astro.props;
   <head>
     <CommonHead title={title} description={description} image={image} />
     
+    <!-- Force hardware acceleration and WebGL support -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="force-rendering" content="webkit|ie-comp|ie-stand">
+    
+    <!-- Firefox-specific WebGL fix - must load before other scripts -->
+    <script is:inline src="/firefox-webgl-fix.js"></script>
+    
+    <!-- WebGL test script - runs before any 3D content -->
+    <script is:inline src="/webgl-test.js"></script>
+    
+    <!-- Clean up WebGL error messages if fallback works -->
+    <script is:inline src="/clean-webgl-errors.js"></script>
+    
     <!-- Fix for Content Security Policy issues -->
     <CSPFix />
     
-    <!-- Include layout-specific CSS overrides or additions if needed -->
+    <!-- Force hardware acceleration -->
     <style>
+      html, body, canvas {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000;
+        -webkit-font-smoothing: antialiased;
+      }
+      
+      /* Force GPU rendering for Firefox */
+      @-moz-document url-prefix() {
+        canvas, .force-gpu {
+          transform: translate3d(0, 0, 0);
+          will-change: transform;
+        }
+      }
+      
       /* Styles specific to the MainLayout structure itself */
       body {
         /* Ensure body takes full height */

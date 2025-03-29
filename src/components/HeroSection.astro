@@ -8,9 +8,13 @@ import InteractionHint from "./InteractionHint.astro";
 <!-- HeroSection.astro - Encapsulates the entire hero section of the homepage -->
 <section class="hero-section">
   <div class="relative min-h-screen">
+    <!-- Add SplashPrism disabler script -->
+    <script is:inline src="/disable-splash-prism.js"></script>
+    
     <!-- Amorphous prism container with gooey effect applied -->
     <div id="hero-prism-container" class="absolute top-0 left-0 w-full h-screen pointer-events-auto gooey-container" 
-         style="z-index: 6; transform: translateZ(0); will-change: transform; cursor: grab; touch-action: none;">
+         style="z-index: 35; transform: translateZ(0); will-change: transform; cursor: grab; touch-action: none;" 
+         data-priority="high" data-interactive="true">
       <AmorphousPrism />
     </div>
     
@@ -24,34 +28,6 @@ import InteractionHint from "./InteractionHint.astro";
     
     <!-- Add cross-browser fix component -->
     <CrossBrowserFix />
-    
-    <!-- Modified to load the script safely with deferred execution and THREE check -->
-    <script>
-      // Wait for THREE to be available before loading the rotation fix script
-      document.addEventListener('DOMContentLoaded', function() {
-        // Create a function to check if THREE is ready
-        const checkThreeLoaded = function() {
-          // Fix TypeScript errors with proper type checking
-          const globalWindow = window as any; // Use type assertion for global objects
-          if (globalWindow.THREE || 
-              (typeof globalWindow.prismaticScene !== 'undefined' && globalWindow.prismaticScene.THREE)) {
-            // THREE is loaded, now we can load the rotation fix script
-            const script = document.createElement('script');
-            script.src = '/direct-rotation-fix.js';
-            script.async = true;
-            document.body.appendChild(script);
-            console.log('THREE detected, loading rotation fix script');
-          } else {
-            // THREE not loaded yet, check again in a moment
-            console.log('Waiting for THREE to be available before loading rotation fix...');
-            setTimeout(checkThreeLoaded, 500);
-          }
-        };
-        
-        // Start checking for THREE
-        setTimeout(checkThreeLoaded, 1000);
-      });
-    </script>
   </div>
 </section>
 
@@ -76,9 +52,9 @@ import InteractionHint from "./InteractionHint.astro";
     perspective: 1000px;
     transform-style: preserve-3d;
     will-change: transform;
-    z-index: 6 !important;
+    z-index: 35 !important; /* Increased from 6 to match direct-rotation-fix.js */
     pointer-events: auto !important;
-    touch-action: auto !important; /* Changed from none to auto for Chrome compatibility */
+    touch-action: none !important; /* Critical: ensure consistent with canvas */
   }
   
   /* Apply gooey effect to the container */
@@ -184,5 +160,30 @@ import InteractionHint from "./InteractionHint.astro";
         });
       }, 100);
     }
+    
+    // Listen for fallback canvas creation and ensure it has proper styling
+    window.addEventListener('fallbackCanvasCreated', (event) => {
+      console.log('Fallback canvas created event received:', (event as CustomEvent).detail);
+      
+      // Find the fallback canvas
+      const fallbackCanvas = document.getElementById((event as CustomEvent).detail.canvasId);
+      if (fallbackCanvas) {
+        console.log('Ensuring fallback canvas has proper styling for HeroSection');
+        
+        // Apply critical styles
+        fallbackCanvas.style.zIndex = '50'; // Ensure high z-index
+        fallbackCanvas.style.pointerEvents = 'auto';
+        fallbackCanvas.style.touchAction = 'none';
+        fallbackCanvas.style.cursor = 'grab';
+        fallbackCanvas.style.opacity = '1';
+        
+        // Ensure the container has proper z-index as well
+        if (prismContainer) {
+          prismContainer.style.zIndex = '35'; // Match the original z-index
+        }
+        
+        console.log('Fallback canvas styling applied successfully');
+      }
+    });
   });
 </script>

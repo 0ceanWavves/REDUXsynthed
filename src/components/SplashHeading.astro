@@ -1,0 +1,202 @@
+---
+// SplashHeading.astro - Component for the heading section with transforming text effect
+---
+
+<div class="splash-heading">
+  <p class="mb-1 content-item fade-in-item transforming-text" style="opacity: 0; transform: translateY(10px);">Transforming ideas into</p>
+  
+  <!-- Digital Solutions heading with enhanced glow effect -->
+  <p class="text-primary text-2xl md:text-3xl font-bold mb-4 md:mb-5 content-item pointer-events-none digital-solutions-text glow-pulse" style="opacity: 0; transform: translateY(10px);">Digital Solutions</p>
+</div>
+
+<style>
+  /* Enhanced Digital Solutions text styling */
+  .digital-solutions-text {
+    background: linear-gradient(90deg, #00e599, #4aefd5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    text-shadow: 0 0 15px rgba(0, 229, 153, 0.7);
+  }
+  
+  /* Letter-specific animations */
+  .digital-letter {
+    display: inline-block;
+    background: inherit;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    text-shadow: 0 0 15px rgba(0, 229, 153, 0.7);
+  }
+  
+  /* Transforming text with static electricity effect */
+  .transforming-text {
+    position: relative;
+    display: inline-block;
+    color: #fff;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+  }
+  
+  .transforming-text::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0) 80%, rgba(255, 255, 255, 0.2) 100%);
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0;
+    animation: staticPulse 4s ease-in-out infinite;
+  }
+  
+  /* Static electricity animation */
+  @keyframes staticPulse {
+    0%, 100% {
+      opacity: 0;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+  }
+  
+  /* Spark animation for Transforming text */
+  @keyframes sparkFlash {
+    0%, 100% {
+      opacity: 0;
+    }
+    5%, 10% {
+      opacity: 1;
+    }
+  }
+  
+  /* Apply the glow pulse to the whole element */
+  .glow-pulse {
+    animation: glowPulse 4s ease-in-out infinite 3.5s;
+  }
+
+  /* Glow pulse animation for Digital Solutions text */
+  @keyframes glowPulse {
+    0%, 100% {
+      filter: drop-shadow(0 0 5px rgba(0, 229, 153, 0.4))
+              drop-shadow(0 0 15px rgba(0, 229, 153, 0.2));
+    }
+    50% {
+      filter: drop-shadow(0 0 10px rgba(0, 229, 153, 0.7))
+              drop-shadow(0 0 25px rgba(0, 229, 153, 0.4));
+    }
+  }
+
+  /* Standard fade in item animation */
+  .fade-in-item {
+    animation: fadeInUp 0.8s ease-out 2.5s both;
+  }
+  
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    .digital-solutions-text {
+      font-size: 1.75rem;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Add static electricity effect to the "Transforming" text
+    const transformingText = document.querySelector('.transforming-text');
+    if (transformingText) {
+      // Create sparks for the static electricity effect
+      for (let i = 0; i < 10; i++) {
+        createStaticSpark(transformingText);
+      }
+      
+      // Set interval to continuously create new sparks
+      setInterval(() => {
+        createStaticSpark(transformingText);
+      }, 500);
+    }
+    
+    // Function to create static electricity sparks
+    function createStaticSpark(element) {
+      const spark = document.createElement('div');
+      spark.className = 'static-spark';
+      
+      // Random position around the text
+      const posX = Math.random() * 120 - 10; // Some sparks outside the text
+      const posY = Math.random() * 120 - 10;
+      
+      // Apply styles
+      spark.style.cssText = `
+        position: absolute;
+        top: ${posY}%;
+        left: ${posX}%;
+        width: 2px;
+        height: 2px;
+        background: white;
+        box-shadow: 0 0 4px white, 0 0 8px #a9f4fb;
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        z-index: 2;
+      `;
+      
+      // Set random rotation and length for lightning-like effect
+      const rotation = Math.random() * 360;
+      const length = Math.random() * 10 + 5;
+      
+      // Add lightning shape for some sparks
+      if (Math.random() > 0.7) {
+        spark.style.width = `${length}px`;
+        spark.style.height = '1px';
+        spark.style.transform = `rotate(${rotation}deg)`;
+      }
+      
+      // Add to element
+      element.appendChild(spark);
+      
+      // Animate the spark
+      spark.animate(
+        [
+          { opacity: 0, transform: `scale(0.5) rotate(${rotation}deg)` },
+          { opacity: 1, transform: `scale(1.2) rotate(${rotation}deg)` },
+          { opacity: 0, transform: `scale(0.8) rotate(${rotation}deg)` }
+        ],
+        {
+          duration: 200 + Math.random() * 300,
+          easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+          fill: 'forwards'
+        }
+      );
+      
+      // Remove after animation
+      setTimeout(() => {
+        spark.remove();
+      }, 500);
+    }
+    
+    // Force first paragraph to be visible after a delay
+    setTimeout(() => {
+      const firstParagraph = document.querySelector('.content-item.fade-in-item');
+      if (firstParagraph instanceof HTMLElement) {
+        firstParagraph.style.opacity = '1';
+        firstParagraph.style.transform = 'translateY(0)';
+      }
+    }, 4000);
+  });
+</script> 

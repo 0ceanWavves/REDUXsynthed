@@ -1,90 +1,285 @@
 ---
-// src/components/MorphingPolyhedron.astro - Morphing low-poly shapes with original colors
+// src/components/MorphingPolyhedron.astro - Morphing intricate geometry visualization
 ---
 
-<canvas id="morphing-poly-canvas" class="absolute top-0 left-0 w-full h-full" style="pointer-events: auto !important; z-index: 5; touch-action: none; cursor: grab;"></canvas>
+<!-- Force-enable WebGL and add proper content type -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-<!-- Loading indicator -->
+<!-- Hardware acceleration hints -->
+<style>
+  /* Force hardware acceleration */
+  html, body {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
+    -webkit-font-smoothing: antialiased;
+  }
+</style>
+
+<!-- Canvas with WebGL-optimized attributes -->
+<canvas id="morphing-poly-canvas" class="absolute top-0 left-0 w-full h-full morphing-poly-canvas" 
+  width="800" height="600"
+  style="pointer-events: auto !important; z-index: 50; touch-action: none; cursor: grab; opacity: 1; backface-visibility: hidden; transform: translateZ(0); will-change: transform; background: rgba(5,3,10,0.2);" 
+  data-interactive="true" data-priority="highest"></canvas>
+
+<!-- Force element to remain visible -->
+<style>
+  /* Target both original and fallback canvas IDs */
+  #morphing-poly-canvas,
+  #morphing-poly-canvas-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    opacity: 1;
+    touch-action: none;
+    cursor: grab;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+    will-change: transform;
+    background: rgba(5,3,10,0.2);
+    image-rendering: crisp-edges;
+    pointer-events: auto !important;
+  }
+
+  .morphing-poly-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    opacity: 1;
+    image-rendering: crisp-edges;
+  }
+
+  @-moz-document url-prefix() {
+    #morphing-poly-canvas,
+    #morphing-poly-canvas-fallback,
+    .morphing-poly-canvas {
+      image-rendering: -moz-crisp-edges;
+      will-change: transform;
+    }
+  }
+
+  /* Canvas container for WebGL */
+  .sacred-geometry-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 25;
+  }
+
+  .loading-indicator {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0a0a1a;
+    z-index: 10;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<!-- Firefox WebGL fallback container -->
+<div id="firefox-webgl-container" class="absolute top-0 left-0 w-full h-full" style="z-index: 999;"></div>
+
+<!-- Loading indicator (unchanged) -->
 <div id="morphing-poly-loading" class="absolute inset-0 flex items-center justify-center bg-[#0a0a1a] z-10" style="display: block; position: fixed; width: 100%; height: 100%;">
   <div class="flex flex-col items-center">
-    <div class="w-16 h-16 border-4 border-t-purple-500 border-r-transparent border-b-teal-400 border-l-transparent rounded-full animate-spin"></div>
-    <p class="mt-6 text-white/80 text-base">Loading 3D visualization...</p>
+    <div class="w-16 h-16 border-4 border-t-[#ff00ff] border-r-transparent border-b-[#00ffff] border-l-transparent rounded-full animate-spin"></div>
+    <p class="mt-6 text-white/80 text-base">Conjuring geometric realms...</p>
   </div>
 </div>
 
-<!-- Add SVG filter for gooey effect (optional, kept from original) -->
-<svg width="0" height="0" style="position: absolute; z-index: -1;">
-  <defs>
-    <filter id="gooey-effect">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur" />
-      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
-      <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
-    </filter>
-  </defs>
-</svg>
+<!-- Preload Three.js dependency to improve loading time -->
+<link rel="preload" href="/node_modules/three/build/three.module.js" as="script" fetchpriority="high" />
 
 <script>
-  // Use dynamic imports
-  let THREE;
-  let createNoise4D; // Keep for potential wobble or particle effects
-  let isLoading = true;
-  let isMobile = window.innerWidth < 768;
-
-  // Load dependencies
-  const loadDependencies = async () => {
-    try {
-      console.log("Loading dependencies...");
-      [THREE, { createNoise4D }] = await Promise.all([
-        import('three'),
-        import('simplex-noise')
-      ]);
-      console.log("Dependencies loaded successfully");
-      isLoading = false;
-      return { THREE, createNoise4D };
-    } catch (error) {
-      console.error("Error loading dependencies:", error);
-      throw error;
-    }
-  };
-
-  // Create particle texture function (from original script)
-  function createCircleTexture(THREE, size = 128) {
-      const canvas = document.createElement('canvas');
-      canvas.width = size; canvas.height = size;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return new THREE.Texture(); // Return blank if no context
-
-      ctx.clearRect(0, 0, size, size);
-      const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
-      gradient.addColorStop(0, 'rgba(255,255,255,1)');
-      gradient.addColorStop(0.5, 'rgba(255,255,255,0.5)');
-      gradient.addColorStop(1, 'rgba(255,255,255,0)');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, size, size);
-
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.generateMipmaps = false;
-      texture.minFilter = THREE.LinearFilter;
-      texture.magFilter = THREE.LinearFilter;
-      texture.format = THREE.RGBAFormat;
-      texture.needsUpdate = true;
-      return texture;
-  }
-
-
-  document.addEventListener('DOMContentLoaded', () => {
-    console.log("Morphing Polyhedron initialization started");
-
-    const loadingIndicator = document.getElementById('morphing-poly-loading');
-    const canvas = document.getElementById('morphing-poly-canvas') as HTMLCanvasElement | null;
-
-    if (!canvas) {
-        console.error("Canvas element #morphing-poly-canvas not found!");
-        if(loadingIndicator) loadingIndicator.style.display = 'none';
-        return;
+  // Ensure we have exclusive ownership of the THREE global
+  if (window.__AMORPHOUS_PRISM_LOADING) {
+    console.log("AmorphousPrism already loading, skipping duplicate initialization");
+  } else {
+    // Mark as loading to prevent duplicate initialization
+    window.__AMORPHOUS_PRISM_LOADING = true;
+    
+    // Create a temporary THREE placeholder to prevent "THREE is not defined" errors
+    // This will be replaced with the actual THREE library when loaded
+    if (!window.THREE) {
+      console.log("Setting up THREE placeholder until library loads");
+      window.THREE = {
+        // Provide minimal stubs for commonly used properties/methods
+        Vector3: function() { return {x: 0, y: 0, z: 0}; },
+        Color: function() { return {r: 0, g: 0, b: 0}; },
+        Texture: function() { return {}; },
+        // Add a flag to identify this as a placeholder
+        __isPlaceholder: true
+      };
     }
 
-    setTimeout(async () => {
+    // Use dynamic imports (unchanged)
+    let THREE;
+    let createNoise4D;
+    let isLoading = true;
+    let isMobile = window.innerWidth < 768;
+
+    // Load dependencies (unchanged)
+    const loadDependencies = async () => {
+      try {
+        console.log("Loading dependencies...");
+        // Use the dynamically imported THREE variable directly
+        const threeModule = await import('three');
+        const THREE = threeModule.default || threeModule; // Handle potential default export differences
+        const simplexNoiseModule = await import('simplex-noise');
+        const createNoise4D = simplexNoiseModule.createNoise4D; // Ensure correct import
+        console.log("Dependencies loaded successfully");
+
+        // Make THREE globally available after loading
+        window.THREE = THREE;
+        // Remove the placeholder flag
+        delete window.THREE.__isPlaceholder;
+
+        // Dispatch a custom event
+        window.dispatchEvent(new CustomEvent('threeReady', { detail: { THREE } }));
+        console.log("Dispatched threeReady event.");
+        
+        isLoading = false;
+        return { THREE, createNoise4D };
+      } catch (error) {
+        console.error("Error loading dependencies:", error);
+        throw error;
+      }
+    };
+
+    // Create particle texture function (unchanged)
+    function createCircleTexture(THREE, size = 128) {
+        // ... (keep the exact same function as before)
+        const canvas = document.createElement('canvas');
+        canvas.width = size; canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return new THREE.Texture(); // Return blank if no context
+
+        ctx.clearRect(0, 0, size, size);
+        const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+        gradient.addColorStop(0, 'rgba(255,255,255,1)');
+        gradient.addColorStop(0.5, 'rgba(255,255,255,0.5)');
+        gradient.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, size, size);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.generateMipmaps = false;
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        texture.format = THREE.RGBAFormat;
+        texture.needsUpdate = true;
+        return texture;
+    }
+
+    // Function to add barycentric coordinates to geometry
+    function addBarycentricCoordinates(geometry, THREE) {
+        const count = geometry.attributes.position.count;
+        const barycentric = new Float32Array(count * 3);
+
+        for (let i = 0; i < count; i++) {
+            const i3 = i * 3;
+            const indexInTriangle = i % 3; // 0, 1, or 2
+
+            if (indexInTriangle === 0) { // First vertex of triangle
+                barycentric[i3 + 0] = 1.0;
+                barycentric[i3 + 1] = 0.0;
+                barycentric[i3 + 2] = 0.0;
+            } else if (indexInTriangle === 1) { // Second vertex
+                barycentric[i3 + 0] = 0.0;
+                barycentric[i3 + 1] = 1.0;
+                barycentric[i3 + 2] = 0.0;
+            } else { // Third vertex
+                barycentric[i3 + 0] = 0.0;
+                barycentric[i3 + 1] = 0.0;
+                barycentric[i3 + 2] = 1.0;
+            }
+        }
+        geometry.setAttribute('a_barycentric', new THREE.BufferAttribute(barycentric, 3));
+        console.log("Barycentric coordinates added to base geometry.");
+    }
+
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      console.log("Morphing Sacred Geometry initialization started");
+
+      const loadingIndicator = document.getElementById('morphing-poly-loading');
+      const canvas = document.getElementById('morphing-poly-canvas');
+
+      if (!canvas) {
+          console.error("Canvas element #morphing-poly-canvas not found!");
+          if(loadingIndicator) loadingIndicator.style.display = 'none';
+          return;
+      }
+
+      // Add WebGL debugging
+      try {
+        // Test WebGL availability
+        const testContext = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!testContext) {
+          console.error("🚨 WebGL NOT SUPPORTED in this browser!");
+          const msg = document.createElement('div');
+          msg.style.position = 'fixed';
+          msg.style.top = '50%';
+          msg.style.left = '50%';
+          msg.style.transform = 'translate(-50%, -50%)';
+          msg.style.backgroundColor = 'rgba(0,0,0,0.8)';
+          msg.style.color = 'red';
+          msg.style.padding = '20px';
+          msg.style.borderRadius = '5px';
+          msg.style.zIndex = '9999';
+          msg.innerText = 'WebGL not supported in your browser. Please try Chrome or Firefox.';
+          document.body.appendChild(msg);
+        } else {
+          console.log("✅ WebGL is supported in this browser");
+          
+          // Check for WebGL extensions
+          const extensions = {
+            standard: [
+              'ANGLE_instanced_arrays',
+              'EXT_blend_minmax',
+              'OES_element_index_uint',
+              'OES_standard_derivatives',
+              'OES_texture_float',
+              'WEBGL_debug_renderer_info'
+            ],
+            extra: [
+              'OES_texture_float_linear',
+              'OES_texture_half_float',
+              'WEBGL_depth_texture'
+            ]
+          };
+          
+          console.log("📊 WebGL Info:", {
+            renderer: testContext.getParameter(testContext.getExtension('WEBGL_debug_renderer_info')?.UNMASKED_RENDERER_WEBGL || 0) || 'Unknown',
+            vendor: testContext.getParameter(testContext.getExtension('WEBGL_debug_renderer_info')?.UNMASKED_VENDOR_WEBGL || 0) || 'Unknown',
+            standardExtensions: extensions.standard.map(ext => ({
+              name: ext,
+              supported: !!testContext.getExtension(ext)
+            })),
+            extraExtensions: extensions.extra.map(ext => ({
+              name: ext,
+              supported: !!testContext.getExtension(ext)
+            }))
+          });
+        }
+      } catch (e) {
+        console.error("🚨 Error checking WebGL support:", e);
+      }
+
+      // Hide loading indicator sooner (optional, but might feel faster)
       if (loadingIndicator) {
         loadingIndicator.style.display = 'none';
         console.log("Loading indicator hidden.");
@@ -92,486 +287,855 @@
 
       try {
         console.log("Starting dependency load...");
+        // Directly await the dependency loading here
         const { THREE, createNoise4D } = await loadDependencies();
         console.log("Dependencies finished loading.");
 
-        setTimeout(() => {
-          console.log("Yielded main thread, starting THREE.js setup...");
+        // After THREE is loaded (line 52)
+        console.log("THREE.js version:", THREE.REVISION);
 
-          // --- Configuration ---
-           const colors = {
-              background: new THREE.Color("#0a0a1a"), // Dark blue/purple background
-              accent1: new THREE.Color("#8162ff"),    // Vibrant purple (main shape)
-              accent2: new THREE.Color("#00e599"),    // Teal (secondary light/particles)
-              accent3: new THREE.Color("#ffffff"),    // White for highlights
-              edgeColor: new THREE.Color("#e0e0ff"),  // Light blueish white for edges
-              particleColor1: new THREE.Color("#7142ff"), // Darker purple for particles
-              particleColor2: new THREE.Color("#00c489")  // Darker teal for particles
+        // Check if WebGL is available before trying to create a renderer
+        function isWebGLAvailable() {
+          try {
+            const canvas = document.createElement('canvas');
+            return !!(window.WebGLRenderingContext && 
+              (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+          } catch(e) {
+            return false;
+          }
+        }
+
+        // --- Now THREE is guaranteed to be available for the rest of the setup ---
+        console.log("Starting THREE.js setup...");
+        console.log("WebGL Support Check:", isWebGLAvailable() ? "WebGL IS SUPPORTED" : "!!! WebGL NOT SUPPORTED !!!");
+
+        // --- Configuration ---
+         const colors = {
+            background: new THREE.Color("#05030d"), // Even darker background
+            shape1: new THREE.Color("#ff00ff"),     // Magenta / Fuchsia
+            shape2: new THREE.Color("#00ffff"),     // Cyan / Aqua
+            wireframe: new THREE.Color("#ffffff"),  // Bright white wireframe
+            particle1: new THREE.Color("#cc00ff"),  // Vivid purple particle
+            particle2: new THREE.Color("#00ccff")   // Vivid blue particle
+        };
+
+        const morphInterval = 3000; // 3 seconds per morph
+        const holdDuration = 1000; // Hold shape for 1 second
+        const autoRotateSpeed = 0.0015; // Slightly faster auto-rotate
+        const userRotationSpeed = isMobile ? 0.007 : 0.005;
+        const dampingFactor = 0.94; // Slightly less damping
+        const minVelocityThreshold = 0.00005;
+        // const noise4D = createNoise4D(); // Keep if using noise in shader
+
+        // --- Core THREE.js Setup ---
+        const scene = new THREE.Scene();
+        scene.background = colors.background;
+        const clock = new THREE.Clock(); // Use clock for shader time
+
+        const fov = isMobile ? 60 : 55;
+        const camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.z = isMobile ? 4.8 : 4.2;
+
+        // Use let instead of const so we can reassign if needed for fallback
+        let canvas = document.getElementById('morphing-poly-canvas');
+
+        if (!canvas) {
+            console.error("Canvas element #morphing-poly-canvas not found!");
+            if(loadingIndicator) loadingIndicator.style.display = 'none';
+            return;
+        }
+
+        // Try to create the renderer with various fallback options
+        let renderer;
+        const isFirefox = navigator.userAgent.indexOf('Firefox') !== -1;
+        
+        try {
+          // First attempt - standard settings
+          console.log('Creating WebGLRenderer - first attempt');
+          
+          // Use Firefox helper for WebGL2 if available (from firefox-webgl-fix.js)
+          let rendererOptions = {
+            canvas: canvas,
+            antialias: !isFirefox, // Disable antialiasing in Firefox
+            alpha: true,
+            preserveDrawingBuffer: isFirefox, // Needed for Firefox
+            powerPreference: 'high-performance'
           };
-
-          const morphInterval = 3000; // 3 seconds per morph
-          const holdDuration = 1000; // Hold shape for 1 second before next morph
-          const edgeThresholdAngle = 5; // Adjust for desired edge visibility on low-poly shapes
-          const edgeLineWidth = 1.5;
-          const glowScaleFactor = 1.12;
-          const glowOpacity = 0.20;
-          const autoRotateSpeed = 0.001; // Slower auto-rotate
-          const userRotationSpeed = isMobile ? 0.007 : 0.005;
-          const dampingFactor = 0.95;
-          const minVelocityThreshold = 0.00005;
-          const noise4D = createNoise4D(); // Noise function instance
-
-          console.log("Starting THREE.js setup...");
-
-          // --- Core THREE.js Setup ---
-          const scene = new THREE.Scene();
-          scene.background = colors.background;
-
-          const fov = isMobile ? 60 : 55;
-          const camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 0.1, 100);
-          camera.position.z = isMobile ? 4.8 : 4.2;
-
-          const renderer = new THREE.WebGLRenderer({
+          
+          // For Firefox, try to use the helper function if available
+          if (isFirefox && window.__FIREFOX_WEBGL2_HELPER) {
+            console.log('Using Firefox WebGL2 helper');
+            const webgl2Context = window.__FIREFOX_WEBGL2_HELPER(canvas);
+            if (webgl2Context) {
+              rendererOptions.context = webgl2Context;
+              console.log('Firefox WebGL2 context created successfully');
+            }
+          }
+          
+          renderer = new THREE.WebGLRenderer(rendererOptions);
+        } catch (err) {
+          console.warn('Initial WebGLRenderer creation failed:', err);
+          
+          try {
+            // Second attempt - minimal settings
+            console.log('Creating WebGLRenderer - second attempt with minimal settings');
+            renderer = new THREE.WebGLRenderer({
               canvas: canvas,
-              antialias: !isMobile,
+              antialias: false,
               alpha: true,
-              powerPreference: 'high-performance'
-          });
-          renderer.setSize(window.innerWidth, window.innerHeight);
-          renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
-          renderer.setClearColor(0x000000, 0);
-
-          // --- Geometry Setup for Morphing ---
-          // 1. Define the target shapes (Progressively sided low-poly)
-          const targetGeometries = [
-              // Approx 6 "sides" using low-seg sphere
-              new THREE.SphereGeometry(1.2, 6, 4),     // Target 0
-              // Octahedron (8 triangular faces)
-              new THREE.OctahedronGeometry(1.3, 0),    // Target 1
-              // Dodecahedron (12 pentagonal faces)
-              new THREE.DodecahedronGeometry(1.4, 0),  // Target 2
-              // Smoother low-poly sphere (~10-12+ sides)
-              new THREE.SphereGeometry(1.35, 10, 8),   // Target 3
-              // Icosahedron (20 triangular faces) - more detailed low-poly
-              new THREE.IcosahedronGeometry(1.3, 1)    // Target 4
-          ];
-          const shapeNames = ["HexSphere", "Octahedron", "Dodecahedron", "DecaSphere", "Icosahedron"];
-
-          // 2. Create the Base Geometry (MUST have enough vertices for smooth morphing)
-          const baseGeometry = new THREE.SphereGeometry(1.1, 32, 16); // Keep higher-res base
-          baseGeometry.morphAttributes.position = []; // Initialize morph attributes
-
-          const basePositionAttribute = baseGeometry.attributes.position;
-          const baseVertex = new THREE.Vector3();
-          const targetVertex = new THREE.Vector3();
-
-          console.log(`Base geometry has ${basePositionAttribute.count} vertices.`);
-
-          // 3. Generate Morph Target Attributes (No indentations this time)
-          for (let i = 0; i < targetGeometries.length; i++) {
-              const targetGeo = targetGeometries[i];
-              const targetPositionAttribute = targetGeo.attributes.position;
-
-              console.log(`Processing target ${shapeNames[i]} with ${targetPositionAttribute.count} vertices.`);
-              if (!targetPositionAttribute) {
-                  console.error(`Target geometry ${shapeNames[i]} has no position attribute!`); continue;
-              }
-
-              const morphPositions = new Float32Array(basePositionAttribute.count * 3);
-
-              // For each vertex in the BASE geometry...
-              for (let j = 0; j < basePositionAttribute.count; j++) {
-                  baseVertex.fromBufferAttribute(basePositionAttribute, j);
-                  let closestDistSq = Infinity;
-                  let closestVertexIndex = -1;
-
-                  // Find the closest vertex in the TARGET geometry
-                  for (let k = 0; k < targetPositionAttribute.count; k++) {
-                      targetVertex.fromBufferAttribute(targetPositionAttribute, k);
-                      const distSq = baseVertex.distanceToSquared(targetVertex);
-                      if (distSq < closestDistSq) {
-                          closestDistSq = distSq; closestVertexIndex = k;
-                      }
-                  }
-
-                  if (closestVertexIndex !== -1) {
-                      targetVertex.fromBufferAttribute(targetPositionAttribute, closestVertexIndex);
-                  } else { targetVertex.copy(baseVertex); } // Fallback
-
-                  morphPositions[j * 3] = targetVertex.x;
-                  morphPositions[j * 3 + 1] = targetVertex.y;
-                  morphPositions[j * 3 + 2] = targetVertex.z;
-              }
-
-              baseGeometry.morphAttributes.position.push(
-                  new THREE.Float32BufferAttribute(morphPositions, 3)
-              );
-              targetGeo.dispose(); // Dispose temporary geometry
-          }
-          targetGeometries.length = 0; // Clear array
-
-          // 4. Create Material (Restoring original properties + flatShading)
-          const material = new THREE.MeshStandardMaterial({
-              color: colors.accent1, // Main color
-              metalness: 0.3,
-              roughness: 0.6,
-              flatShading: true, // Emphasize facets
-              transparent: false, // Generally opaque
-              opacity: 1.0,
-              // Removed transmission/clearcoat for a more solid look like the static example
-          });
-
-          // 5. Create the Mesh (Enable morph targets)
-          const mesh = new THREE.Mesh(baseGeometry, material);
-          mesh.morphTargetInfluences = new Array(baseGeometry.morphAttributes.position.length).fill(0);
-          scene.add(mesh);
-
-           // --- Edges (Sync with Morph Targets) ---
-           console.log("Creating edges...");
-           const edgesGeometry = new THREE.EdgesGeometry(baseGeometry, edgeThresholdAngle); // Use baseGeometry
-           const edgeMaterial = new THREE.LineBasicMaterial({
-               color: colors.edgeColor,
-               linewidth: edgeLineWidth,
-               transparent: true,
-               opacity: 0.85
-           });
-           const edges = new THREE.LineSegments(edgesGeometry, edgeMaterial);
-           edges.morphTargetInfluences = mesh.morphTargetInfluences; // Share the same influences array!
-           mesh.add(edges); // Add edges as child
-
-           // --- Glow (Sync with Morph Targets) ---
-           console.log("Creating glow mesh...");
-           const glowMaterial = new THREE.MeshBasicMaterial({
-               color: colors.accent1, // Glow with main color
-               transparent: true,
-               opacity: glowOpacity,
-               side: THREE.BackSide
-           });
-           const glowMesh = new THREE.Mesh(baseGeometry, glowMaterial); // Use baseGeometry
-           glowMesh.scale.set(glowScaleFactor, glowScaleFactor, glowScaleFactor);
-           glowMesh.morphTargetInfluences = mesh.morphTargetInfluences; // Share influences
-           mesh.add(glowMesh); // Add glow as child
-
-
-          // --- Particle System (Restored) ---
-          const particleCount = isMobile ? 300 : 500;
-          const particleGeometry = new THREE.BufferGeometry();
-          const positions = new Float32Array(particleCount * 3);
-          const colorsAttrib = new Float32Array(particleCount * 3); // Renamed from particleColors
-          const sizes = new Float32Array(particleCount);
-
-          const particleTexture = createCircleTexture(THREE); // Create the texture
-          const atmosphereRadius = isMobile ? 2.8 : 3.2;
-
-          for (let i = 0; i < particleCount; i++) {
-              const i3 = i * 3;
-              const theta = Math.random() * Math.PI * 2;
-              const phi = Math.acos(2 * Math.random() - 1);
-              const radius = atmosphereRadius * (0.7 + Math.random() * 0.6); // Wider spread
-
-              positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-              positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-              positions[i3 + 2] = radius * Math.cos(phi);
-
-              const lerpFactor = Math.random();
-              const color = new THREE.Color().lerpColors(colors.particleColor1, colors.particleColor2, lerpFactor);
-              colorsAttrib[i3] = color.r;
-              colorsAttrib[i3 + 1] = color.g;
-              colorsAttrib[i3 + 2] = color.b;
-
-              sizes[i] = isMobile ? (0.06 + Math.random() * 0.15) : (0.04 + Math.random() * 0.12);
-          }
-
-          particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-          particleGeometry.setAttribute('color', new THREE.BufferAttribute(colorsAttrib, 3));
-          particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-
-          const particleMaterial = new THREE.ShaderMaterial({
-              uniforms: {
-                  time: { value: 0.0 },
-                  pointTexture: { value: particleTexture } // Use created texture
-              },
-              vertexShader: `
-                  attribute float size;
-                  varying vec3 vColor;
-                  uniform float time;
-                  void main() {
-                      vColor = color;
-                      vec3 pos = position;
-                      // Subtle movement
-                      pos.x += sin(pos.y * 2.0 + time * 0.5) * 0.05;
-                      pos.y += cos(pos.z * 2.0 + time * 0.4) * 0.05;
-                      vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
-                      gl_PointSize = size * (300.0 / -mvPosition.z);
-                      gl_Position = projectionMatrix * mvPosition;
-                  }
-              `,
-              fragmentShader: `
-                  uniform sampler2D pointTexture;
-                  varying vec3 vColor;
-                  void main() {
-                      gl_FragColor = vec4(vColor, 1.0) * texture2D(pointTexture, gl_PointCoord);
-                      if (gl_FragColor.a < 0.1) discard; // Fade edges
-                  }
-              `,
-              blending: THREE.AdditiveBlending,
-              depthWrite: false,
-              transparent: true,
-              vertexColors: true // This tells THREE to handle the 'color' attribute
-          });
-
-          const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
-          scene.add(particleSystem); // Add particles to the main scene
-
-
-          // --- Lighting (Restored original lights) ---
-          const ambientLight = new THREE.AmbientLight(0xffffff, isMobile ? 0.8 : 0.6);
-          scene.add(ambientLight);
-
-          const directionalLight = new THREE.DirectionalLight(colors.accent1, isMobile ? 1.5 : 1.0);
-          directionalLight.position.set(2, 3, 5);
-          scene.add(directionalLight);
-
-          const directionalLight2 = new THREE.DirectionalLight(colors.accent2, isMobile ? 1.2 : 0.8);
-          directionalLight2.position.set(-3, -1, 2);
-          scene.add(directionalLight2);
-
-          // --- Animation & Morphing State ---
-          let time = 0;
-          let animationId: number | null = null;
-          let currentShapeIndex = 0;
-          let targetShapeIndex = 1;
-          let morphProgress = 0;
-          let isMorphing = true;
-          let lastMorphTime = performance.now();
-          let holdStartTime = 0;
-          let morphingPausedByUser = false;
-
-          // --- User Interaction State ---
-          const rotationVelocity = { x: 0, y: 0 };
-          let isUserInteracting = false;
-          let previousPointerPosition = { x: 0, y: 0 };
-
-          // --- Morphing Update Function ---
-          function updateMorphing() {
-            if (!isMorphing || morphingPausedByUser) return;
-
-            const now = performance.now();
-            const influences = mesh.morphTargetInfluences; // Get reference
-            if (!influences) return; // Safety check
-
-            // Holding state
-            if (morphProgress === 1.0) {
-                if (holdStartTime === 0) { holdStartTime = now; }
-                if (now - holdStartTime > holdDuration) {
-                    currentShapeIndex = targetShapeIndex;
-                    targetShapeIndex = (targetShapeIndex + 1) % influences.length;
-                    morphProgress = 0;
-                    lastMorphTime = now;
-                    holdStartTime = 0;
-                     console.log(`Morphing to: ${shapeNames[targetShapeIndex]}`);
-                } else { return; } // Still holding
-            }
-
-            // Morphing state
-            if (morphProgress < 1.0) {
-                let morphElapsedTime = now - lastMorphTime;
-                morphProgress = Math.min(1.0, morphElapsedTime / morphInterval);
-            }
-
-            const easedProgress = 0.5 - 0.5 * Math.cos(morphProgress * Math.PI);
-
-            // Reset all influences
-            for (let i = 0; i < influences.length; i++) { influences[i] = 0; }
-
-            // Apply current and target influence
-            influences[currentShapeIndex] = 1 - easedProgress;
-            influences[targetShapeIndex] = easedProgress;
-
-            // Optional: Adjust edge opacity during morph
-            edgeMaterial.opacity = 0.7 + Math.sin(easedProgress * Math.PI) * 0.25;
-          }
-
-          // --- User interaction handlers (Pointer Events - same as before) ---
-          function onPointerDown(event: PointerEvent) {
-            if (event.target !== canvas) return;
-            event.preventDefault();
-            isUserInteracting = true;
-            morphingPausedByUser = true; // Pause morphing
-            canvas!.style.cursor = 'grabbing';
-            document.body.style.cursor = 'grabbing';
-            previousPointerPosition = { x: event.clientX, y: event.clientY };
-            try {
-              canvas!.setPointerCapture(event.pointerId);
-              canvas!.addEventListener('pointermove', onPointerMove);
-              canvas!.addEventListener('pointerup', onPointerUp);
-              canvas!.addEventListener('pointercancel', onPointerUp);
-            } catch (err) { console.warn("Pointer capture failed", err); }
-          }
-
-          function onPointerMove(event: PointerEvent) {
-            if (!isUserInteracting) return;
-            // No preventDefault needed here if capture worked,
-            // but good practice if relying on window listeners as fallback
-            const deltaX = event.clientX - previousPointerPosition.x;
-            const deltaY = event.clientY - previousPointerPosition.y;
-            rotationVelocity.y = deltaX * userRotationSpeed;
-            rotationVelocity.x = -deltaY * userRotationSpeed; // Invert Y
-            previousPointerPosition = { x: event.clientX, y: event.clientY };
-          }
-
-          function onPointerUp(event: PointerEvent) {
-            if (!isUserInteracting) return;
-            // No preventDefault needed here if capture worked
-            isUserInteracting = false;
-            canvas!.style.cursor = 'grab';
-             document.body.style.cursor = '';
-
-            try {
-                 if (canvas!.hasPointerCapture(event.pointerId)) {
-                    canvas!.releasePointerCapture(event.pointerId);
-                 }
-                 canvas!.removeEventListener('pointermove', onPointerMove);
-                 canvas!.removeEventListener('pointerup', onPointerUp);
-                 canvas!.removeEventListener('pointercancel', onPointerUp);
-            } catch (err) { console.warn("Pointer release/listener removal failed", err); }
-
-            // Resume morphing after delay
-            setTimeout(() => {
-              morphingPausedByUser = false;
-              // Adjust timers to prevent jump
-              if (morphProgress < 1.0) { lastMorphTime = performance.now() - morphProgress * morphInterval; }
-               else { holdStartTime = performance.now(); } // Restart hold timer if ended during drag
-              console.log("Resuming morphing");
-            }, 500); // Shorter delay
-          }
-          canvas!.addEventListener('pointerdown', onPointerDown);
-
-
-          // --- Animation loop ---
-          function animate() {
-            animationId = requestAnimationFrame(animate);
-            time = performance.now() * 0.001;
-
-            // Update morphing state
-            updateMorphing();
-
-            // Apply rotation velocity with damping
-            rotationVelocity.x *= dampingFactor;
-            rotationVelocity.y *= dampingFactor;
-            if (Math.abs(rotationVelocity.x) < minVelocityThreshold) rotationVelocity.x = 0;
-            if (Math.abs(rotationVelocity.y) < minVelocityThreshold) rotationVelocity.y = 0;
-
-            if (isUserInteracting || rotationVelocity.x !== 0 || rotationVelocity.y !== 0) {
-              // User-controlled rotation or coasting
-              mesh.rotation.x += rotationVelocity.x;
-              mesh.rotation.y += rotationVelocity.y;
-            } else {
-              // Auto-rotation when idle
-              mesh.rotation.y += autoRotateSpeed;
-              mesh.rotation.x += autoRotateSpeed * 0.2; // Less tilt
-            }
-
-            // Update particle shader time
-            if(particleMaterial.uniforms.time) {
-                 particleMaterial.uniforms.time.value = time;
-            }
-             // Subtle particle system rotation
-             particleSystem.rotation.y += 0.0002;
-
-
-            // Render scene
-            renderer.render(scene, camera);
-          }
-
-          // --- Start animation ---
-          console.log("Starting animation loop");
-          animate();
-
-          // --- Handle window resize ---
-          let resizeTimeout;
-          function debounceResize() {
-              clearTimeout(resizeTimeout);
-              resizeTimeout = setTimeout(() => {
-                  camera.aspect = window.innerWidth / window.innerHeight;
-                  camera.updateProjectionMatrix();
-                  renderer.setSize(window.innerWidth, window.innerHeight);
-                  renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
-                  console.log("Resized renderer and camera");
-              }, 150);
-          }
-          window.addEventListener('resize', debounceResize, false);
-
-          // --- Handle visibility change ---
-          const handleVisibilityChange = () => {
-            if (document.hidden && animationId) {
-              cancelAnimationFrame(animationId); animationId = null;
-              console.log("Animation paused (tab hidden)");
-            } else if (!document.hidden && !animationId && mesh) { // Check mesh exists too
-              // Need to reset morph timers if paused for a long time
-              if (morphProgress < 1.0) { lastMorphTime = performance.now() - morphProgress * morphInterval; }
-               else { holdStartTime = performance.now(); }
-              animate();
-              console.log("Animation resumed (tab visible)");
-            }
-          };
-          document.addEventListener('visibilitychange', handleVisibilityChange);
-
-          // --- Cleanup on navigation ---
-          document.addEventListener('astro:before-swap', () => {
-            console.log("Cleaning up Morphing Polyhedron component...");
-            if (animationId) cancelAnimationFrame(animationId);
-            animationId = null;
-
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            window.removeEventListener('resize', debounceResize);
-            clearTimeout(resizeTimeout);
-
-            if (canvas) {
-                canvas!.removeEventListener('pointerdown', onPointerDown);
-                canvas!.removeEventListener('pointermove', onPointerMove);
-                canvas!.removeEventListener('pointerup', onPointerUp);
-                canvas!.removeEventListener('pointercancel', onPointerUp);
-                 // Maybe remove hover listeners if they were added
-            }
-
-            // Dispose THREE.js objects
-            scene.traverse(object => {
-                 if (object.geometry) object.geometry.dispose();
-                 if (object.material) {
-                    if (Array.isArray(object.material)) {
-                        object.material.forEach(mat => {
-                            if (mat.map) mat.map.dispose();
-                            if (mat.uniforms && mat.uniforms.pointTexture && mat.uniforms.pointTexture.value) {
-                                mat.uniforms.pointTexture.value.dispose(); // Dispose particle texture
-                            }
-                            mat.dispose();
-                        });
-                    } else {
-                         if (object.material.map) object.material.map.dispose();
-                         if (object.material.uniforms && object.material.uniforms.pointTexture && object.material.uniforms.pointTexture.value) {
-                                object.material.uniforms.pointTexture.value.dispose(); // Dispose particle texture
-                            }
-                         object.material.dispose();
-                    }
-                 }
+              powerPreference: 'default'
             });
-            if (particleTexture) particleTexture.dispose(); // Explicit dispose just in case
+          } catch (err2) {
+            console.warn('Second WebGLRenderer attempt failed:', err2);
+            
+            try {
+              // Third attempt - different context attributes
+              console.log('Creating WebGLRenderer - third attempt with custom context');
+              renderer = new THREE.WebGLRenderer({
+                canvas: canvas,
+                context: canvas.getContext('webgl', {
+                  alpha: true,
+                  antialias: false,
+                  depth: true,
+                  failIfMajorPerformanceCaveat: false,
+                  premultipliedAlpha: false
+                })
+              });
+            } catch (err3) {
+              console.warn('Third WebGLRenderer attempt failed:', err3);
+              
+              // Final attempt - create a new canvas
+              console.log('Final attempt: creating new canvas...');
+              try {
+                const container = document.querySelector('.sacred-geometry-container') || document.body;
+                const newCanvas = document.createElement('canvas');
+                newCanvas.width = window.innerWidth;
+                newCanvas.height = window.innerHeight;
+                newCanvas.className = 'morphing-poly-canvas';
+                newCanvas.id = 'morphing-poly-canvas-fallback';
+                newCanvas.style.cssText = `
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  z-index: 50;
+                  opacity: 1;
+                  touch-action: none;
+                  cursor: grab;
+                  backface-visibility: hidden;
+                  transform: translateZ(0);
+                  will-change: transform;
+                  background: rgba(5,3,10,0.2);
+                  image-rendering: crisp-edges;
+                  pointer-events: auto !important;
+                `;
+                
+                if (canvas.parentNode) {
+                  canvas.parentNode.replaceChild(newCanvas, canvas);
+                } else {
+                  container.appendChild(newCanvas);
+                }
+                
+                canvas = newCanvas; // This works now since canvas is let not const
+                
+                renderer = new THREE.WebGLRenderer({
+                  canvas: canvas,
+                  antialias: false,
+                  alpha: true
+                });
+                
+                // Immediately apply size/aspect updates for the fallback canvas
+                if (renderer && canvas.id === 'morphing-poly-canvas-fallback') {
+                  console.log("Applying size/aspect updates for fallback canvas...");
+                  // Use window dimensions initially, resize handler will refine
+                  const width = window.innerWidth;
+                  const height = window.innerHeight;
+                  renderer.setSize(width, height); 
+                  camera.aspect = width / height;
+                  camera.updateProjectionMatrix();
+                  renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2)); // Reset pixel ratio too
+                  console.log(`Fallback canvas resized to ${width}x${height}`);
+                  
+                  // Dispatch an event to notify other scripts the fallback is active
+                  window.dispatchEvent(new CustomEvent('fallbackCanvasCreated', { 
+                    detail: { 
+                      canvasId: canvas.id,
+                      width: width,
+                      height: height
+                    } 
+                  }));
+                }
+              } catch (err4) {
+                console.error('All renderer creation attempts failed:', err4);
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'webgl-error';
+                errorMessage.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; color: red; background-color: black; padding: 20px;';
+                errorMessage.textContent = 'Failed to initialize WebGL. Please try a different browser or device.';
+                container.appendChild(errorMessage);
+                if(loadingIndicator) loadingIndicator.style.display = 'none';
+                return;
+              }
+            }
+          }
+        }
+        
+        // If we've made it this far, we have a renderer, so dispatch an event to let other scripts know
+        console.log("WebGLRenderer created successfully!");
+        
+        // Dispatch an event to let other scripts (like webgl-test.js) know the renderer was created successfully
+        window.dispatchEvent(new CustomEvent('webglRendererCreated', { 
+          detail: { 
+            canvas: canvas.id,
+            success: true 
+          } 
+        }));
+        
+        // If webgl-test showed an error message, try to remove it since we got a working renderer
+        if (typeof window.removeWebGLErrorMessage === 'function') {
+          window.removeWebGLErrorMessage();
+        }
+        
+        console.log("WebGL Info:", {
+          renderer: "Created successfully",
+          webglContext: "Context acquired",
+          contextAttributes: renderer.getContext().getContextAttributes()
+        });
+        
+        // Add more debugging for renderer
+        console.log("Canvas Dimensions:", {
+          clientWidth: canvas.clientWidth,
+          clientHeight: canvas.clientHeight,
+          width: canvas.width,
+          height: canvas.height,
+          style: canvas.style.cssText
+        });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+        renderer.setClearColor(0x000000, 0);
 
-            if (renderer) renderer.dispose();
-            console.log("Morphing Polyhedron cleanup complete.");
-          }, { once: true }); // Run cleanup once
+        // Force hardware acceleration and try different blending mode
+        renderer.setSize(window.innerWidth, window.innerHeight, false);  // false = don't update style
+        renderer.shadowMap.enabled = false; // disable unnecessary features
+        renderer.outputEncoding = THREE.sRGBEncoding || THREE.LinearEncoding; // prefer sRGB if available
+        renderer.premultipliedAlpha = true; // try different alpha settings
+        
+        // Force a redraw by clearing with a visible color then restoring
+        renderer.setClearColor(0x7700FF, 0.1);
+        renderer.clear();
+        renderer.setClearColor(0x000000, 0);
+        
+        // Log any WebGL errors/warnings
+        const gl = renderer.getContext();
+        gl?.getExtension('WEBGL_debug_renderer_info');
+        const debugInfo = gl?.getExtension('WEBGL_debug_renderer_info');
+        if (debugInfo) {
+            console.log("GPU INFO:", {
+                vendor: gl?.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
+                renderer: gl?.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+            });
+        }
 
-          console.log("Morphing Polyhedron initialization completed.");
+        // --- Geometry Setup for Morphing ---
+        // 1. Define target shapes (Unchanged)
+        const targetGeometries = [
+            new THREE.SphereGeometry(1.2, 6, 4),
+            new THREE.OctahedronGeometry(1.3, 0),
+            new THREE.DodecahedronGeometry(1.4, 0),
+            new THREE.SphereGeometry(1.35, 10, 8),
+            new THREE.IcosahedronGeometry(1.3, 1)
+        ];
+        const shapeNames = ["HexSphere", "Octahedron", "Dodecahedron", "DecaSphere", "Icosahedron"];
 
-        }, 0); // End inner setTimeout
+        // 2. Create Base Geometry (Higher res for smoother morph/wireframe)
+        // Ensure the base geometry is NOT indexed, or barycentric logic needs adjustment
+        // SphereGeometry is non-indexed by default.
+        const baseGeometry = new THREE.SphereGeometry(1.1, 32, 32); // Increased detail slightly
+        baseGeometry.morphAttributes.position = [];
+        const basePositionAttribute = baseGeometry.attributes.position;
+
+        // 3. Add Barycentric Coordinates BEFORE generating morph targets
+         addBarycentricCoordinates(baseGeometry, THREE); // Pass THREE as parameter
+
+        // 4. Generate Morph Target Attributes (Unchanged logic, but uses new base)
+        console.log(`Base geometry has ${basePositionAttribute.count} vertices.`);
+        const baseVertex = new THREE.Vector3();
+        const targetVertex = new THREE.Vector3();
+
+        for (let i = 0; i < targetGeometries.length; i++) {
+            const targetGeo = targetGeometries[i];
+            const targetPositionAttribute = targetGeo.attributes.position;
+            console.log(`Processing target ${shapeNames[i]} with ${targetPositionAttribute.count} vertices.`);
+            if (!targetPositionAttribute) { console.error(`Target geo ${shapeNames[i]} lacks position!`); continue; }
+
+            const morphPositions = new Float32Array(basePositionAttribute.count * 3);
+            for (let j = 0; j < basePositionAttribute.count; j++) {
+                baseVertex.fromBufferAttribute(basePositionAttribute, j);
+                let closestDistSq = Infinity; let closestVertexIndex = -1;
+                for (let k = 0; k < targetPositionAttribute.count; k++) {
+                    targetVertex.fromBufferAttribute(targetPositionAttribute, k);
+                    const distSq = baseVertex.distanceToSquared(targetVertex);
+                    if (distSq < closestDistSq) { closestDistSq = distSq; closestVertexIndex = k; }
+                }
+                if (closestVertexIndex !== -1) targetVertex.fromBufferAttribute(targetPositionAttribute, closestVertexIndex);
+                else targetVertex.copy(baseVertex); // Fallback
+                morphPositions[j * 3] = targetVertex.x;
+                morphPositions[j * 3 + 1] = targetVertex.y;
+                morphPositions[j * 3 + 2] = targetVertex.z;
+            }
+            baseGeometry.morphAttributes.position.push(
+                new THREE.Float32BufferAttribute(morphPositions, 3)
+            );
+            targetGeo.dispose();
+        }
+        targetGeometries.length = 0;
+
+        // 5. Create Shader Material for Partial Wireframe/Mesh
+        const shaderMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0.0 },
+                uColor1: { value: colors.shape1 },
+                uColor2: { value: colors.shape2 },
+                uWireframeColor: { value: colors.wireframe },
+                uWireframeThickness: { value: isMobile ? 0.05 : 0.03 }, // Increased thickness from 0.018/0.012
+                uFaceOpacity: { value: 0.5 }, // Reduced face opacity from 0.65
+            },
+            vertexShader: `
+      // Attributes forwarded from THREE.js
+      attribute vec3 a_barycentric; // Our custom attribute
+
+      // Varyings sent to Fragment Shader
+      varying vec3 vBarycentric;
+      varying vec3 vNormal;
+      varying vec3 vWorldPosition;
+      // varying float vMorphEffect; // REMOVED - No longer needed
+
+      // Uniforms
+      uniform float uTime;
+
+      // Include standard THREE.js chunks (Order Matters!)
+      #include <common>
+      #include <uv_pars_vertex>
+      #include <displacementmap_pars_vertex>
+      #include <morphtarget_pars_vertex> // <<< Needs to be included
+      #include <skinning_pars_vertex>
+      #include <logdepthbuf_pars_vertex>
+      #include <clipping_planes_pars_vertex>
+
+      void main() {
+          vBarycentric = a_barycentric; // Pass barycentric coords
+
+          // --- Start Standard Calculations ---
+          // Calculate the base normal (before morphing)
+          #include <beginnormal_vertex>      // <<< IMPORTANT STANDARD CHUNK
+          #include <morphnormal_vertex>      // <<< Calculates morphedNormal/transformedNormal variable
+          #include <skinbase_vertex>
+          #include <skinnormal_vertex>
+          #include <defaultnormal_vertex>    // <<< Assigns final normal attribute
+
+          // Calculate the base position (before morphing/skinning)
+          #include <begin_vertex>            // <<< IMPORTANT STANDARD CHUNK (Initializes 'transformed')
+
+          // Apply morph targets to 'transformed'
+          #include <morphtarget_vertex>      // <<< Modifies 'transformed'
+
+          // Apply skinning to 'transformed'
+          #include <skinning_vertex>
+
+          // Apply displacement map
+          #include <displacementmap_vertex>
+
+          // Calculate final projected position
+          #include <project_vertex>          // <<< Calculates gl_Position from 'transformed'
+
+          // Handle depth buffer and clipping
+          #include <logdepthbuf_vertex>
+          #include <clipping_planes_vertex>
+
+          // --- Pass required data to Fragment Shader ---
+          // Use 'transformedNormal' calculated by the includes
+          vNormal = normalize(transformedNormal); // <<< USE THE CORRECT MORPHED NORMAL
+
+          // Use 'transformed' position after morphing etc. for world position
+          vec4 worldPosition_ = modelMatrix * vec4( transformed, 1.0 ); // <<< USE THE CORRECT MORPHED POSITION
+          vWorldPosition = worldPosition_.xyz;
+
+          #include <uv_vertex> // Pass UVs if needed
+      }
+  `,
+            fragmentShader: `
+                // Varyings received from Vertex Shader
+                varying vec3 vBarycentric;
+                varying vec3 vNormal;
+                varying vec3 vWorldPosition;
+
+                // Uniforms
+                uniform float uTime;
+                uniform vec3 uColor1; // Primary face color
+                uniform vec3 uColor2; // Secondary face color
+                uniform vec3 uWireframeColor;
+                uniform float uWireframeThickness;
+                uniform float uFaceOpacity;
+
+                 // Function to calculate edge factor using barycentric coordinates
+                float edgeFactor(float thickness){
+                    // Calculate derivatives for screen-space thickness
+                    vec3 d = fwidth(vBarycentric);
+                    // Calculate smoothed minimum distance to edge
+                    vec3 a3 = smoothstep(vec3(0.0), d * (1.0 + thickness * 20.0), vBarycentric); // Increase multiplier for sharper edges
+                    // The factor is 1.0 on edges, 0.0 in the center
+                    return clamp(1.0 - min(min(a3.x, a3.y), a3.z), 0.0, 1.0);
+                }
+
+                // Simple noise function (replace with Simplex/Perlin if needed)
+                float hash( float n ) { return fract(sin(n)*43758.5453); }
+                float noise( vec3 x ) {
+                    vec3 p = floor(x); vec3 f = fract(x);
+                    f = f*f*(3.0-2.0*f);
+                    float n = p.x + p.y*57.0 + 113.0*p.z;
+                    return mix(mix(mix( hash(n+0.0), hash(n+1.0),f.x),
+                                 mix( hash(n+57.0), hash(n+58.0),f.x),f.y),
+                                 mix(mix( hash(n+113.0), hash(n+114.0),f.x),
+                                     mix( hash(n+170.0), hash(n+171.0),f.x),f.y),f.z);
+                }
+
+                void main() {
+                    float edge = edgeFactor(uWireframeThickness);
+
+                    // --- Calculate Face Color ---
+                    // Mix base colors based on normal and add subtle noise
+                    float normalMix = smoothstep(-0.5, 0.8, vNormal.y); // Mix based on vertical normal
+                    float timeBasedMix = sin(uTime * 0.5 + vWorldPosition.y * 2.0) * 0.5 + 0.5; // Slow sine wave mix
+                    vec3 baseFaceColor = mix(uColor1, uColor2, normalMix * 0.6 + timeBasedMix * 0.4);
+
+                    // Add subtle noise pattern based on world position and time
+                    float n = noise(vWorldPosition * 1.5 + uTime * 0.1);
+                    vec3 noisyColor = mix(baseFaceColor * 0.8, baseFaceColor * 1.2, n);
+
+                    // Modulate color slightly during morphing transitions
+                    vec3 faceColor = noisyColor;
+
+
+                    // --- Combine Wireframe and Face ---
+                    vec3 finalColor = mix(faceColor, uWireframeColor, edge * 1.5); // Increased edge emphasis
+
+                    // --- Calculate Opacity ---
+                    // Make faces partially transparent, wireframe mostly opaque
+                    float finalOpacity = mix(uFaceOpacity, 1.0, edge * 1.5); // Increased edge opacity
+                    // Fade out if looking edge-on (optional)
+                    float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.0); // View direction assumed (0,0,1), reduced power
+                    finalOpacity *= mix(1.0, 0.3, fresnel * (1.0 - edge)); // Fade faces more than wireframe
+
+
+                    gl_FragColor = vec4(finalColor, finalOpacity);
+
+                    // Premultiplied Alpha blending is often better for transparency
+                     gl_FragColor.rgb *= finalOpacity;
+
+                    #include <tonemapping_fragment> // Apply tone mapping
+                    #include <colorspace_fragment> // Apply color space correction (like linearTosRGB)
+                }
+            `,
+            transparent: true, // MUST be true for opacity effects
+            side: THREE.DoubleSide, // Render both sides for a more robust wireframe effect
+            // blending: THREE.AdditiveBlending, // Could try Additive for a glowier look, but Normal is safer
+             depthWrite: false, // Often needed with transparency, especially complex shapes
+        });
+        
+        // DEBUG: Print vertex shader code to verify it's correct
+        console.log("Using Vertex Shader:\n", shaderMaterial.vertexShader);
+
+        // 6. Create the Mesh (using the ShaderMaterial)
+        const mesh = new THREE.Mesh(baseGeometry, shaderMaterial);
+        mesh.name = "sacredGeometryMesh"; // Assign a unique name for external reference
+        mesh.morphTargetInfluences = new Array(baseGeometry.morphAttributes.position.length).fill(0);
+        // shaderMaterial.uniforms.morphTargetInfluences.value = mesh.morphTargetInfluences; // Link if needed
+        scene.add(mesh);
+
+        // --- Edges and Glow REMOVED --- No longer needed!
+
+        // --- Particle System (Keep, adjust colors maybe) ---
+        const particleCount = isMobile ? 400 : 600; // Slightly more particles
+        const particleGeometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+        const colorsAttrib = new Float32Array(particleCount * 3);
+        const sizes = new Float32Array(particleCount);
+        const particleTexture = createCircleTexture(THREE);
+        const atmosphereRadius = isMobile ? 3.0 : 3.5; // Slightly larger radius
+
+        for (let i = 0; i < particleCount; i++) {
+            const i3 = i * 3;
+            // Spread particles more evenly on sphere surface (Fibonacci sphere / Golden angle)
+            const y = 1 - (i / (particleCount - 1)) * 2; // y goes from 1 to -1
+            const radius = Math.sqrt(1 - y * y) * atmosphereRadius * (0.8 + Math.random() * 0.4);
+            const theta = (Math.PI * (3. - Math.sqrt(5.))) * i; // Golden angle increment
+
+            positions[i3] = radius * Math.cos(theta);
+            positions[i3 + 1] = y * atmosphereRadius * (0.8 + Math.random() * 0.4); // Add randomness to Y radius too
+            positions[i3 + 2] = radius * Math.sin(theta);
+
+            const lerpFactor = Math.random(); // Use random mix
+            const color = new THREE.Color().lerpColors(colors.particle1, colors.particle2, lerpFactor);
+            colorsAttrib[i3] = color.r; colorsAttrib[i3 + 1] = color.g; colorsAttrib[i3 + 2] = color.b;
+            sizes[i] = isMobile ? (0.08 + Math.random() * 0.18) : (0.05 + Math.random() * 0.15); // Slightly larger/more varied
+        }
+
+        particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        particleGeometry.setAttribute('color', new THREE.BufferAttribute(colorsAttrib, 3));
+        particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+        const particleMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0.0 },
+                pointTexture: { value: particleTexture }
+            },
+            vertexShader: `
+                attribute float size;
+                varying vec3 vColor;
+                uniform float uTime;
+                void main() {
+                    vColor = color;
+                    vec3 pos = position;
+                    // More dynamic movement - swirl + pulse
+                    float angle = atan(pos.x, pos.z) + uTime * 0.2;
+                    float radius = length(pos.xz);
+                    pos.x = cos(angle) * radius + sin(pos.y * 1.5 + uTime * 0.6) * 0.1;
+                    pos.z = sin(angle) * radius + cos(pos.x * 1.5 + uTime * 0.5) * 0.1;
+                    pos.y += sin(length(position) * 0.5 + uTime * 0.7) * 0.15; // Pulse in/out slightly
+
+                    vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                    gl_PointSize = size * (400.0 / -mvPosition.z); // Adjust sizing maybe
+                    gl_Position = projectionMatrix * mvPosition;
+                }
+            `,
+            fragmentShader: `
+                uniform sampler2D pointTexture;
+                varying vec3 vColor;
+                void main() {
+                    float alpha = texture2D(pointTexture, gl_PointCoord).a;
+                    if (alpha < 0.05) discard; // Harder edge discard
+                    gl_FragColor = vec4(vColor, alpha * 0.9); // Slightly less intense alpha
+                }
+            `,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            transparent: true,
+            vertexColors: true
+        });
+
+        const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+        scene.add(particleSystem);
+
+        // --- Lighting (Less crucial with ShaderMaterial, but good for particles) ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.8); // Increased intensity from 0.5
+        scene.add(ambientLight);
+
+        // Maybe one subtle directional light to give particles some directionality
+        const directionalLight = new THREE.DirectionalLight(colors.shape1, 0.7); // Increased intensity from 0.4
+        directionalLight.position.set(3, 2, 3);
+        scene.add(directionalLight);
+        const directionalLight2 = new THREE.DirectionalLight(colors.shape2, 0.7); // Increased intensity from 0.4
+        directionalLight2.position.set(-3, -2, -3);
+        scene.add(directionalLight2);
+
+
+        // --- Animation & Morphing State (Unchanged logic) ---
+        let animationId = null;
+        let currentShapeIndex = 0;
+        let targetShapeIndex = 1;
+        let morphProgress = 0;
+        let isMorphing = true;
+        let lastMorphTime = performance.now();
+        let holdStartTime = 0;
+        let morphingPausedByUser = false;
+
+        // --- User Interaction State (Unchanged) ---
+        const rotationVelocity = { x: 0, y: 0 };
+        let isUserInteracting = false;
+        let previousPointerPosition = { x: 0, y: 0 };
+
+        // --- Morphing Update Function (Unchanged logic, affects mesh.morphTargetInfluences) ---
+        function updateMorphing() {
+          if (!isMorphing || morphingPausedByUser) return;
+          const now = performance.now();
+          const influences = mesh.morphTargetInfluences;
+          if (!influences) return;
+
+          if (morphProgress === 1.0) {
+              if (holdStartTime === 0) { holdStartTime = now; }
+              if (now - holdStartTime > holdDuration) {
+                  currentShapeIndex = targetShapeIndex;
+                  targetShapeIndex = (targetShapeIndex + 1) % influences.length;
+                  morphProgress = 0;
+                  lastMorphTime = now;
+                  holdStartTime = 0;
+                   console.log(`Morphing to: ${shapeNames[targetShapeIndex]}`);
+              } else { return; } // Still holding
+          }
+
+          if (morphProgress < 1.0) {
+              let morphElapsedTime = now - lastMorphTime;
+              morphProgress = Math.min(1.0, morphElapsedTime / morphInterval);
+          }
+          const easedProgress = 0.5 - 0.5 * Math.cos(morphProgress * Math.PI);
+
+          for (let i = 0; i < influences.length; i++) { influences[i] = 0; }
+          influences[currentShapeIndex] = 1 - easedProgress;
+          influences[targetShapeIndex] = easedProgress;
+
+          // Update shader uniform if needed (optional, vMorphEffect tries to derive it)
+          // shaderMaterial.uniforms.uMorphProgress.value = easedProgress;
+        }
+
+        // --- User interaction handlers (Unchanged) ---
+        function onPointerDown(event) {
+          console.log(">>> AmorphousPrism: Pointer Down Fired <<<", {
+            target: event.target?.id || 'unknown',
+            canvas: canvas?.id || 'unknown',
+            pointerId: event.pointerId
+          });
+          
+          // IMPORTANT: If this click is not on our canvas, do nothing
+          if (event.target !== canvas) {
+            console.log(">>> AmorphousPrism: IGNORING event - wrong target <<<");
+            return;
+          }
+          
+          // Prevent default AND stop propagation to block SplashPrism from capturing
+          event.preventDefault();
+          event.stopPropagation();
+          
+          isUserInteracting = true;
+          morphingPausedByUser = true;
+          canvas.style.cursor = 'grabbing';
+          document.body.style.cursor = 'grabbing'; // Use body cursor too
+          
+          // Save initial position
+          previousPointerPosition = { x: event.clientX, y: event.clientY };
+          
+          try {
+            // IMPORTANT: Set pointer capture to keep receiving events
+            canvas.setPointerCapture(event.pointerId);
+            console.log(">>> AmorphousPrism: Pointer capture success <<<");
+            
+            // Add move and up handlers
+            canvas.addEventListener('pointermove', onPointerMove);
+            canvas.addEventListener('pointerup', onPointerUp);
+            canvas.addEventListener('pointercancel', onPointerUp);
+          } catch (err) { 
+            console.warn(">>> AmorphousPrism: Pointer capture FAILED <<<", err); 
+          }
+        }
+        
+        function onPointerMove(event) {
+          console.log(">>> AmorphousPrism: Pointer Move Fired <<<", {
+            interacting: isUserInteracting,
+            deltaX: event.clientX - previousPointerPosition.x,
+            deltaY: event.clientY - previousPointerPosition.y
+          });
+          
+          if (!isUserInteracting) {
+            console.log(">>> AmorphousPrism: Ignoring move - not interacting <<<");
+            return;
+          }
+          
+          // Stop propagation to block SplashPrism
+          event.stopPropagation();
+          
+          // Calculate deltas
+          const deltaX = event.clientX - previousPointerPosition.x;
+          const deltaY = event.clientY - previousPointerPosition.y;
+          
+          // Update rotation velocity
+          rotationVelocity.y = deltaX * userRotationSpeed;
+          rotationVelocity.x = -deltaY * userRotationSpeed; // Invert Y
+          
+          // Log rotation application
+          console.log(">>> AmorphousPrism: Applied rotation <<<", {
+            velocityX: rotationVelocity.x,
+            velocityY: rotationVelocity.y
+          });
+          
+          // Update previous position
+          previousPointerPosition = { x: event.clientX, y: event.clientY };
+        }
+        
+        function onPointerUp(event) {
+          console.log(">>> AmorphousPrism: Pointer Up Fired <<<", {
+            interacting: isUserInteracting,
+            pointerId: event.pointerId
+          });
+          
+          if (!isUserInteracting) {
+            console.log(">>> AmorphousPrism: Ignoring up - not interacting <<<");
+            return;
+          }
+          
+          // Stop propagation to block SplashPrism
+          event.stopPropagation();
+          
+          // Reset state
+          isUserInteracting = false;
+          canvas.style.cursor = 'grab';
+          document.body.style.cursor = ''; // Reset body cursor
+
+          try {
+            // Release pointer capture
+            if (canvas.hasPointerCapture(event.pointerId)) {
+              canvas.releasePointerCapture(event.pointerId);
+              console.log(">>> AmorphousPrism: Released pointer capture <<<");
+            }
+            
+            // Remove event listeners
+            canvas.removeEventListener('pointermove', onPointerMove);
+            canvas.removeEventListener('pointerup', onPointerUp);
+            canvas.removeEventListener('pointercancel', onPointerUp);
+          } catch (err) { 
+            console.warn(">>> AmorphousPrism: Pointer release/listener removal FAILED <<<", err); 
+          }
+
+          // Resume morphing after delay (unchanged)
+          setTimeout(() => {
+            morphingPausedByUser = false;
+            if (morphProgress < 1.0) { lastMorphTime = performance.now() - morphProgress * morphInterval; }
+            else { holdStartTime = performance.now(); }
+            console.log(">>> AmorphousPrism: Resuming morphing <<<");
+          }, 500);
+        }
+        console.log(">>> AmorphousPrism: Attaching pointer listeners to:", canvas);
+        
+        // IMPORTANT: Use capture=true to ensure we get the events before SplashPrism
+        canvas.addEventListener('pointerdown', onPointerDown, { capture: true });
+
+        // --- Animation loop ---
+        function animate() {
+          animationId = requestAnimationFrame(animate);
+          const elapsedTime = clock.getElapsedTime(); // Use clock for smooth time
+
+          // Update shader time uniform
+          shaderMaterial.uniforms.uTime.value = elapsedTime;
+          particleMaterial.uniforms.uTime.value = elapsedTime; // Update particle time too
+
+          // Update morphing state
+          updateMorphing();
+
+          // Apply rotation velocity with damping (Unchanged)
+          rotationVelocity.x *= dampingFactor;
+          rotationVelocity.y *= dampingFactor;
+          if (Math.abs(rotationVelocity.x) < minVelocityThreshold) rotationVelocity.x = 0;
+          if (Math.abs(rotationVelocity.y) < minVelocityThreshold) rotationVelocity.y = 0;
+
+          if (isUserInteracting || rotationVelocity.x !== 0 || rotationVelocity.y !== 0) {
+            mesh.rotation.x += rotationVelocity.x;
+            mesh.rotation.y += rotationVelocity.y;
+          } else {
+            mesh.rotation.y += autoRotateSpeed;
+            mesh.rotation.x += autoRotateSpeed * 0.3; // Slightly more tilt wobble
+          }
+
+           // Subtle particle system rotation (independent?)
+           particleSystem.rotation.y -= 0.0003; // Slightly different speed/direction
+
+          // Render scene
+          renderer.render(scene, camera);
+        }
+
+        // --- Start animation ---
+        console.log("Starting animation loop");
+        animate();
+
+        // --- Handle window resize (Unchanged) ---
+        let resizeTimeout;
+        function debounceResize() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                isMobile = window.innerWidth < 768; // Update mobile status on resize
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+                // Update shader uniforms sensitive to screen size/type?
+                shaderMaterial.uniforms.uWireframeThickness.value = isMobile ? 0.05 : 0.03;
+                console.log("Resized renderer and camera");
+            }, 150);
+        }
+        window.addEventListener('resize', debounceResize, false);
+
+
+        // --- Handle visibility change (Unchanged) ---
+        const handleVisibilityChange = () => {
+          if (document.hidden && animationId) {
+            cancelAnimationFrame(animationId); animationId = null;
+            clock.stop(); // Pause the clock too
+            console.log("Animation paused (tab hidden)");
+          } else if (!document.hidden && !animationId && mesh) {
+            clock.start(); // Resume the clock
+            if (morphProgress < 1.0) { lastMorphTime = performance.now() - morphProgress * morphInterval; }
+            else { holdStartTime = performance.now(); }
+            animate();
+            console.log("Animation resumed (tab visible)");
+          }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        // --- Cleanup on navigation ---
+        document.addEventListener('astro:before-swap', () => {
+          console.log("Cleaning up Sacred Geometry component...");
+          if (animationId) cancelAnimationFrame(animationId);
+          animationId = null;
+
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+          window.removeEventListener('resize', debounceResize);
+          clearTimeout(resizeTimeout);
+
+          if (canvas) { // Remove listeners (unchanged)
+              canvas.removeEventListener('pointerdown', onPointerDown);
+              canvas.removeEventListener('pointermove', onPointerMove);
+              canvas.removeEventListener('pointerup', onPointerUp);
+              canvas.removeEventListener('pointercancel', onPointerUp);
+          }
+
+          // Dispose THREE.js objects (ensure shader material is disposed)
+          scene.traverse(object => {
+               if (object.geometry) object.geometry.dispose();
+               if (object.material) {
+                  if (Array.isArray(object.material)) {
+                      object.material.forEach(mat => {
+                          // Dispose textures in uniforms if they exist
+                          Object.values(mat.uniforms || {}).forEach(uniform => {
+                              if (uniform && uniform.value instanceof THREE.Texture) {
+                                  uniform.value.dispose();
+                              }
+                          });
+                          mat.dispose();
+                      });
+                  } else {
+                       // Dispose textures in uniforms
+                       Object.values(object.material.uniforms || {}).forEach(uniform => {
+                          if (uniform && uniform.value instanceof THREE.Texture) {
+                              uniform.value.dispose();
+                          }
+                      });
+                       object.material.dispose(); // Dispose the material itself
+                  }
+               }
+          });
+          if (particleTexture) particleTexture.dispose(); // Explicit dispose just in case
+
+          if (renderer) renderer.dispose();
+          console.log("Sacred Geometry cleanup complete.");
+        }, { once: true });
+
+        console.log("Sacred Geometry initialization completed.");
 
       } catch (error) {
-        console.error("Error in Morphing Polyhedron initialization:", error);
+        console.error("Error in Sacred Geometry initialization:", error);
+        // Ensure loading indicator is hidden on error even if it wasn't before
         if (loadingIndicator && loadingIndicator.style.display !== 'none') {
           loadingIndicator.style.display = 'none';
         }
       }
-    }, 50); // End outer setTimeout
-  });
+    });
+  }
 </script>
