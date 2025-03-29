@@ -2,7 +2,7 @@
 // src/components/AmorphousPrism.astro - Refactored to use morph targets with edge definition
 ---
 
-<canvas id="prism-bg-canvas" class="absolute top-0 left-0 w-full h-full" style="pointer-events: auto !important; z-index: 5; touch-action: none;"></canvas>
+<canvas id="prism-bg-canvas" class="absolute top-0 left-0 w-full h-full" style="pointer-events: auto !important; z-index: 5; touch-action: pan-y;"></canvas>
 
 <!-- Loading indicator -->
 <div id="prism-loading" class="absolute inset-0 flex items-center justify-center bg-[#0a0a1a] z-10" style="display: block; position: fixed; width: 100%; height: 100%;">
@@ -29,6 +29,7 @@
   let createNoise4D;
   let isLoading = true;
   let renderQuality = 'low';
+  let isMobile = window.innerWidth < 768;
   
   // Load dependencies progressively
   const loadDependencies = async () => {
@@ -159,14 +160,14 @@
           }
 
           // Ensure pointer events are explicitly set and z-index is lower than text
-          canvas.style.cssText += '; pointer-events: auto !important; z-index: 5; touch-action: none;';
-          console.log("Canvas pointer-events set to:", canvas.style.pointerEvents);
+          // On mobile, use touch-action: pan-y to allow vertical scrolling
+          canvas.style.cssText += '; pointer-events: auto !important; z-index: 5; touch-action: ' + (isMobile ? 'pan-y' : 'none') + ';';
+          console.log("Canvas pointer-events set to:", canvas.style.pointerEvents, "touch-action:", canvas.style.touchAction);
 
           // Add browser detection for optimizations
           const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
           const isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1 && 
                           navigator.userAgent.toLowerCase().indexOf('edge') === -1;
-          const isMobile = window.innerWidth < 768;
           
           console.log('Browser detection:', { isFirefox, isChrome, isMobile });
           

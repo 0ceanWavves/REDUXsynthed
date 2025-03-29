@@ -9,11 +9,12 @@ const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.us
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isMobile = window.innerWidth < 768;
 
 // Universal touch event handler - works across all browsers
 export function applyTouchEventFixes() {
   console.log("Applying universal cross-browser touch event fixes");
-  console.log("Browser detection:", { isFirefox, isChrome, isSafari, isIOS });
+  console.log("Browser detection:", { isFirefox, isChrome, isSafari, isIOS, isMobile });
   
   // Find all canvases and interactive 3D elements
   // IMPORTANT: EXCLUDE #prism-bg-canvas and prism-background since they are handled by AmorphousPrism.astro
@@ -24,16 +25,21 @@ export function applyTouchEventFixes() {
       // Set universal styles first
       canvas.style.pointerEvents = 'auto';
       
+      // On mobile, set touch-action to allow scrolling
+      if (isMobile) {
+        canvas.style.touchAction = 'pan-y';
+      }
+      
       // Firefox-specific fixes
       if (isFirefox) {
         // Firefox needs these specific styles
-        canvas.style.touchAction = 'auto';
+        canvas.style.touchAction = isMobile ? 'pan-y' : 'auto';
         canvas.style.userSelect = 'none';
         canvas.style.mozUserSelect = 'none';
       }
       // Chrome/Safari/iOS-specific fixes
       else if (isChrome || isSafari || isIOS) {
-        canvas.style.touchAction = 'none';
+        canvas.style.touchAction = isMobile ? 'pan-y' : 'none';
         canvas.style.webkitTouchCallout = 'none';
         canvas.style.webkitUserSelect = 'none';
         canvas.style.webkitTapHighlightColor = 'rgba(0,0,0,0)';
@@ -45,19 +51,25 @@ export function applyTouchEventFixes() {
         
         // Add touch event listeners specifically for Chrome
         const handleTouchStart = function(e) {
-          e.preventDefault();
+          // Don't prevent default on mobile to allow scrolling
+          if (!isMobile) {
+            e.preventDefault();
+          }
           console.log("Chrome touch event captured");
           canvas.dataset.interactionType = 'touch';
           canvas.setAttribute('data-interaction-type', 'touch'); // Force attribute to be set directly
         };
         
         const handleTouchMove = function(e) {
-          e.preventDefault(); // Always prevent default for Chrome touch events
+          // Don't prevent default on mobile to allow scrolling
+          if (!isMobile) {
+            e.preventDefault();
+          }
           console.log("Chrome touch move with interaction type:", canvas.dataset.interactionType);
         };
         
-        canvas.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
-        canvas.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
+        canvas.addEventListener('touchstart', handleTouchStart, { passive: isMobile, capture: true });
+        canvas.addEventListener('touchmove', handleTouchMove, { passive: isMobile, capture: true });
         
         // Handle mouse events separately from touch
         canvas.addEventListener('mousedown', function(e) {
@@ -70,19 +82,19 @@ export function applyTouchEventFixes() {
       // Universal pointer events - EXCLUDE BOTH prism-bg-canvas AND prism-background
       if (canvas.id !== 'prism-bg-canvas' && canvas.id !== 'prism-background') {
         canvas.addEventListener('pointerdown', function(e) {
-          // Don't prevent default in Firefox for pointer events
-          if (!isFirefox) {
+          // Don't prevent default on mobile or in Firefox for pointer events
+          if (!isFirefox && !isMobile) {
             e.preventDefault();
           }
           console.log(`${isFirefox ? 'Firefox' : 'Browser'} pointerdown captured on ${canvas.id || 'canvas'}`);
-        }, { passive: isFirefox });
+        }, { passive: isFirefox || isMobile });
         
         canvas.addEventListener('pointermove', function(e) {
-          // Don't prevent default in Firefox for pointer events
-          if (!isFirefox) {
+          // Don't prevent default on mobile or in Firefox for pointer events
+          if (!isFirefox && !isMobile) {
             e.preventDefault();
           }
-        }, { passive: isFirefox });
+        }, { passive: isFirefox || isMobile });
       }
       
       console.log(`Applied ${isFirefox ? 'Firefox' : 'standard'} touch fixes to: ${canvas.id || "canvas element"}`);
@@ -117,7 +129,8 @@ export function applyTouchEventFixes() {
       if (isFirefox) {
         prismBackground.style.userSelect = 'none';
       } else {
-        prismBackground.style.touchAction = 'none';
+        // On mobile, set touch-action to allow scrolling
+        prismBackground.style.touchAction = isMobile ? 'pan-y' : 'none';
         prismBackground.style.webkitUserSelect = 'none';
         
         // CRITICAL: For Chrome, set initial interaction type but NO EVENT HANDLERS
@@ -169,32 +182,32 @@ export function setupCrossBrowserInteraction(element, onInteractionStart, onInte
 
 // Setup pointer events (better for Firefox)
 function setupPointerEvents(element, onStart, onMove, onEnd) {
-  // For Firefox, we use non-preventDefault pointer events
-  const passive = isFirefox;
+  // For Firefox or mobile, we use passive event listeners to allow scrolling
+  const passive = isFirefox || isMobile;
   
   element.addEventListener('pointerdown', function(e) {
-    if (!isFirefox) e.preventDefault();
+    if (!isFirefox && !isMobile) e.preventDefault();
     onStart({
       clientX: e.clientX,
       clientY: e.clientY,
-      preventDefault: () => isFirefox ? null : e.preventDefault(),
+      preventDefault: () => isFirefox || isMobile ? null : e.preventDefault(),
       stopPropagation: () => e.stopPropagation()
     });
     
     const handlePointerMove = function(moveEvent) {
-      if (!isFirefox) moveEvent.preventDefault();
+      if (!isFirefox && !isMobile) moveEvent.preventDefault();
       onMove({
         clientX: moveEvent.clientX,
         clientY: moveEvent.clientY,
-        preventDefault: () => isFirefox ? null : moveEvent.preventDefault(),
+        preventDefault: () => isFirefox || isMobile ? null : moveEvent.preventDefault(),
         stopPropagation: () => moveEvent.stopPropagation()
       });
     };
     
     const handlePointerUp = function(upEvent) {
-      if (!isFirefox) upEvent.preventDefault();
+      if (!isFirefox && !isMobile) upEvent.preventDefault();
       onEnd({
-        preventDefault: () => isFirefox ? null : upEvent.preventDefault(),
+        preventDefault: () => isFirefox || isMobile ? null : upEvent.preventDefault(),
         stopPropagation: () => upEvent.stopPropagation()
       });
       
@@ -209,8 +222,11 @@ function setupPointerEvents(element, onStart, onMove, onEnd) {
 
 // Setup touch events specifically for Chrome/iOS - independent from mouse events
 function setupTouchEvents(element, onStart, onMove, onEnd) {
+  // Use passive event listeners on mobile to allow scrolling
+  const passive = isMobile;
+  
   element.addEventListener('touchstart', function(e) {
-    e.preventDefault();
+    if (!isMobile) e.preventDefault();
     element.dataset.interactionType = 'touch';
     element.setAttribute('data-interaction-type', 'touch'); // Force attribute to be set directly
     
@@ -221,13 +237,13 @@ function setupTouchEvents(element, onStart, onMove, onEnd) {
       onStart({
         clientX: touch.clientX,
         clientY: touch.clientY,
-        preventDefault: () => e.preventDefault(),
+        preventDefault: () => isMobile ? null : e.preventDefault(),
         stopPropagation: () => e.stopPropagation()
       });
     }
     
     const handleTouchMove = function(moveEvent) {
-      moveEvent.preventDefault();
+      if (!isMobile) moveEvent.preventDefault();
       
       console.log("Touch move with type:", element.dataset.interactionType);
       
@@ -236,19 +252,19 @@ function setupTouchEvents(element, onStart, onMove, onEnd) {
         onMove({
           clientX: touch.clientX,
           clientY: touch.clientY,
-          preventDefault: () => moveEvent.preventDefault(),
+          preventDefault: () => isMobile ? null : moveEvent.preventDefault(),
           stopPropagation: () => moveEvent.stopPropagation()
         });
       }
     };
     
     const handleTouchEnd = function(endEvent) {
-      endEvent.preventDefault();
+      if (!isMobile) endEvent.preventDefault();
       element.dataset.interactionType = 'none';
       element.setAttribute('data-interaction-type', 'none'); // Force attribute to be set directly
       
       onEnd({
-        preventDefault: () => endEvent.preventDefault(),
+        preventDefault: () => isMobile ? null : endEvent.preventDefault(),
         stopPropagation: () => endEvent.stopPropagation()
       });
       
@@ -256,9 +272,9 @@ function setupTouchEvents(element, onStart, onMove, onEnd) {
       document.removeEventListener('touchend', handleTouchEnd);
     };
     
-    document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
-    document.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
-  }, { passive: false, capture: true });
+    document.addEventListener('touchmove', handleTouchMove, { passive, capture: true });
+    document.addEventListener('touchend', handleTouchEnd, { passive, capture: true });
+  }, { passive, capture: true });
 }
 
 // Setup separate mouse events for Chrome/iOS

@@ -142,8 +142,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check if pointer events need adjustment (especially for Chrome mobile override)
     if (isChrome && isMobile) {
         canvas.style.pointerEvents = 'none';
-        canvas.style.touchAction = 'auto'; // Allow scrolling
+        canvas.style.touchAction = 'pan-y'; // Allow scrolling
         console.log('Applied Chrome mobile pointer-events fix to canvas.');
+    } else if (isMobile) {
+        canvas.style.touchAction = 'pan-y'; // Allow scrolling on all mobile browsers
+        console.log('Applied mobile touch-action: pan-y to canvas');
     } else {
         canvas.style.pointerEvents = 'auto'; // Ensure it's auto otherwise
         console.log('Canvas interaction styles verified.');
@@ -154,11 +157,14 @@ document.addEventListener('DOMContentLoaded', () => {
   if (prismBg) {
      if (isChrome && isMobile) {
         prismBg.style.pointerEvents = 'none';
-        prismBg.style.touchAction = 'auto';
+        prismBg.style.touchAction = 'pan-y';
         console.log('Applied Chrome mobile pointer-events fix to prism background.');
+    } else if (isMobile) {
+        prismBg.style.touchAction = 'pan-y';
+        console.log('Applied mobile touch-action: pan-y to prism background');
     } else {
         prismBg.style.pointerEvents = 'auto';
-         console.log('Prism background interaction styles verified.');
+        console.log('Prism background interaction styles verified.');
     }
   }
 
@@ -174,19 +180,25 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 500); // Reduced delay slightly
 
   // Special fix for Chrome mobile scrolling performance/behavior
-  if (isChrome && isMobile) {
+  if (isMobile) {
     // Apply passive listeners to potentially improve scroll performance
     ['touchstart', 'touchmove'].forEach(evt => {
         window.addEventListener(evt, () => {}, { passive: true });
     });
-    console.log('Applied passive scroll listeners for Chrome mobile.');
+    console.log('Applied passive scroll listeners for mobile browsers.');
 
+    // Check all canvas elements and ensure they allow scrolling
+    document.querySelectorAll('canvas').forEach(canvasEl => {
+        canvasEl.style.touchAction = 'pan-y';
+        console.log(`Applied pan-y touch-action to canvas: ${canvasEl.id || 'unnamed canvas'}`);
+    });
+    
     // Re-check pointer events on flow background as well
      const flowCanvas = document.getElementById('flow-bg-canvas');
      if (flowCanvas) {
          flowCanvas.style.pointerEvents = 'none';
-         flowCanvas.style.touchAction = 'auto';
-         console.log('Applied Chrome mobile pointer-events fix to flow background.');
+         flowCanvas.style.touchAction = 'pan-y';
+         console.log('Applied mobile pointer-events fix to flow background.');
      }
   }
 
