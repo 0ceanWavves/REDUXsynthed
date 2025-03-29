@@ -1,0 +1,533 @@
+---
+// src/components/MorphingPolyhedronInteractive.astro - Marble-like interaction
+---
+
+<canvas id="morphing-poly-canvas" class="absolute top-0 left-0 w-full h-full" style="pointer-events: auto !important; z-index: 5; touch-action: none; cursor: grab;"></canvas>
+
+<!-- Loading indicator -->
+<div id="morphing-poly-loading" class="absolute inset-0 flex items-center justify-center bg-[#0a0a1a] z-10" style="display: block; position: fixed; width: 100%; height: 100%;">
+  <div class="flex flex-col items-center">
+    <div class="w-16 h-16 border-4 border-t-purple-500 border-r-transparent border-b-teal-400 border-l-transparent rounded-full animate-spin"></div>
+    <p class="mt-6 text-white/80 text-base">Loading 3D visualization...</p>
+  </div>
+</div>
+
+<!-- Optional SVG filter -->
+<svg width="0" height="0" style="position: absolute; z-index: -1;">
+  <defs>
+    <filter id="gooey-effect">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur" />
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+      <feComposite in="SourceGraphic" in2="goo" operator="atop"/>
+    </filter>
+  </defs>
+</svg>
+
+<script>
+  // Imports and checks (THREE, simplex-noise, isMobile, isFirefox)
+  let THREE;
+  let createNoise4D;
+  let isLoading = true;
+  let isMobile = window.innerWidth < 768;
+  const isFirefox = navigator.userAgent.toLowerCase().includes('firefox');
+
+  // Load dependencies
+  const loadDependencies = async () => { /* ... same as before ... */
+    try {
+        console.log("Loading dependencies...");
+        [THREE, { createNoise4D }] = await Promise.all([
+            import('three'),
+            import('simplex-noise')
+        ]);
+        console.log("Dependencies loaded successfully");
+        isLoading = false;
+        return { THREE, createNoise4D };
+    } catch (error) {
+        console.error("Error loading dependencies:", error);
+        throw error;
+    }
+  };
+
+  // createCircleTexture function (same as before)
+  function createCircleTexture(THREE, size = 128) { /* ... same as before ... */
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return new THREE.Texture();
+    ctx.clearRect(0, 0, size, size);
+    const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+    gradient.addColorStop(0, 'rgba(255,255,255,1)');
+    gradient.addColorStop(0.5, 'rgba(255,255,255,0.5)');
+    gradient.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.format = THREE.RGBAFormat;
+    texture.needsUpdate = true;
+    return texture;
+  }
+
+
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log("Morphing Polyhedron Interactive initialization started");
+
+    const loadingIndicator = document.getElementById('morphing-poly-loading');
+    const canvas = document.getElementById('morphing-poly-canvas') as HTMLCanvasElement | null;
+
+    if (!canvas) { /* ... error handling ... */
+        console.error("Canvas element #morphing-poly-canvas not found!");
+        if(loadingIndicator) loadingIndicator.style.display = 'none';
+        return;
+    }
+
+    setTimeout(async () => {
+      if (loadingIndicator) { /* ... hide loader ... */
+        loadingIndicator.style.display = 'none';
+        console.log("Loading indicator hidden.");
+      }
+
+      try {
+        console.log("Starting dependency load...");
+        const { THREE, createNoise4D } = await loadDependencies();
+        console.log("Dependencies finished loading.");
+
+        setTimeout(() => {
+          console.log("Yielded main thread, starting THREE.js setup...");
+
+          // --- Configuration ---
+           const colors = { /* ... same color definitions ... */
+                background: new THREE.Color("#0a0a1a"),
+                accent1: new THREE.Color("#8162ff"),
+                accent2: new THREE.Color("#00e599"),
+                accent3: new THREE.Color("#ffffff"),
+                edgeColor: new THREE.Color("#e0e0ff"),
+                particleColor1: new THREE.Color("#7142ff"),
+                particleColor2: new THREE.Color("#00c489")
+           };
+
+          const morphInterval = 3000;
+          const holdDuration = 1000;
+          const edgeThresholdAngle = 5;
+          const edgeLineWidth = 1.5;
+          const glowScaleFactor = 1.12;
+          const glowOpacity = 0.20;
+          const autoRotateSpeed = 0.0008; // Slightly slower auto-rotate maybe
+          const dampingFactor = 0.94; // Friction for settling down
+          const minVelocityThreshold = 0.00001; // Lower threshold
+          const noise4D = createNoise4D();
+
+          // --- NEW: Nudge Interaction Configuration ---
+          const nudgeFactor = isMobile ? 0.00008 : 0.00005; // Sensitivity to pointer distance
+
+          console.log("Starting THREE.js setup...");
+
+          // --- Core THREE.js Setup (Scene, Camera, Renderer) ---
+          /* ... same setup as before ... */
+            const scene = new THREE.Scene();
+            scene.background = colors.background;
+            const fov = isMobile ? 60 : 55;
+            const camera = new THREE.PerspectiveCamera(fov, window.innerWidth / window.innerHeight, 0.1, 100);
+            camera.position.z = isMobile ? 4.8 : 4.2;
+            const renderer = new THREE.WebGLRenderer({ /* ... */
+                canvas: canvas,
+                antialias: !isMobile,
+                alpha: true,
+                powerPreference: 'high-performance'
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+            renderer.setClearColor(0x000000, 0);
+
+
+          // --- Geometry Setup for Morphing (Targets, Base, Attribute Generation) ---
+          /* ... same setup as before ... */
+            const targetGeometries = [ /* ... */
+                new THREE.SphereGeometry(1.2, 6, 4), new THREE.OctahedronGeometry(1.3, 0),
+                new THREE.DodecahedronGeometry(1.4, 0), new THREE.SphereGeometry(1.35, 10, 8),
+                new THREE.IcosahedronGeometry(1.3, 1)
+            ];
+            const shapeNames = ["HexSphere", "Octahedron", "Dodecahedron", "DecaSphere", "Icosahedron"];
+            const baseGeometry = new THREE.SphereGeometry(1.1, 32, 16);
+            baseGeometry.morphAttributes.position = [];
+            const basePositionAttribute = baseGeometry.attributes.position;
+            const baseVertex = new THREE.Vector3();
+            const targetVertex = new THREE.Vector3();
+
+            // Morph attribute generation loop...
+            for (let i = 0; i < targetGeometries.length; i++) { /* ... morph generation logic ... */
+                const targetGeo = targetGeometries[i];
+                const targetPositionAttribute = targetGeo.attributes.position;
+                if (!targetPositionAttribute) continue;
+                const morphPositions = new Float32Array(basePositionAttribute.count * 3);
+                for (let j = 0; j < basePositionAttribute.count; j++) {
+                    baseVertex.fromBufferAttribute(basePositionAttribute, j);
+                    let closestDistSq = Infinity, closestVertexIndex = -1;
+                    for (let k = 0; k < targetPositionAttribute.count; k++) {
+                        targetVertex.fromBufferAttribute(targetPositionAttribute, k);
+                        const distSq = baseVertex.distanceToSquared(targetVertex);
+                        if (distSq < closestDistSq) { closestDistSq = distSq; closestVertexIndex = k; }
+                    }
+                    if (closestVertexIndex !== -1) targetVertex.fromBufferAttribute(targetPositionAttribute, closestVertexIndex);
+                    else targetVertex.copy(baseVertex);
+                    morphPositions[j * 3] = targetVertex.x;
+                    morphPositions[j * 3 + 1] = targetVertex.y;
+                    morphPositions[j * 3 + 2] = targetVertex.z;
+                }
+                baseGeometry.morphAttributes.position.push(new THREE.Float32BufferAttribute(morphPositions, 3));
+                targetGeo.dispose();
+            }
+            targetGeometries.length = 0;
+
+
+          // --- Material, Mesh, Edges, Glow ---
+          /* ... same setup as before, ensuring morphTargetInfluences are shared ... */
+            const material = new THREE.MeshStandardMaterial({ /* ... */
+                color: colors.accent1, metalness: 0.3, roughness: 0.6, flatShading: true,
+            });
+            const mesh = new THREE.Mesh(baseGeometry, material);
+            mesh.morphTargetInfluences = new Array(baseGeometry.morphAttributes.position.length).fill(0);
+            scene.add(mesh);
+            const edgesGeometry = new THREE.EdgesGeometry(baseGeometry, edgeThresholdAngle);
+            const edgeMaterial = new THREE.LineBasicMaterial({ /* ... */
+                color: colors.edgeColor, linewidth: edgeLineWidth, transparent: true, opacity: 0.85
+            });
+            const edges = new THREE.LineSegments(edgesGeometry, edgeMaterial);
+            edges.morphTargetInfluences = mesh.morphTargetInfluences;
+            mesh.add(edges);
+            const glowMaterial = new THREE.MeshBasicMaterial({ /* ... */
+                color: colors.accent1, transparent: true, opacity: glowOpacity, side: THREE.BackSide
+            });
+            const glowMesh = new THREE.Mesh(baseGeometry, glowMaterial);
+            glowMesh.scale.set(glowScaleFactor, glowScaleFactor, glowScaleFactor);
+            glowMesh.morphTargetInfluences = mesh.morphTargetInfluences;
+            mesh.add(glowMesh);
+
+
+          // --- Particle System Setup ---
+          /* ... same setup as before ... */
+            console.log("Creating particle system...");
+            const particleCount = isFirefox ? 340 : (isMobile ? 420 : 600);
+            const particleGeometry = new THREE.BufferGeometry();
+            const particlePositions = new Float32Array(particleCount * 3);
+            const particleSizes = new Float32Array(particleCount);
+            const particleColorsAttrib = new Float32Array(particleCount * 3);
+            const atmosphereRadius = isMobile ? 3.0 : 3.5;
+            const particleTexture = createCircleTexture(THREE);
+            // Particle position/color/size generation loop...
+            for (let i = 0; i < particleCount; i++) { /* ... */
+                const i3 = i * 3;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const radius = atmosphereRadius * (0.6 + Math.random() * 0.8);
+                particlePositions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+                particlePositions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                particlePositions[i3 + 2] = radius * Math.cos(phi);
+                const lerpFactor = Math.random();
+                const color = new THREE.Color().lerpColors(colors.particleColor1, colors.particleColor2, lerpFactor);
+                particleColorsAttrib[i3] = color.r;
+                particleColorsAttrib[i3 + 1] = color.g;
+                particleColorsAttrib[i3 + 2] = color.b;
+                particleSizes[i] = isMobile ? (0.05 + Math.random() * 0.12) : (0.035 + Math.random() * 0.1);
+            }
+            particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+            particleGeometry.setAttribute('color', new THREE.BufferAttribute(particleColorsAttrib, 3));
+            particleGeometry.setAttribute('size', new THREE.BufferAttribute(particleSizes, 1));
+            const particleMaterial = new THREE.ShaderMaterial({ /* ... same shader material ... */
+                uniforms: { time: { value: 0.0 }, pointTexture: { value: particleTexture } },
+                vertexShader: `
+                  attribute float size;
+                  attribute vec3 color; // Receive color attribute
+                  varying vec3 vColor;
+                  uniform float time;
+
+                  // Basic noise function (you can replace with simplex if needed)
+                  float rand(vec2 co){ return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453); }
+
+                  void main() {
+                      vColor = color; // Pass color to fragment shader
+                      vec3 pos = position;
+
+                      // Add subtle movement based on time and position
+                      float displacement = sin(pos.y * 2.5 + time * 0.6) * 0.06 + cos(pos.x * 2.5 + time * 0.4) * 0.06;
+                      pos += normalize(pos) * displacement * 0.5; // Move along normal
+                      pos.x += sin(time * 0.3 + position.z * 0.5) * 0.04;
+                       pos.y += cos(time * 0.4 + position.x * 0.5) * 0.04;
+
+
+                      vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+                      // Adjust point size based on distance
+                      gl_PointSize = size * ( 300.0 / -mvPosition.z );
+                      gl_Position = projectionMatrix * mvPosition;
+                  }
+              `,
+              fragmentShader: `
+                  uniform sampler2D pointTexture;
+                  varying vec3 vColor; // Receive color from vertex shader
+
+                  void main() {
+                      // Multiply texture alpha with vertex color
+                      gl_FragColor = vec4( vColor, 1.0 ) * texture2D( pointTexture, gl_PointCoord );
+                      // Fade out particles with low alpha
+                      if (gl_FragColor.a < 0.05) discard;
+                  }
+              `,
+                blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, vertexColors: true
+            });
+            const particleSystem = new THREE.Points(particleGeometry, particleMaterial);
+            scene.add(particleSystem);
+            console.log("Particle system created and added to scene.");
+
+
+          // --- Lighting ---
+          /* ... same lighting setup as before ... */
+            const ambientLight = new THREE.AmbientLight(0xffffff, isMobile ? 0.8 : 0.6); scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(colors.accent1, isMobile ? 1.5 : 1.0); directionalLight.position.set(2, 3, 5); scene.add(directionalLight);
+            const directionalLight2 = new THREE.DirectionalLight(colors.accent2, isMobile ? 1.2 : 0.8); directionalLight2.position.set(-3, -1, 2); scene.add(directionalLight2);
+
+
+          // --- Animation & State ---
+          let time = 0;
+          let animationId: number | null = null;
+          let currentShapeIndex = 0;
+          let targetShapeIndex = 1;
+          let morphProgress = 0;
+          let isMorphing = true;
+          let lastMorphTime = performance.now();
+          let holdStartTime = 0;
+          let morphingPausedByUser = false; // Still pause morphing during interaction
+
+          // --- Interaction State ---
+          const rotationVelocity = { x: 0, y: 0 }; // Stores the current rotational speed
+          let isUserInteracting = false; // Is the pointer currently down?
+
+          // --- Morphing Update Function (same as before) ---
+           function updateMorphing() { /* ... morph update logic ... */
+                if (!isMorphing || morphingPausedByUser) return;
+                 const now = performance.now();
+                 const influences = mesh.morphTargetInfluences; if (!influences) return;
+                 if (morphProgress === 1.0) {
+                     if (holdStartTime === 0) { holdStartTime = now; }
+                     if (now - holdStartTime > holdDuration) {
+                         currentShapeIndex = targetShapeIndex;
+                         targetShapeIndex = (targetShapeIndex + 1) % influences.length;
+                         morphProgress = 0; lastMorphTime = now; holdStartTime = 0;
+                         // console.log(`Morphing to: ${shapeNames[targetShapeIndex]}`); // Optional log
+                     } else { return; }
+                 }
+                 if (morphProgress < 1.0) {
+                     let morphElapsedTime = now - lastMorphTime;
+                     morphProgress = Math.min(1.0, morphElapsedTime / morphInterval);
+                 }
+                 const easedProgress = 0.5 - 0.5 * Math.cos(morphProgress * Math.PI);
+                 for (let i = 0; i < influences.length; i++) { influences[i] = 0; }
+                 influences[currentShapeIndex] = 1 - easedProgress;
+                 influences[targetShapeIndex] = easedProgress;
+                 edgeMaterial.opacity = 0.7 + Math.sin(easedProgress * Math.PI) * 0.25;
+           }
+
+          // --- User Interaction Handlers (Modified for Nudge) ---
+          function onPointerDown(event: PointerEvent) {
+            if (event.target !== canvas) return;
+            event.preventDefault();
+            isUserInteracting = true;
+            morphingPausedByUser = true; // Pause morphing while nudging
+            canvas.style.cursor = 'grabbing';
+            document.body.style.cursor = 'grabbing';
+            // No need to store previousPointerPosition for nudge
+
+            try {
+              canvas.setPointerCapture(event.pointerId);
+              canvas.addEventListener('pointermove', onPointerMove); // Use the modified move handler
+              canvas.addEventListener('pointerup', onPointerUp);
+              canvas.addEventListener('pointercancel', onPointerUp);
+            } catch (err) { console.warn("Pointer capture failed", err); }
+          }
+
+          // --- MODIFIED: Apply nudge based on position relative to center ---
+          function onPointerMove(event: PointerEvent) {
+            if (!isUserInteracting) return;
+            // No preventDefault needed if capture worked
+
+            // Calculate center of the canvas
+            const canvasCenterX = canvas.clientWidth / 2;
+            const canvasCenterY = canvas.clientHeight / 2;
+
+            // Calculate vector from center to pointer
+            const nudgeX = event.clientX - canvasCenterX;
+            const nudgeY = event.clientY - canvasCenterY;
+
+            // Apply nudge force to rotation velocity
+            // Horizontal push affects Y rotation, Vertical push affects X rotation
+            // Adjust signs and factors for desired feel
+            rotationVelocity.y += nudgeX * nudgeFactor;
+            rotationVelocity.x -= nudgeY * nudgeFactor; // Negative Y often feels more natural
+
+            // We DON'T update previousPointerPosition here
+          }
+
+          function onPointerUp(event: PointerEvent) {
+            if (!isUserInteracting) return;
+            isUserInteracting = false; // Stop applying nudge force
+            canvas.style.cursor = 'grab';
+            document.body.style.cursor = '';
+
+            try { // Release pointer and remove listeners
+                 if (canvas.hasPointerCapture(event.pointerId)) { canvas.releasePointerCapture(event.pointerId); }
+                 canvas.removeEventListener('pointermove', onPointerMove);
+                 canvas.removeEventListener('pointerup', onPointerUp);
+                 canvas.removeEventListener('pointercancel', onPointerUp);
+            } catch (err) { console.warn("Pointer release/listener removal failed", err); }
+
+            // Resume morphing after a short delay
+            setTimeout(() => {
+              morphingPausedByUser = false;
+              // Adjust morph timers (same as before)
+              if (morphProgress < 1.0) { lastMorphTime = performance.now() - morphProgress * morphInterval; }
+              else { holdStartTime = performance.now(); }
+            }, 500);
+          }
+          canvas.addEventListener('pointerdown', onPointerDown);
+
+
+          // --- Animation loop (Modified Rotation Logic) ---
+          function animate() {
+            animationId = requestAnimationFrame(animate);
+            const currentTime = performance.now();
+            time = currentTime * 0.001;
+
+            // Update morphing state
+            updateMorphing();
+
+            // --- Rotation Logic ---
+            // 1. Apply damping (friction) to slow down previous motion
+            rotationVelocity.x *= dampingFactor;
+            rotationVelocity.y *= dampingFactor;
+
+             // 2. If not interacting, gently pull towards auto-rotation speed
+             //    This helps it settle back into the auto-spin
+             if (!isUserInteracting) {
+                 // Apply a small portion of the auto-rotate speed constantly
+                 // This will overcome the damping when velocity is low
+                 rotationVelocity.x += autoRotateSpeed * 0.2 * (1.0 - dampingFactor); // Adjust multiplier as needed
+                 rotationVelocity.y += autoRotateSpeed * (1.0 - dampingFactor);
+             }
+
+            // 3. Stop velocity if it becomes negligible
+            if (Math.abs(rotationVelocity.x) < minVelocityThreshold) rotationVelocity.x = 0;
+            if (Math.abs(rotationVelocity.y) < minVelocityThreshold) rotationVelocity.y = 0;
+
+
+            // 4. Apply the final velocity to the mesh rotation
+            mesh.rotation.x += rotationVelocity.x;
+            mesh.rotation.y += rotationVelocity.y;
+
+
+            // --- Update Particle System ---
+            particleSystem.rotation.y += 0.0005;
+            particleSystem.rotation.x += 0.0003;
+            if (particleMaterial.uniforms.time) {
+                particleMaterial.uniforms.time.value = time;
+            }
+
+            // Render scene
+            renderer.render(scene, camera);
+          }
+
+          // --- Start animation, Resize Handling, Visibility Handling ---
+          /* ... same as before ... */
+            console.log("Starting animation loop"); animate();
+            let resizeTimeout; function debounceResize() { /* ... */
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    camera.aspect = window.innerWidth / window.innerHeight;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+                    console.log("Resized renderer and camera");
+                }, 150);
+            } window.addEventListener('resize', debounceResize, false);
+            const handleVisibilityChange = () => { /* ... */
+                if (document.hidden && animationId) { cancelAnimationFrame(animationId); animationId = null; console.log("Animation paused"); }
+                 else if (!document.hidden && !animationId && mesh) {
+                    // Reset timers on resume
+                     if (morphProgress < 1.0) { lastMorphTime = performance.now() - morphProgress * morphInterval; } else { holdStartTime = performance.now(); }
+                     if (particleMaterial.uniforms.time) { particleMaterial.uniforms.time.value = performance.now() * 0.001; } // Resync particle time
+                     animate(); console.log("Animation resumed");
+                 }
+            }; document.addEventListener('visibilitychange', handleVisibilityChange);
+
+          // --- Cleanup on navigation ---
+          /* ... same cleanup logic as before, ensuring particle texture disposal ... */
+           document.addEventListener('astro:before-swap', () => { /* ... full cleanup ... */
+                console.log("Cleaning up Morphing Polyhedron component...");
+                if (animationId) cancelAnimationFrame(animationId);
+                animationId = null;
+
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
+                window.removeEventListener('resize', debounceResize);
+                clearTimeout(resizeTimeout);
+
+                if (canvas) { // Remove canvas listeners
+                    canvas.removeEventListener('pointerdown', onPointerDown);
+                    canvas.removeEventListener('pointermove', onPointerMove);
+                    canvas.removeEventListener('pointerup', onPointerUp);
+                    canvas.removeEventListener('pointercancel', onPointerUp);
+                }
+
+                // Dispose THREE.js objects
+                scene.traverse(object => {
+                    // Dispose Geometries
+                    if (object.geometry) object.geometry.dispose();
+
+                    // Dispose Materials and Textures
+                    if (object.material) {
+                        if (Array.isArray(object.material)) {
+                            object.material.forEach(mat => {
+                                if (mat.map) mat.map.dispose();
+                                // --- START: Dispose Particle Texture in ShaderMaterial ---
+                                if (mat.uniforms && mat.uniforms.pointTexture && mat.uniforms.pointTexture.value) {
+                                    mat.uniforms.pointTexture.value.dispose();
+                                    console.log("Disposed particle texture from shader uniform.");
+                                }
+                                // --- END: Dispose Particle Texture ---
+                                mat.dispose();
+                            });
+                        } else {
+                            if (object.material.map) object.material.map.dispose();
+                            // --- START: Dispose Particle Texture in ShaderMaterial ---
+                            if (object.material.uniforms && object.material.uniforms.pointTexture && object.material.uniforms.pointTexture.value) {
+                                object.material.uniforms.pointTexture.value.dispose();
+                                console.log("Disposed particle texture from shader uniform.");
+                            }
+                            // --- END: Dispose Particle Texture ---
+                            object.material.dispose();
+                        }
+                    }
+                });
+                // --- START: Explicit Particle Texture Dispose (Safety Net) ---
+                if (particleTexture) {
+                    particleTexture.dispose();
+                    console.log("Explicitly disposed particle texture.");
+                }
+                // --- END: Explicit Particle Texture Dispose ---
+
+
+                if (renderer) renderer.dispose();
+                console.log("Morphing Polyhedron cleanup complete.");
+           }, { once: true });
+
+
+          console.log("Morphing Polyhedron Interactive initialization completed.");
+
+        }, 0); // End inner setTimeout
+
+      } catch (error) { /* ... error handling ... */
+            console.error("Error in Morphing Polyhedron initialization:", error);
+            if (loadingIndicator && loadingIndicator.style.display !== 'none') { loadingIndicator.style.display = 'none'; }
+      }
+    }, 50); // End outer setTimeout
+  });
+</script>

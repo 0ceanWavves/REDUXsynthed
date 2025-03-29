@@ -48,6 +48,9 @@ const { title, description, image } = Astro.props;
       }
     </style>
     
+    <!-- Script to remove gooey menu bubbles - loaded early -->
+    <script is:inline src="/remove-bubbles.js"></script>
+    
     <!-- Inline script to remove container box around service cards -->
     <script is:inline>
       document.addEventListener('DOMContentLoaded', function() {

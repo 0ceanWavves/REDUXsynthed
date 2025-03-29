@@ -9,11 +9,11 @@
     <!-- Digital Solutions heading with enhanced glow effect -->
     <p class="text-primary text-2xl md:text-3xl font-bold mb-4 md:mb-5 content-item pointer-events-none digital-solutions-text glow-pulse" style="opacity: 0; transform: translateY(10px);">Digital Solutions</p>
     
-    <!-- Service bullet points with enhanced styling -->
-    <div class="service-bullets my-4 mb-8 crystal-container">
+    <!-- Service bullet points with enhanced styling - MOVED UP AND SMALLER -->
+    <div class="service-bullets my-4 mb-8 crystal-container" style="transform: translateY(-20px) scale(0.75);">
       <div class="crystal-background"></div>
       
-      <!-- Crystalline bullets - SHORTENED MENU ITEMS -->
+      <!-- Crystalline bullets -->
       <div class="crystal-bullet-item" data-delay="0">
         <div class="crystal-icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-glow">
@@ -76,8 +76,25 @@
     background-clip: text;
     text-fill-color: transparent;
     text-shadow: 0 0 15px rgba(0, 229, 153, 0.7);
-    animation: fadeInUp 0.8s ease-out 2.8s both,
-               glowPulse 4s ease-in-out infinite 3.5s;
+    /* Remove original animation to allow our custom letter animation */
+    /* animation: fadeInUp 0.8s ease-out 2.8s both,
+               glowPulse 4s ease-in-out infinite 3.5s; */
+  }
+  
+  /* Letter-specific animations */
+  .digital-letter {
+    display: inline-block;
+    background: inherit;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    text-shadow: 0 0 15px rgba(0, 229, 153, 0.7);
+  }
+  
+  /* Apply the glow pulse to the whole element */
+  .glow-pulse {
+    animation: glowPulse 4s ease-in-out infinite 3.5s;
   }
 
   /* Glow pulse animation for Digital Solutions text */
@@ -105,6 +122,9 @@
     border-radius: 0.75rem;
     overflow: hidden;
     animation: fadeIn 1s ease-out 3s both;
+    /* Added transform to move up and scale down by 25% */
+    transform: translateY(-20px) scale(0.75);
+    transform-origin: center;
   }
 
   .crystal-background {
@@ -325,13 +345,6 @@
         }
       });
       
-      // Force Digital Solutions text to be visible
-      const digitalSolutionsText = document.querySelector('.digital-solutions-text');
-      if (digitalSolutionsText instanceof HTMLElement) {
-        digitalSolutionsText.style.opacity = '1';
-        digitalSolutionsText.style.transform = 'translateY(0)';
-      }
-      
       // Force first paragraph to be visible
       const firstParagraph = document.querySelector('.content-item.fade-in-item');
       if (firstParagraph instanceof HTMLElement) {
@@ -399,3 +412,6 @@
     });
   });
 </script>
+
+<!-- Import the letter animation script -->
+<script src="../scripts/letter-animation.js"></script>

@@ -32,44 +32,37 @@
 
   /* Enhanced title word styling for better visibility */
   .title-word {
-    opacity: 0; /* Start hidden for animation */
-    transform: translateY(-100px) scale(1.2); /* Start position for animation */
+    /* Initial state for animation */
+    opacity: 0;
+    transform: translateY(-60px) scale(1.1); /* Start higher and slightly bigger */
     will-change: transform, opacity;
+
+    /* --- Add/Modify Transition --- */
+    /* Using cubic-bezier for the overshoot "slam" effect on transform, ease-out for opacity */
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.320, 1.275),
+                opacity 0.4s ease-out;
+    /* --- End Transition --- */
+
     position: relative;
     display: block;
     pointer-events: none;
     z-index: 999;
-    /* Add outline and shadow for better visibility */
     letter-spacing: -1px;
     margin-bottom: 5px;
-  }
 
-  /* Individual word styling for different gradient effects */
-  .title-word-create {
-    background: linear-gradient(45deg, #00ddff, #44eeff);
+    /* Gradient from previous step */
+    background: linear-gradient(to bottom, #00e599, #8162ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     text-fill-color: transparent;
-    filter: drop-shadow(0 0 8px rgba(0, 221, 255, 0.7));
+    filter: drop-shadow(0 0 5px rgba(129, 98, 255, 0.5));
   }
 
-  .title-word-design {
-    background: linear-gradient(45deg, #ffffff, #f0f0ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.7));
-  }
-
-  .title-word-build {
-    background: linear-gradient(45deg, #8899ff, #aaeeff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    filter: drop-shadow(0 0 8px rgba(136, 153, 255, 0.7));
+  /* Style for the word once it's animated in */
+  .title-word.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1); /* Final resting state */
   }
 
   /* Shadow elements for added depth effect */
