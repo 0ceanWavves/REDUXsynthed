@@ -26,21 +26,9 @@ export function applyTouchEventFixes() {
       // Firefox-specific fixes
       if (isFirefox) {
         // Firefox needs these specific styles
-        canvas.style.touchAction = 'none';
+        canvas.style.touchAction = 'auto';
         canvas.style.userSelect = 'none';
         canvas.style.mozUserSelect = 'none';
-        
-        // Firefox sometimes needs the touch-action applied directly to the element
-        const forceStyle = document.createElement('style');
-        forceStyle.textContent = `
-          #${canvas.id} {
-            touch-action: none !important;
-            -moz-user-select: none !important;
-            user-select: none !important;
-            pointer-events: auto !important;
-          }
-        `;
-        document.head.appendChild(forceStyle);
       }
       // Chrome/Safari/iOS-specific fixes
       else if (isChrome || isSafari || isIOS) {
@@ -48,9 +36,36 @@ export function applyTouchEventFixes() {
         canvas.style.webkitTouchCallout = 'none';
         canvas.style.webkitUserSelect = 'none';
         canvas.style.webkitTapHighlightColor = 'rgba(0,0,0,0)';
+        
+        // CRITICAL: For Chrome, we need special handling to ensure both touch and mouse work
+        // This flag helps us track which type of event initiated the interaction
+        canvas.dataset.interactionType = 'none';
+        
+        // Add touch event listeners specifically for Chrome
+        const handleTouchStart = function(e) {
+          e.preventDefault();
+          console.log("Chrome touch event captured");
+          canvas.dataset.interactionType = 'touch';
+        };
+        
+        const handleTouchMove = function(e) {
+          // Only prevent default if this was a touch interaction
+          if (canvas.dataset.interactionType === 'touch') {
+            e.preventDefault();
+          }
+        };
+        
+        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+        
+        // Handle mouse events separately from touch
+        canvas.addEventListener('mousedown', function(e) {
+          console.log("Chrome mouse event captured");
+          canvas.dataset.interactionType = 'mouse';
+        });
       }
       
-      // Universal pointer events (more reliable in Firefox)
+      // Universal pointer events (Firefox uses these primarily)
       canvas.addEventListener('pointerdown', function(e) {
         // Don't prevent default in Firefox for pointer events
         if (!isFirefox) {
@@ -65,21 +80,6 @@ export function applyTouchEventFixes() {
           e.preventDefault();
         }
       }, { passive: isFirefox });
-      
-      // Add non-passive touch event listeners for iOS/Chrome
-      if (isChrome || isSafari || isIOS) {
-        const handleTouchStart = function(e) {
-          e.preventDefault();
-          console.log("Touch start captured");
-        };
-        
-        const handleTouchMove = function(e) {
-          e.preventDefault();
-        };
-        
-        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
-        canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-      }
       
       console.log(`Applied ${isFirefox ? 'Firefox' : 'standard'} touch fixes to: ${canvas.id || "canvas element"}`);
     }
@@ -106,6 +106,9 @@ export function applyTouchEventFixes() {
     } else {
       prismBackground.style.touchAction = 'none';
       prismBackground.style.webkitUserSelect = 'none';
+      
+      // CRITICAL: For Chrome, set initial interaction type
+      prismBackground.dataset.interactionType = 'none';
     }
   }
 }
@@ -119,10 +122,9 @@ export function setupCrossBrowserInteraction(element, onInteractionStart, onInte
     // Firefox works best with pointer events
     setupPointerEvents(element, onInteractionStart, onInteractionMove, onInteractionEnd);
   } else if (isChrome || isIOS || isSafari) {
-    // Chrome/iOS work best with touch events
+    // Chrome/iOS - set up BOTH independently
     setupTouchEvents(element, onInteractionStart, onInteractionMove, onInteractionEnd);
-    // But also add pointer events as backup
-    setupPointerEvents(element, onInteractionStart, onInteractionMove, onInteractionEnd);
+    setupMouseEvents(element, onInteractionStart, onInteractionMove, onInteractionEnd);
   } else {
     // All other browsers - use pointer events
     setupPointerEvents(element, onInteractionStart, onInteractionMove, onInteractionEnd);
@@ -137,7 +139,7 @@ export function setupCrossBrowserInteraction(element, onInteractionStart, onInte
 
 // Setup pointer events (better for Firefox)
 function setupPointerEvents(element, onStart, onMove, onEnd) {
-  // For Firefox, we use non-preventDefaullt pointer events
+  // For Firefox, we use non-preventDefault pointer events
   const passive = isFirefox;
   
   element.addEventListener('pointerdown', function(e) {
@@ -175,10 +177,11 @@ function setupPointerEvents(element, onStart, onMove, onEnd) {
   }, { passive });
 }
 
-// Setup touch events (better for Chrome/iOS)
+// Setup touch events specifically for Chrome/iOS - independent from mouse events
 function setupTouchEvents(element, onStart, onMove, onEnd) {
   element.addEventListener('touchstart', function(e) {
     e.preventDefault();
+    element.dataset.interactionType = 'touch';
     
     if (e.touches.length > 0) {
       const touch = e.touches[0];
@@ -206,6 +209,7 @@ function setupTouchEvents(element, onStart, onMove, onEnd) {
     
     const handleTouchEnd = function(endEvent) {
       endEvent.preventDefault();
+      element.dataset.interactionType = 'none';
       
       onEnd({
         preventDefault: () => endEvent.preventDefault(),
@@ -219,4 +223,48 @@ function setupTouchEvents(element, onStart, onMove, onEnd) {
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleTouchEnd, { passive: false });
   }, { passive: false });
+}
+
+// Setup separate mouse events for Chrome/iOS
+function setupMouseEvents(element, onStart, onMove, onEnd) {
+  element.addEventListener('mousedown', function(e) {
+    // Skip if currently in a touch interaction
+    if (element.dataset.interactionType === 'touch') return;
+    
+    element.dataset.interactionType = 'mouse';
+    
+    onStart({
+      clientX: e.clientX,
+      clientY: e.clientY,
+      preventDefault: () => e.preventDefault(),
+      stopPropagation: () => e.stopPropagation()
+    });
+    
+    const handleMouseMove = function(moveEvent) {
+      // Skip if not in a mouse interaction
+      if (element.dataset.interactionType !== 'mouse') return;
+      
+      onMove({
+        clientX: moveEvent.clientX,
+        clientY: moveEvent.clientY,
+        preventDefault: () => moveEvent.preventDefault(),
+        stopPropagation: () => moveEvent.stopPropagation()
+      });
+    };
+    
+    const handleMouseUp = function() {
+      element.dataset.interactionType = 'none';
+      
+      onEnd({
+        preventDefault: () => {},
+        stopPropagation: () => {}
+      });
+      
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+    
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  });
 }

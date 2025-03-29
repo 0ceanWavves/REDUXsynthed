@@ -4,7 +4,7 @@
 
 <div class="prism-container relative">
   <!-- Expanded interactive area to cover entire viewport and placed at higher z-index -->
-  <div id="prism-background" class="prism-interactive-area absolute inset-0 cursor-grab active:cursor-grabbing" style="z-index: 20; touch-action: none;">
+  <div id="prism-background" class="prism-interactive-area absolute inset-0 cursor-grab active:cursor-grabbing" style="z-index: 20; touch-action: none;" data-interaction-type="none">
     <div class="interactivity-hint absolute inset-0 flex items-center justify-center pointer-events-none">
       <div class="bg-gradient-to-r from-transparent via-white/5 to-transparent w-full h-20 animate-pulse-slow"></div>
     </div>
@@ -226,8 +226,14 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Detect Firefox - CRITICAL for preventing double event handling
+    // Detect browsers for targeted fixes
     const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    console.log("Browser detection:", { isFirefox, isChrome, isSafari, isIOS });
     
     // Only run initial animation on all browsers, but don't set up interaction in Firefox
     // (since it will be handled by firefox-fix.js)
@@ -249,6 +255,11 @@
     if (prismBackground) {
       prismBackground.style.zIndex = '20';
       prismBackground.style.pointerEvents = 'auto';
+      
+      // Initialize interaction tracking for Chrome
+      if (isChrome || isSafari || isIOS) {
+        prismBackground.dataset.interactionType = 'none';
+      }
       
       // Use browser-specific styles
       if (isFirefox) {
@@ -312,6 +323,12 @@
       return;
     }
     
+    // Browser detection
+    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
     // CRITICAL: Ensure proper z-index and pointer events
     prismBackground.style.zIndex = '20';
     prismBackground.style.pointerEvents = 'auto';
@@ -322,151 +339,232 @@
     let isInteracting = false;
     let previousMousePosition = { x: 0, y: 0 };
     
-    // Detect Chrome/Safari/iOS
-    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    
-    // Pointer down handler for direct prism interaction
-    function onPointerDown(event: PointerEvent | TouchEvent) {
-      event.preventDefault();
-      
-      // Update visual feedback
-      prismBackground.classList.remove('cursor-grab');
-      prismBackground.classList.add('cursor-grabbing');
-      
-      // Track interaction state
-      isInteracting = true;
-      
-      // Update global state if available
-      if (window.prismaticScene?.setInteraction) {
-        window.prismaticScene.setInteraction(true);
-      }
-      
-      // Get initial position
-      const clientX = 'clientX' in event ? event.clientX : (event as TouchEvent).touches[0].clientX;
-      const clientY = 'clientY' in event ? event.clientY : (event as TouchEvent).touches[0].clientY;
-      previousMousePosition = { x: clientX, y: clientY };
-      
-      // Add handlers
-      document.addEventListener('pointermove', onPointerMove, { passive: false });
-      document.addEventListener('pointerup', onPointerUp, { passive: false });
-      document.addEventListener('pointercancel', onPointerUp, { passive: false });
-      
-      console.log('Prism interaction started');
-    }
-    
-    // Pointer move handler
-    function onPointerMove(event: PointerEvent | TouchEvent) {
-      if (!isInteracting) return;
-      
-      // Skip default behavior
-      event.preventDefault();
-      
-      // Get current position
-      const clientX = 'clientX' in event ? event.clientX : (event as TouchEvent).touches[0].clientX;
-      const clientY = 'clientY' in event ? event.clientY : (event as TouchEvent).touches[0].clientY;
-      
-      // Calculate delta
-      const deltaX = clientX - previousMousePosition.x;
-      const deltaY = clientY - previousMousePosition.y;
-      
-      // Apply rotation via prismaticScene API
-      if (window.prismaticScene?.applyRotation) {
-        // Y axis rotation is controlled by X movement (horizontal)
-        // X axis rotation is controlled by Y movement (vertical)
-        window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
-      }
-      // Direct control fallback if API not available
-      else if (window.prismaticScene?.prism) {
-        window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
-        window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
-      }
-      
-      // Update previous position
-      previousMousePosition = { x: clientX, y: clientY };
-    }
-    
-    // Pointer up handler
-    function onPointerUp(event: PointerEvent | TouchEvent) {
-      event.preventDefault();
-      
-      // Update visual feedback
-      if (prismBackground) {
-        prismBackground.classList.remove('cursor-grabbing');
-        prismBackground.classList.add('cursor-grab');
-      }
-      
-      // Track interaction state
-      isInteracting = false;
-      
-      // Update global state if available - with delay to allow momentum
-      setTimeout(() => {
-        if (window.prismaticScene?.setInteraction) {
-          window.prismaticScene.setInteraction(false);
-        }
-      }, 800);
-      
-      // Remove handlers
-      document.removeEventListener('pointermove', onPointerMove);
-      document.removeEventListener('pointerup', onPointerUp);
-      document.removeEventListener('pointercancel', onPointerUp);
-      
-      console.log('Prism interaction ended');
-    }
-    
+    // For Chrome, we need separate handlers for mouse and touch
     if (isChrome || isSafari || isIOS) {
-      // Use specialized touch handling for Chrome and iOS
-      console.log("Using enhanced touch handling for Chrome/iOS");
+      console.log("Setting up separate mouse/touch handlers for Chrome/iOS");
       
-      // Add touch-specific event listeners with passive: false
-      prismBackground.addEventListener('touchstart', function(e) {
-        e.preventDefault();
-        if (e.touches.length > 0) {
-          const touch = e.touches[0];
-          // Update visual feedback
-          prismBackground.classList.remove('cursor-grab');
-          prismBackground.classList.add('cursor-grabbing');
+      // Initialize interaction tracking
+      prismBackground.dataset.interactionType = 'none';
+      
+      // --- MOUSE HANDLER ---
+      const handleMouseDown = function(e) {
+        // Skip if we're currently in a touch interaction
+        if (prismBackground.dataset.interactionType === 'touch') return;
+        
+        console.log("Chrome mouse interaction started");
+        
+        // Set the interaction type
+        prismBackground.dataset.interactionType = 'mouse';
+        
+        // Update visual feedback
+        prismBackground.classList.remove('cursor-grab');
+        prismBackground.classList.add('cursor-grabbing');
+        
+        // Track interaction state
+        isInteracting = true;
+        
+        // Get initial position
+        previousMousePosition = { x: e.clientX, y: e.clientY };
+        
+        // Update global state if available
+        if (window.prismaticScene?.setInteraction) {
+          window.prismaticScene.setInteraction(true);
+        }
+        
+        const handleMouseMove = function(moveEvent) {
+          // Skip if not in a mouse interaction
+          if (prismBackground.dataset.interactionType !== 'mouse') return;
           
-          // Track interaction state
-          isInteracting = true;
+          // Calculate delta
+          const deltaX = moveEvent.clientX - previousMousePosition.x;
+          const deltaY = moveEvent.clientY - previousMousePosition.y;
           
-          // Update global state if available
-          if (window.prismaticScene?.setInteraction) {
-            window.prismaticScene.setInteraction(true);
+          // Apply rotation
+          if (window.prismaticScene?.applyRotation) {
+            window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
+          } else if (window.prismaticScene?.prism) {
+            window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
+            window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
           }
           
-          previousMousePosition = { x: touch.clientX, y: touch.clientY };
-          console.log('Chrome/iOS touch interaction started');
-        }
-      }, { passive: false });
-      
-      prismBackground.addEventListener('touchmove', function(e) {
-        e.preventDefault();
-        if (!isInteracting || e.touches.length === 0) return;
+          // Update previous position
+          previousMousePosition = { x: moveEvent.clientX, y: moveEvent.clientY };
+        };
         
-        const touch = e.touches[0];
+        const handleMouseUp = function() {
+          console.log("Chrome mouse interaction ended");
+          
+          // Reset the interaction type
+          prismBackground.dataset.interactionType = 'none';
+          
+          // Update visual feedback
+          prismBackground.classList.remove('cursor-grabbing');
+          prismBackground.classList.add('cursor-grab');
+          
+          // Track interaction state
+          isInteracting = false;
+          
+          // Reset global state
+          setTimeout(() => {
+            if (window.prismaticScene?.setInteraction) {
+              window.prismaticScene.setInteraction(false);
+            }
+          }, 800);
+          
+          // Remove handlers
+          document.removeEventListener('mousemove', handleMouseMove);
+          document.removeEventListener('mouseup', handleMouseUp);
+        };
+        
+        // Add document-level event listeners
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+      };
+      
+      // --- TOUCH HANDLER ---
+      const handleTouchStart = function(e) {
+        e.preventDefault();
+        
+        console.log("Chrome touch interaction started");
+        
+        // Set the interaction type
+        prismBackground.dataset.interactionType = 'touch';
+        
+        // Track interaction state
+        isInteracting = true;
+        
+        // Get initial position
+        if (e.touches.length > 0) {
+          const touch = e.touches[0];
+          previousMousePosition = { x: touch.clientX, y: touch.clientY };
+        }
+        
+        // Update global state if available
+        if (window.prismaticScene?.setInteraction) {
+          window.prismaticScene.setInteraction(true);
+        }
+        
+        const handleTouchMove = function(moveEvent) {
+          moveEvent.preventDefault();
+          
+          // Skip if not in a touch interaction
+          if (!isInteracting || prismBackground.dataset.interactionType !== 'touch') return;
+          
+          if (moveEvent.touches.length > 0) {
+            const touch = moveEvent.touches[0];
+            
+            // Calculate delta
+            const deltaX = touch.clientX - previousMousePosition.x;
+            const deltaY = touch.clientY - previousMousePosition.y;
+            
+            // Apply rotation
+            if (window.prismaticScene?.applyRotation) {
+              window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
+            } else if (window.prismaticScene?.prism) {
+              window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
+              window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
+            }
+            
+            // Update previous position
+            previousMousePosition = { x: touch.clientX, y: touch.clientY };
+          }
+        };
+        
+        const handleTouchEnd = function(endEvent) {
+          endEvent.preventDefault();
+          
+          console.log("Chrome touch interaction ended");
+          
+          // Reset the interaction type
+          prismBackground.dataset.interactionType = 'none';
+          
+          // Track interaction state
+          isInteracting = false;
+          
+          // Reset global state
+          setTimeout(() => {
+            if (window.prismaticScene?.setInteraction) {
+              window.prismaticScene.setInteraction(false);
+            }
+          }, 800);
+          
+          // Remove handlers
+          document.removeEventListener('touchmove', handleTouchMove);
+          document.removeEventListener('touchend', handleTouchEnd);
+        };
+        
+        // Add document-level event listeners with passive: false
+        document.addEventListener('touchmove', handleTouchMove, { passive: false });
+        document.addEventListener('touchend', handleTouchEnd, { passive: false });
+      };
+      
+      // Add initial event listeners
+      prismBackground.addEventListener('mousedown', handleMouseDown);
+      prismBackground.addEventListener('touchstart', handleTouchStart, { passive: false });
+      
+    } else {
+      // Non-Firefox, non-Chrome browsers (Safari, Edge, etc.)
+      console.log("Setting up general event handlers for non-Firefox, non-Chrome browser");
+      
+      // Pointer down handler for general interaction
+      function onPointerDown(event) {
+        event.preventDefault();
+        
+        // Update visual feedback
+        prismBackground.classList.remove('cursor-grab');
+        prismBackground.classList.add('cursor-grabbing');
+        
+        // Track interaction state
+        isInteracting = true;
+        
+        // Update global state if available
+        if (window.prismaticScene?.setInteraction) {
+          window.prismaticScene.setInteraction(true);
+        }
+        
+        // Get initial position
+        const clientX = 'clientX' in event ? event.clientX : (event.touches ? event.touches[0].clientX : 0);
+        const clientY = 'clientY' in event ? event.clientY : (event.touches ? event.touches[0].clientY : 0);
+        previousMousePosition = { x: clientX, y: clientY };
+        
+        // Add handlers
+        document.addEventListener('pointermove', onPointerMove, { passive: false });
+        document.addEventListener('pointerup', onPointerUp, { passive: false });
+        document.addEventListener('pointercancel', onPointerUp, { passive: false });
+        
+        console.log('Default pointer interaction started');
+      }
+      
+      // Pointer move handler
+      function onPointerMove(event) {
+        if (!isInteracting) return;
+        
+        // Skip default behavior
+        event.preventDefault();
+        
+        // Get current position
+        const clientX = 'clientX' in event ? event.clientX : (event.touches ? event.touches[0].clientX : 0);
+        const clientY = 'clientY' in event ? event.clientY : (event.touches ? event.touches[0].clientY : 0);
+        
         // Calculate delta
-        const deltaX = touch.clientX - previousMousePosition.x;
-        const deltaY = touch.clientY - previousMousePosition.y;
+        const deltaX = clientX - previousMousePosition.x;
+        const deltaY = clientY - previousMousePosition.y;
         
         // Apply rotation via prismaticScene API
         if (window.prismaticScene?.applyRotation) {
           window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
-        }
-        // Direct control fallback if API not available
-        else if (window.prismaticScene?.prism) {
+        } else if (window.prismaticScene?.prism) {
           window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
           window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
         }
         
         // Update previous position
-        previousMousePosition = { x: touch.clientX, y: touch.clientY };
-      }, { passive: false });
+        previousMousePosition = { x: clientX, y: clientY };
+      }
       
-      prismBackground.addEventListener('touchend', function(e) {
-        e.preventDefault();
+      // Pointer up handler
+      function onPointerUp(event) {
+        event.preventDefault();
         
         // Update visual feedback
         if (prismBackground) {
@@ -484,33 +582,16 @@
           }
         }, 800);
         
-        console.log('Chrome/iOS touch interaction ended');
-      }, { passive: false });
+        // Remove handlers
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerUp);
+        
+        console.log('Default pointer interaction ended');
+      }
       
-      prismBackground.addEventListener('touchcancel', function(e) {
-        e.preventDefault();
-        
-        // Update visual feedback
-        if (prismBackground) {
-          prismBackground.classList.remove('cursor-grabbing');
-          prismBackground.classList.add('cursor-grab');
-        }
-        
-        // Track interaction state
-        isInteracting = false;
-        
-        // Update global state if available
-        if (window.prismaticScene?.setInteraction) {
-          window.prismaticScene.setInteraction(false);
-        }
-        
-        console.log('Chrome/iOS touch interaction cancelled');
-      }, { passive: false });
-    } else {
-      // Use standard pointer events for non-Firefox browsers (that aren't Chrome/iOS)
       // Add event listeners for both mouse and touch
       prismBackground.addEventListener('pointerdown', onPointerDown);
-      prismBackground.addEventListener('touchstart', onPointerDown as EventListener);
     }
     
     // Add hover effects
