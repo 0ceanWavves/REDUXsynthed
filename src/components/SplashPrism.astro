@@ -4,13 +4,13 @@
 
 <div class="prism-container relative">
   <!-- Expanded interactive area to cover entire viewport and placed at higher z-index -->
-  <div id="prism-background" class="prism-interactive-area absolute inset-0 cursor-grab active:cursor-grabbing" style="z-index: 20;">
+  <div id="prism-background" class="prism-interactive-area absolute inset-0 cursor-grab active:cursor-grabbing" style="z-index: 20; touch-action: none;">
     <div class="interactivity-hint absolute inset-0 flex items-center justify-center pointer-events-none">
       <div class="bg-gradient-to-r from-transparent via-white/5 to-transparent w-full h-20 animate-pulse-slow"></div>
     </div>
   </div>
 
-  <!-- Add swipe indicators to show object is interactive -->
+  <!-- Enhanced rotation arrows with more prominence -->
   <div class="rotation-arrows pointer-events-none">
     <div class="curved-arrow main-rotation-arrow">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50" class="arrow-svg">
@@ -53,10 +53,10 @@
 
   .curved-arrow {
     position: absolute;
-    width: 160px;
-    height: 80px;
+    width: 180px; /* Increased size */
+    height: 90px; /* Increased size */
     opacity: 0;
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4)); /* Enhanced glow */
   }
 
   .main-rotation-arrow {
@@ -64,31 +64,31 @@
     top: 40%; 
     left: 50%;
     transform: translate(-50%, -50%);
-    animation: initialFlashArrow 8s ease-out;
+    animation: initialFlashArrow 12s ease-out; /* Longer duration */
     z-index: 30;
   }
 
-  /* Add a background to make the arrow more visible */
+  /* Enhanced arrow styling */
   .arrow-svg {
-    filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.5));
+    filter: drop-shadow(0 0 12px rgba(0, 0, 0, 0.6)); /* Enhanced shadow */
     width: 100%;
     height: 100%;
   }
 
   .arrow-path, .arrow-head {
     stroke: white;
-    stroke-width: 3;
+    stroke-width: 3.5; /* Thicker stroke */
     fill: none;
     stroke-linecap: round;
     stroke-dasharray: 100;
     stroke-dashoffset: 100;
-    stroke-opacity: 0.6;
+    stroke-opacity: 0.8; /* Higher opacity */
     animation: drawArrow 1.5s ease-in-out forwards;
   }
 
   .arrow-head {
     fill: white;
-    fill-opacity: 0.6;
+    fill-opacity: 0.8; /* Higher opacity */
     opacity: 0;
     animation: fadeIn 0.3s ease-in-out forwards;
     animation-delay: 1.2s;
@@ -104,35 +104,37 @@
     animation-delay: 2.2s;
   }
 
-  /* Enhance the label to be more noticeable but more transparent */
+  /* Enhanced rotate label */
   .rotate-label {
     position: absolute;
     width: 100%;
     text-align: center;
     color: white;
-    font-size: 16px;
+    font-size: 18px; /* Larger font */
     font-weight: 700;
-    margin-top: 5px;
-    text-shadow: 0 0 8px rgba(0, 0, 0, 0.8), 0 0 4px rgba(0, 0, 0, 0.5);
+    margin-top: 8px; /* More spacing */
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.9), 0 0 5px rgba(0, 0, 0, 0.6);
     opacity: 0;
-    animation: fadeLabel 8s ease-out;
+    animation: fadeLabel 12s ease-out; /* Longer duration */
     animation-delay: 1.5s;
     border-radius: 12px;
-    padding: 4px 8px;
-    background-color: rgba(0, 0, 0, 0.2);
+    padding: 5px 10px;
+    background-color: rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(4px);
     width: auto;
     left: 50%;
     transform: translateX(-50%);
   }
 
+  /* Enhanced animations */
   @keyframes initialFlashArrow {
-    0%, 10% { opacity: 0; }
-    15%, 25% { opacity: 0.7; }
-    30%, 40% { opacity: 0.3; }
-    45%, 55% { opacity: 0.7; }
-    60%, 70% { opacity: 0.3; }
-    75%, 85% { opacity: 0.7; }
+    0%, 5% { opacity: 0; }
+    10%, 20% { opacity: 0.9; }
+    25%, 35% { opacity: 0.5; }
+    40%, 50% { opacity: 0.9; }
+    55%, 65% { opacity: 0.5; }
+    70%, 80% { opacity: 0.9; }
+    85%, 95% { opacity: 0.5; }
     100% { opacity: 0; }
   }
 
@@ -143,13 +145,13 @@
 
   @keyframes fadeIn {
     to {
-      opacity: 0.7;
+      opacity: 0.9; /* Higher final opacity */
     }
   }
 
   @keyframes fadeLabel {
     0%, 5% { opacity: 0; }
-    10%, 30% { opacity: 0.7; }
+    10%, 40% { opacity: 0.9; } /* Longer visibility, higher opacity */
     100% { opacity: 0; }
   }
 
@@ -164,7 +166,7 @@
     left: 0;
     width: 100vw; /* Full viewport width */
     height: 100vh; /* Full viewport height */
-    touch-action: none; /* Prevent default touch behaviors */
+    touch-action: none !important; /* Prevent default touch behaviors - critical for iOS */
   }
   
   .prism-interactive-area:active {
@@ -190,7 +192,7 @@
     }
     
     .main-rotation-arrow {
-      width: 140px;
+      width: 160px;
       top: 40%; 
       left: 50%;
       transform: translate(-50%, -50%);
@@ -199,6 +201,9 @@
 </style>
 
 <script>
+  // Import touch event fix to enhance cross-browser compatibility
+  import { setupCrossBrowserInteraction } from './touchEventFix.js';
+
   // Extend Window interface to include our custom properties
   declare global {
     interface Window {
@@ -221,20 +226,37 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Setup initial rotation animation for the 3D object
+    // Detect Firefox - CRITICAL for preventing double event handling
+    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    
+    // Only run initial animation on all browsers, but don't set up interaction in Firefox
+    // (since it will be handled by firefox-fix.js)
     setupInitialRotationAnimation();
 
     // Ensure all text elements don't block interaction
     enforcePointerEventsBehavior();
     
-    // Setup direct interaction with the 3D prism
-    setupDirectPrismInteraction();
+    // Setup direct interaction with the 3D prism - SKIP FOR FIREFOX
+    if (!isFirefox) {
+      console.log("Setting up normal interaction handlers (non-Firefox)");
+      setupDirectPrismInteraction();
+    } else {
+      console.log("Firefox detected: using Firefox-specific handlers instead");
+    }
     
     // Fix z-index for prism background and ensure it gets pointer events
     const prismBackground = document.getElementById('prism-background');
     if (prismBackground) {
       prismBackground.style.zIndex = '20';
       prismBackground.style.pointerEvents = 'auto';
+      
+      // Use browser-specific styles
+      if (isFirefox) {
+        prismBackground.style.userSelect = 'none';
+        prismBackground.style.mozUserSelect = 'none';
+      } else {
+        prismBackground.style.touchAction = 'none';
+      }
       
       // Force all parent elements to pass through pointer events
       let parent = prismBackground.parentElement;
@@ -284,81 +306,27 @@
     const prismBackground = document.getElementById('prism-background');
     if (!prismBackground) return;
     
+    // Check if we're on Firefox - if so, exit this function since Firefox has its own handlers
+    if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+      console.log("Firefox detected, skipping non-Firefox interaction setup");
+      return;
+    }
+    
     // CRITICAL: Ensure proper z-index and pointer events
     prismBackground.style.zIndex = '20';
     prismBackground.style.pointerEvents = 'auto';
+    prismBackground.style.touchAction = 'none';
     
     const isMobile = window.innerWidth < 768;
     const rotationSpeed = isMobile ? 0.005 : 0.003;
     let isInteracting = false;
     let previousMousePosition = { x: 0, y: 0 };
     
-    // ENHANCED: Also add listener to document for cases where events might not reach prismBackground
-    function setupGlobalFallbackInteraction() {
-      let isGlobalInteracting = false;
-      
-      document.addEventListener('pointerdown', function(event) {
-        // Only handle if target is not already an interactive element
-        const target = event.target as HTMLElement;
-        const isAlreadyInteractive = target.tagName === 'A' || 
-                                     target.tagName === 'BUTTON' || 
-                                     target.classList.contains('button') ||
-                                     target.hasAttribute('role') && target.getAttribute('role') === 'button';
-                                     
-        if (isAlreadyInteractive) return;
-        
-        isGlobalInteracting = true;
-        previousMousePosition = { x: event.clientX, y: event.clientY };
-        
-        // Update global state if available
-        if (window.prismaticScene?.setInteraction) {
-          window.prismaticScene.setInteraction(true);
-        }
-        
-        const onGlobalPointerMove = function(moveEvent: PointerEvent) {
-          if (!isGlobalInteracting) return;
-          
-          // Calculate delta
-          const deltaX = moveEvent.clientX - previousMousePosition.x;
-          const deltaY = moveEvent.clientY - previousMousePosition.y;
-          
-          // Apply rotation via prismaticScene API
-          if (window.prismaticScene?.applyRotation) {
-            window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
-          }
-          // Direct control fallback if API not available
-          else if (window.prismaticScene?.prism) {
-            window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
-            window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
-          }
-          
-          // Update previous position
-          previousMousePosition = { x: moveEvent.clientX, y: moveEvent.clientY };
-        };
-        
-        const onGlobalPointerUp = function() {
-          isGlobalInteracting = false;
-          
-          // Update global state if available
-          setTimeout(() => {
-            if (window.prismaticScene?.setInteraction) {
-              window.prismaticScene.setInteraction(false);
-            }
-          }, 800);
-          
-          document.removeEventListener('pointermove', onGlobalPointerMove);
-          document.removeEventListener('pointerup', onGlobalPointerUp);
-        };
-        
-        document.addEventListener('pointermove', onGlobalPointerMove);
-        document.addEventListener('pointerup', onGlobalPointerUp);
-      });
-    }
-    
-    // Only set up global fallback if we're not on a mobile device
-    if (!isMobile) {
-      setupGlobalFallbackInteraction();
-    }
+    // Detect Chrome/Safari/iOS
+    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     
     // Pointer down handler for direct prism interaction
     function onPointerDown(event: PointerEvent | TouchEvent) {
@@ -382,9 +350,9 @@
       previousMousePosition = { x: clientX, y: clientY };
       
       // Add handlers
-      document.addEventListener('pointermove', onPointerMove);
-      document.addEventListener('pointerup', onPointerUp);
-      document.addEventListener('pointercancel', onPointerUp);
+      document.addEventListener('pointermove', onPointerMove, { passive: false });
+      document.addEventListener('pointerup', onPointerUp, { passive: false });
+      document.addEventListener('pointercancel', onPointerUp, { passive: false });
       
       console.log('Prism interaction started');
     }
@@ -448,9 +416,102 @@
       console.log('Prism interaction ended');
     }
     
-    // Add event listeners for both mouse and touch
-    prismBackground.addEventListener('pointerdown', onPointerDown);
-    prismBackground.addEventListener('touchstart', onPointerDown as EventListener);
+    if (isChrome || isSafari || isIOS) {
+      // Use specialized touch handling for Chrome and iOS
+      console.log("Using enhanced touch handling for Chrome/iOS");
+      
+      // Add touch-specific event listeners with passive: false
+      prismBackground.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        if (e.touches.length > 0) {
+          const touch = e.touches[0];
+          // Update visual feedback
+          prismBackground.classList.remove('cursor-grab');
+          prismBackground.classList.add('cursor-grabbing');
+          
+          // Track interaction state
+          isInteracting = true;
+          
+          // Update global state if available
+          if (window.prismaticScene?.setInteraction) {
+            window.prismaticScene.setInteraction(true);
+          }
+          
+          previousMousePosition = { x: touch.clientX, y: touch.clientY };
+          console.log('Chrome/iOS touch interaction started');
+        }
+      }, { passive: false });
+      
+      prismBackground.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+        if (!isInteracting || e.touches.length === 0) return;
+        
+        const touch = e.touches[0];
+        // Calculate delta
+        const deltaX = touch.clientX - previousMousePosition.x;
+        const deltaY = touch.clientY - previousMousePosition.y;
+        
+        // Apply rotation via prismaticScene API
+        if (window.prismaticScene?.applyRotation) {
+          window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
+        }
+        // Direct control fallback if API not available
+        else if (window.prismaticScene?.prism) {
+          window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
+          window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
+        }
+        
+        // Update previous position
+        previousMousePosition = { x: touch.clientX, y: touch.clientY };
+      }, { passive: false });
+      
+      prismBackground.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        
+        // Update visual feedback
+        if (prismBackground) {
+          prismBackground.classList.remove('cursor-grabbing');
+          prismBackground.classList.add('cursor-grab');
+        }
+        
+        // Track interaction state
+        isInteracting = false;
+        
+        // Update global state if available - with delay to allow momentum
+        setTimeout(() => {
+          if (window.prismaticScene?.setInteraction) {
+            window.prismaticScene.setInteraction(false);
+          }
+        }, 800);
+        
+        console.log('Chrome/iOS touch interaction ended');
+      }, { passive: false });
+      
+      prismBackground.addEventListener('touchcancel', function(e) {
+        e.preventDefault();
+        
+        // Update visual feedback
+        if (prismBackground) {
+          prismBackground.classList.remove('cursor-grabbing');
+          prismBackground.classList.add('cursor-grab');
+        }
+        
+        // Track interaction state
+        isInteracting = false;
+        
+        // Update global state if available
+        if (window.prismaticScene?.setInteraction) {
+          window.prismaticScene.setInteraction(false);
+        }
+        
+        console.log('Chrome/iOS touch interaction cancelled');
+      }, { passive: false });
+    } else {
+      // Use standard pointer events for non-Firefox browsers (that aren't Chrome/iOS)
+      // Add event listeners for both mouse and touch
+      prismBackground.addEventListener('pointerdown', onPointerDown);
+      prismBackground.addEventListener('touchstart', onPointerDown as EventListener);
+    }
     
     // Add hover effects
     prismBackground.addEventListener('mouseover', () => {

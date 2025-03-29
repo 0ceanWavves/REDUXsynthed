@@ -6,7 +6,8 @@ import Process from "~/components/process.astro";
 import Projects from "~/components/projects.astro";
 import HeroSection from "~/components/HeroSection.astro";
 import FlowBackgroundController from "~/components/FlowBackgroundController.astro";
-import LoadingScreen from "~/components/LoadingScreen.astro"; // Import the new loading screen
+import LoadingScreen from "~/components/LoadingScreen.astro";
+import SectionDivider from "~/components/SectionDivider.astro";
 import "~/styles/index.css";
 
 const { generator, site } = Astro;
@@ -37,6 +38,9 @@ const description =
 		<meta property="og:url" content={site} />
 		<meta name="twitter:card" content="summary_large_image" />
 		
+		<!-- Add brightness adjustments CSS -->
+		<link rel="stylesheet" href="/brightness-adjustments.css" />
+		
 		<!-- initialize theme -->
 		<script is:inline>
 			const themeSaved = localStorage.getItem("theme");
@@ -61,6 +65,35 @@ const description =
 				});
 		</script>
 		
+		<!-- Browser detection and specific fixes -->
+		<script is:inline>
+		  // Detect Firefox and load Firefox-specific fixes
+		  if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+		    console.log("Firefox detected, loading specific fixes");
+		    
+		    // Create and append Firefox-specific script
+		    const firefoxScript = document.createElement('script');
+		    firefoxScript.src = '/firefox-fix.js';
+		    document.head.appendChild(firefoxScript);
+		    
+		    // Add Firefox class to html element
+		    document.documentElement.classList.add('firefox');
+		  }
+		  
+		  // Detect Chrome/iOS and add appropriate classes
+		  const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
+		  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+		               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+		               
+		  if (isChrome) {
+		    document.documentElement.classList.add('chrome');
+		  }
+		  
+		  if (isIOS) {
+		    document.documentElement.classList.add('ios');
+		  }
+		</script>
+		
 		<!-- Emergency fix for z-index issues -->
 		<script src="/fix-zindex.js" is:inline></script>
 		
@@ -69,6 +102,27 @@ const description =
     
     <!-- Extra safety script to ensure title words remain visible -->
     <script src="/ensure-title-visibility.js" is:inline></script>
+		
+		<!-- Add browser-specific CSS -->
+		<style is:inline>
+		  /* Firefox-specific styles */
+		  html.firefox #prism-bg-canvas,
+		  html.firefox #prism-background {
+		    user-select: none !important;
+		    -moz-user-select: none !important;
+		    pointer-events: auto !important;
+		  }
+		  
+		  /* Chrome/iOS-specific styles */
+		  html.chrome #prism-bg-canvas,
+		  html.chrome #prism-background,
+		  html.ios #prism-bg-canvas,
+		  html.ios #prism-background {
+		    touch-action: none !important;
+		    -webkit-user-select: none !important;
+		    pointer-events: auto !important;
+		  }
+		</style>
 	</head>
   <body
     class="h-full overflow-x-hidden text-default text-base selection:bg-secondary selection:text-white bg-[#0a0a1a]"
@@ -76,11 +130,11 @@ const description =
     <!-- Add the Loading Screen component -->
     <LoadingScreen />
     
-    <!-- Flow background with customizable settings - Full opacity -->
+    <!-- Flow background with customizable settings - Full opacity and vibrant colors for brightness -->
     <FlowBackgroundController 
       opacity={1.0}
       zIndex={0}
-      colorMode="default"
+      colorMode="vibrant"
       animationIntensity="medium"
       responsive={true}
       enableStars={true}
@@ -95,8 +149,8 @@ const description =
     <!-- Add a transition gradient between hero and content sections -->
     <div class="section-transition-gradient fixed w-full pointer-events-none z-2" data-astro-cid-j7pv25f6=""></div>
     
-    <!-- Dark overlay to ensure consistent background darkness -->
-    <div class="fixed inset-0 bg-[#0a0a1a]/60 z-5 pointer-events-none"></div>
+    <!-- Dark overlay to ensure consistent background darkness - Reduced opacity -->
+    <div class="fixed inset-0 bg-[#0a0a1a]/40 z-5 pointer-events-none"></div>
     
     <!-- Navigation initially at bottom, moves to top on scroll -->
     <nav id="main-nav" class="fixed bottom-0 left-0 w-full z-50 bg-black/70 backdrop-blur-md py-3 md:py-4 px-4 md:px-6 transition-all duration-500">
@@ -117,10 +171,28 @@ const description =
     <div class="relative z-30 px-4 md:px-8 py-4 md:py-8 mx-auto w-full content-wrapper"
         style="margin-top: 0; margin-bottom: 0;"
     >
-      <Features />
-      <Process />
-      <Projects />
+      <!-- First section - Features/What We Offer -->
+      <div class="section-wrapper" id="features-section">
+        <Features />
+      </div>
+      
+      <!-- Section divider -->
+      <SectionDivider />
+      
+      <!-- Second section - Process/Our Approach -->
+      <div class="section-wrapper" id="process-section">
+        <Process />
+      </div>
+      
+      <!-- Section divider -->
+      <SectionDivider />
+      
+      <!-- Third section - Projects -->
+      <div class="section-wrapper" id="projects-section">
+        <Projects />
+      </div>
     </div>
+    
     <Footer />
     
     <!-- Cursor effect only on desktop -->
@@ -152,7 +224,7 @@ const description =
     width: 50px;
     height: 50px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(129, 98, 255, 0.3) 0%, rgba(129, 98, 255, 0) 70%);
+    background: radial-gradient(circle, rgba(129, 98, 255, 0.4) 0%, rgba(129, 98, 255, 0) 70%);
     pointer-events: none;
     z-index: 9999;
     opacity: 0;
@@ -167,7 +239,7 @@ const description =
     width: 100vw;
     left: 0;
     right: 0;
-    background: linear-gradient(to top, rgba(6, 8, 24, 0.95), rgba(10, 25, 41, 0.5), transparent);
+    background: linear-gradient(to top, rgba(10, 15, 40, 0.85), rgba(15, 35, 60, 0.4), transparent);
     overflow: hidden;
     filter: drop-shadow(0 0 40px rgba(0, 52, 89, 0.5)); 
     transform: scaleY(1);
@@ -189,7 +261,7 @@ const description =
     background-size: 200% 100%; /* Wider SVG coverage */
     width: 200%; /* Extended width for full coverage */
     height: 70vh; /* Much taller waves for more impact */
-    opacity: 0.35; /* More subtle */
+    opacity: 0.45; /* More visible */
     animation: waveAnimation 80s linear infinite; /* Much slower for ominous effect */
     mix-blend-mode: screen;
   }
@@ -278,9 +350,9 @@ const description =
     height: 25vh;
     bottom: 0;
     background: linear-gradient(to bottom, 
-                rgba(10, 10, 26, 0) 0%, 
-                rgba(6, 10, 24, 0.3) 50%,
-                rgba(10, 10, 26, 0.6) 100%);
+                rgba(10, 10, 30, 0) 0%, 
+                rgba(10, 20, 40, 0.3) 50%,
+                rgba(15, 25, 50, 0.5) 100%);
     mix-blend-mode: normal;
     pointer-events: none !important; /* Ensure pointer events are disabled */
     z-index: 2 !important; /* Force lower z-index */
@@ -293,12 +365,33 @@ const description =
     overflow: visible;
   }
   
-  /* Add space between sections */
-  .content-wrapper > :not(:first-child) {
-    margin-top: 2rem;
+  /* Enhanced section wrappers */
+  .section-wrapper {
+    position: relative;
+    width: 100%;
+    scroll-margin-top: 80px;
+    overflow: visible;
   }
   
-  /* Fix for 3D interaction */
+  /* Add scroll-based section identifier */
+  .section-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 0; /* Start with zero height */
+    background: linear-gradient(to bottom, var(--color-primary), transparent);
+    z-index: 5;
+    transition: height 0.5s ease;
+  }
+  
+  /* Active section indicator */
+  .section-wrapper.active::before {
+    height: 100%; /* Full height when active */
+  }
+  
+  /* Fix for 3D interaction - CRITICAL, these must be !important */
   #prism-bg-canvas {
     pointer-events: auto !important;
     z-index: 5 !important;
@@ -307,6 +400,21 @@ const description =
   #prism-background {
     pointer-events: auto !important;
     z-index: 6 !important;
+  }
+  
+  /* Firefox-specific 3D styles - will only apply to Firefox */
+  html.firefox #prism-bg-canvas, 
+  html.firefox #prism-background {
+    user-select: none !important;
+    -moz-user-select: none !important;
+  }
+  
+  /* Chrome/iOS-specific 3D styles - will only apply to Chrome/iOS */
+  html.chrome #prism-bg-canvas,
+  html.chrome #prism-background,
+  html.ios #prism-bg-canvas,
+  html.ios #prism-background {
+    touch-action: none !important;
   }
   
   /* Ensure text doesn't block interaction */
@@ -323,6 +431,12 @@ const description =
 <script>
   // Initialize for all devices
   const isMobile = window.innerWidth < 768;
+  const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+  const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  
+  console.log("Browser detection:", { isFirefox, isChrome, isIOS, isMobile });
   
   // Handle initial setup on page load
   document.addEventListener('DOMContentLoaded', () => {
@@ -333,6 +447,15 @@ const description =
     if (canvas) {
       canvas.style.pointerEvents = 'auto';
       canvas.style.zIndex = '5';
+      
+      // Apply browser-specific styles
+      if (isFirefox) {
+        canvas.style.userSelect = 'none';
+        canvas.style.mozUserSelect = 'none';
+      } else {
+        canvas.style.touchAction = 'none';
+      }
+      
       console.log('Canvas interaction enabled');
     }
     
@@ -340,6 +463,15 @@ const description =
     if (prismBg) {
       prismBg.style.pointerEvents = 'auto';
       prismBg.style.zIndex = '6';
+      
+      // Apply browser-specific styles
+      if (isFirefox) {
+        prismBg.style.userSelect = 'none';
+        prismBg.style.mozUserSelect = 'none';
+      } else {
+        prismBg.style.touchAction = 'none';
+      }
+      
       console.log('Prism background interaction enabled');
     }
     
@@ -360,6 +492,9 @@ const description =
     // Handle navbar scrolling behavior
     handleNavbarScroll();
     
+    // Setup section identification when scrolling
+    setupSectionScrollTracking();
+    
     // Force title words to be visible (additional safety measure)
     setTimeout(() => {
       document.querySelectorAll('.title-word').forEach(word => {
@@ -368,8 +503,67 @@ const description =
           word.style.transform = 'translateY(0) scale(1)';
         }
       });
-    }, 3000);
+    }, 1000);
   });
+  
+  // Track which section is currently visible
+  function setupSectionScrollTracking() {
+    const sections = document.querySelectorAll('.section-wrapper');
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        // If section is at least 40% visible
+        if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
+          // Add active class to this section
+          entry.target.classList.add('active');
+          
+          // Update scroll indicator in navbar
+          updateNavHighlight(entry.target.id);
+        } else {
+          // Remove active class
+          entry.target.classList.remove('active');
+        }
+      });
+    }, { 
+      threshold: [0.2, 0.4, 0.6, 0.8], // Check at multiple thresholds
+      rootMargin: '-10% 0px -10% 0px' // Slightly offset top and bottom
+    });
+    
+    // Observe all section wrappers
+    sections.forEach(section => {
+      observer.observe(section);
+    });
+  }
+  
+  // Update the navigation highlights based on current section
+  function updateNavHighlight(sectionId) {
+    const navLinks = document.querySelectorAll('#main-nav a');
+    
+    // Map section wrapper IDs to nav link hrefs
+    const sectionToNavMap = {
+      'features-section': '#features',
+      'process-section': '#process',
+      'projects-section': '#projects'
+    };
+    
+    // Get the corresponding nav link href
+    const targetHref = sectionToNavMap[sectionId];
+    
+    if (targetHref) {
+      // Remove highlight from all links
+      navLinks.forEach(link => {
+        link.classList.remove('text-blue-300');
+        link.classList.add('text-white');
+      });
+      
+      // Add highlight to active link
+      const activeLink = Array.from(navLinks).find(link => link.getAttribute('href') === targetHref);
+      if (activeLink) {
+        activeLink.classList.remove('text-white');
+        activeLink.classList.add('text-blue-300');
+      }
+    }
+  }
   
   // Navbar scroll behavior
   function handleNavbarScroll() {

@@ -13,59 +13,107 @@ const { title, id } = Astro.props;
   id={id}
   class="flex scroll-mt-24 flex-col items-center gap-2 md:gap-4 space-y-2 md:space-y-4 py-4 md:py-6 lg:py-8 relative section-container w-full"
 >
-  <div class="flex flex-col items-center gap-2 md:gap-4 relative z-10 w-full">
-    <slot name="eyebrow" />
-    <h2 class="gradient-heading text-center text-3xl md:text-4xl lg:text-6xl">{title}</h2>
+  <!-- Section header with enhanced visual styling -->
+  <div class="section-header">
+    <div class="section-header-bg"></div>
+    <div class="header-glow"></div>
+    <div class="flex flex-col items-center gap-2 md:gap-4 relative z-10 w-full">
+      <slot name="eyebrow" />
+      <h2 class="gradient-heading text-center text-3xl md:text-4xl lg:text-6xl">{title}</h2>
+    </div>
   </div>
+  
+  <!-- Lead paragraph -->
   <p class="text-center text-offset text-sm md:text-base lg:text-xl relative z-10 max-w-xs md:max-w-2xl mx-auto">
     <slot name="lead" />
   </p>
+  
+  <!-- Main content -->
   <slot />
+  
+  <!-- Visual indicator for section end -->
+  <div class="section-end-indicator">
+    <div class="indicator-dot"></div>
+  </div>
 </section>
 
 <style>
+  /* Section container styling */
   .section-container {
     position: relative;
-    margin-top: 0; /* Removed negative margin */
+    margin-top: 2rem;
+    margin-bottom: 2rem;
     padding-top: 2.5rem;
     padding-bottom: 2.5rem;
     min-height: auto;
     width: 100%;
-    border: none; /* Ensure no borders */
-    box-shadow: none; /* Ensure no shadows */
-    background: transparent; /* Make background transparent */
-    overflow: hidden; /* Prevent any overflow issues */
-    backdrop-filter: blur(5px); /* Subtle blur effect */
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
   }
   
-  @media (max-width: 768px) {
-    .section-container {
-      padding-top: 1rem;
-      padding-bottom: 1rem;
-    }
-    
-    .gradient-heading::after {
-      filter: blur(30px); /* Less blur on mobile */
-      opacity: 0.1; /* Slightly reduced glow on mobile */
-    }
+  /* Enhanced section header styling */
+  .section-header {
+    position: relative;
+    width: 100%;
+    padding: 1.5rem 0;
+    margin-bottom: 1rem;
+    z-index: 10;
   }
   
-  /* Remove the section background styling
-  .section-background::before {
-    content: '';
+  .section-header-bg {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: radial-gradient(ellipse at center, rgba(10, 10, 30, 0.1), transparent 70%);
-    pointer-events: none;
+    background: linear-gradient(90deg, 
+      rgba(10, 10, 30, 0) 0%, 
+      rgba(20, 20, 50, 0.5) 50%, 
+      rgba(10, 10, 30, 0) 100%
+    );
+    opacity: 0.7;
+    z-index: -1;
+    transform: skewY(-1deg);
   }
-  */
   
-  /* Add subtle glow around headings */
+  .header-glow {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 30px;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(129, 98, 255, 0.3) 0%,
+      rgba(129, 98, 255, 0.1) 40%,
+      transparent 70%
+    );
+    filter: blur(10px);
+    z-index: -1;
+  }
+  
+  /* Gradient heading styling */
   .gradient-heading {
     position: relative;
+    background: linear-gradient(
+      to right,
+      #ffffff 0%,
+      #8162ff 50%,
+      #00e599 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    display: inline-block;
+    padding: 0.5rem 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    text-transform: capitalize;
   }
   
   .gradient-heading::after {
@@ -76,14 +124,33 @@ const { title, id } = Astro.props;
     width: 100%;
     height: 100%;
     transform: translate(-50%, -50%);
-    filter: blur(50px);
-    opacity: 0.15;
+    filter: blur(30px);
+    opacity: 0.2;
     background: radial-gradient(ellipse at center, var(--color-primary), transparent 70%);
     z-index: -1;
     pointer-events: none;
   }
   
-  /* Add a gradient overlay to each section for better transitions */
+  /* Section end indicator */
+  .section-end-indicator {
+    position: relative;
+    width: 100%;
+    height: 40px;
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .indicator-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--color-primary);
+    opacity: 0.7;
+  }
+  
+  /* Background gradient overlay for sections */
   .section-container::before {
     content: '';
     position: absolute;
@@ -91,12 +158,66 @@ const { title, id } = Astro.props;
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to bottom, 
-                rgba(10, 10, 26, 0.4) 0%, 
-                rgba(6, 12, 22, 0.6) 50%,
-                rgba(10, 10, 26, 0.4) 100%);
+    background: linear-gradient(
+      to bottom, 
+      rgba(10, 10, 26, 0.4) 0%, 
+      rgba(6, 12, 22, 0.6) 50%,
+      rgba(10, 10, 26, 0.4) 100%
+    );
     opacity: 0.7;
     z-index: -1;
     transition: opacity 0.5s ease;
   }
+  
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .section-container {
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .section-header {
+      padding: 1rem 0;
+    }
+    
+    .gradient-heading {
+      padding: 0.25rem 1rem;
+    }
+    
+    .gradient-heading::after {
+      filter: blur(20px);
+      opacity: 0.15;
+    }
+    
+    .section-end-indicator {
+      height: 20px;
+      margin-top: 1rem;
+    }
+  }
 </style>
+
+<script>
+  // Add scroll-based animations to section headers
+  document.addEventListener('DOMContentLoaded', () => {
+    const sectionHeaders = document.querySelectorAll('.section-header');
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('header-visible');
+        } else {
+          entry.target.classList.remove('header-visible');
+        }
+      });
+    }, { threshold: 0.3 });
+    
+    sectionHeaders.forEach(header => {
+      observer.observe(header);
+      
+      // Add animation class for initial state
+      header.classList.add('header-animate');
+    });
+  });
+</script>

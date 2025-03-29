@@ -1,6 +1,7 @@
 ---
 import AmorphousPrism from "./AmorphousPrism.astro";
 import Splash from "./splash.astro";
+import CrossBrowserFix from "./crossBrowserFix.astro";
 ---
 
 <!-- HeroSection.astro - Encapsulates the entire hero section of the homepage -->
@@ -16,6 +17,9 @@ import Splash from "./splash.astro";
     <div class="relative z-60 pointer-events-none" style="transform: translateZ(0.1px);">
       <Splash />
     </div>
+    
+    <!-- Add cross-browser fix component -->
+    <CrossBrowserFix />
   </div>
 </section>
 
@@ -42,6 +46,7 @@ import Splash from "./splash.astro";
     will-change: transform;
     z-index: 6 !important;
     pointer-events: auto !important;
+    touch-action: none !important; /* Critical for iOS */
   }
   
   /* Apply gooey effect to the container */
@@ -75,18 +80,23 @@ import Splash from "./splash.astro";
     const canvas = document.getElementById('prism-bg-canvas');
     const heroSection = document.querySelector('.hero-section');
     
-    // Force all interactive elements to have pointer events
+    // Force all interactive elements to have pointer events and touch-action: none
     if (canvas) {
       canvas.style.pointerEvents = 'auto';
       canvas.style.zIndex = '5';
+      canvas.style.touchAction = 'none'; // Critical for iOS/Chrome
     }
     
     if (prismBackground) {
       prismBackground.style.pointerEvents = 'auto';
       prismBackground.style.zIndex = '6';
+      prismBackground.style.touchAction = 'none'; // Critical for iOS/Chrome
     }
     
     if (prismContainer && heroSection) {
+      // Add touch-action: none to the prism container
+      prismContainer.style.touchAction = 'none';
+      
       // Log visibility for debugging
       console.log('Hero section initialized');
       
@@ -137,6 +147,7 @@ import Splash from "./splash.astro";
         document.querySelectorAll('#prism-bg-canvas, #prism-background').forEach(el => {
           if (el instanceof HTMLElement) {
             el.style.pointerEvents = 'auto';
+            el.style.touchAction = 'none'; // Critical for iOS/Chrome
           }
         });
       }, 100);

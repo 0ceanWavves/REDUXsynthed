@@ -7,9 +7,9 @@
 export const themeColors = {
   // Background colors
   background: {
-    primary: "#0a0a1a",    // Dark blue/purple background
-    secondary: "#121225",   // Slightly lighter background
-    overlay: "rgba(0, 0, 0, 0.5)"
+    primary: "#121236",    // Brightened from #0a0a1a
+    secondary: "#1a1a35",   // Brightened from #121225
+    overlay: "rgba(0, 0, 0, 0.4)"  // Reduced opacity from 0.5
   },
   
   // Brand colors
@@ -23,7 +23,7 @@ export const themeColors = {
   // UI colors
   ui: {
     white: "#ffffff",
-    light: "#e0e0ff",      // Light blueish white
+    light: "#e5e5ff",      // Brightened from #e0e0ff
     accent: "#8162ff",     // Same as brand.purple for consistency
     highlight: "#00e599"   // Same as brand.teal for consistency
   },
@@ -31,7 +31,7 @@ export const themeColors = {
   // Text colors
   text: {
     primary: "#ffffff",
-    secondary: "rgba(255, 255, 255, 0.8)",
+    secondary: "rgba(255, 255, 255, 0.9)",  // Brightened from 0.8
     accent: "#8162ff"
   },
   
@@ -50,11 +50,11 @@ export const themeColors = {
 
 // Colors specifically for the FlowBackground component
 export const flowBackgroundColors = {
-  background: "#0a0a1a",  // Dark blue/purple background
-  accent1: "#8162ff",     // Vibrant purple
-  accent2: "#00e599",     // Teal
+  background: "#121236",  // Brightened from #0a0a1a
+  accent1: "#9152ff",     // Brightened from #8162ff
+  accent2: "#00f5a9",     // Brightened from #00e599
   accent3: "#ffffff",     // White for highlights
-  edgeColor: "#e0e0ff",   // Light blueish white for edges
+  edgeColor: "#e5e5ff",   // Brightened from #e0e0ff
   particleColor1: "#7142ff", // Darker purple for particles
   particleColor2: "#00c489"  // Darker teal for particles
 };
@@ -62,7 +62,7 @@ export const flowBackgroundColors = {
 // Colors specifically for the AmorphousPrism component
 export const prismColors = {
   primary: "#8162ff",      // Prism main color
-  edge: "#e0e0ff",         // Edge color
+  edge: "#e5e5ff",         // Brightened from #e0e0ff
   glow: "#7142ff",         // Glow effect color
   particleColor1: "#7142ff", // Particle color 1
   particleColor2: "#00c489"  // Particle color 2
@@ -76,4 +76,4 @@ export const hexToRgb = (hex: string): [number, number, number] => {
     parseInt(result[2], 16) / 255,
     parseInt(result[3], 16) / 255
   ] : [0, 0, 0];
-}; 
+};

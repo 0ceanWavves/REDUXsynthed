@@ -1,0 +1,68 @@
+---
+// crossBrowserFix.astro - Component for handling cross-browser touch/pointer events
+---
+
+<!-- This component doesn't render any visible content, it only adds the touch event fixes -->
+
+<script>
+  // Import the improved touch event fix functions
+  import { applyTouchEventFixes } from './touchEventFix.js';
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    // Detect browsers
+    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    
+    console.log("Browser detection:", { isFirefox, isChrome, isSafari, isIOS });
+    
+    // Apply browser-appropriate fixes
+    if (!isFirefox) {
+      // Use standard fixes for Chrome, Safari, and iOS
+      console.log("Applying standard touch fixes for non-Firefox browser");
+      applyTouchEventFixes();
+    } else {
+      // Firefox is handled separately by the dedicated firefox-fix.js script
+      console.log("Firefox detected, skipping standard touch fixes");
+    }
+    
+    // Handle common adjustments for all browsers
+    const prismCanvas = document.getElementById('prism-bg-canvas');
+    if (prismCanvas) {
+      // Common styles for all browsers
+      prismCanvas.style.pointerEvents = 'auto';
+      prismCanvas.style.zIndex = '5';
+      
+      // Browser-specific styles
+      if (isFirefox) {
+        // Firefox uses user-select: none instead of touch-action: none
+        prismCanvas.style.userSelect = 'none';
+        prismCanvas.style.mozUserSelect = 'none';
+        // Touch-action should be auto for Firefox
+        prismCanvas.style.touchAction = 'auto';
+      } else {
+        // Non-Firefox browsers need touch-action: none
+        prismCanvas.style.touchAction = 'none';
+      }
+    }
+    
+    // Fix the prism background element
+    const prismBackground = document.getElementById('prism-background');
+    if (prismBackground) {
+      // Common styles
+      prismBackground.style.pointerEvents = 'auto';
+      prismBackground.style.zIndex = '20';
+      
+      // Browser-specific styles
+      if (isFirefox) {
+        prismBackground.style.userSelect = 'none';
+        prismBackground.style.mozUserSelect = 'none';
+        prismBackground.style.touchAction = 'auto';
+      } else {
+        prismBackground.style.touchAction = 'none';
+      }
+    }
+  });
+</script>
