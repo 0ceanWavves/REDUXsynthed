@@ -108,3 +108,27 @@ a:active, button:active, .clickable:active {
   transform: translateX(calc(var(--mouse-x) * -20px)) translateY(calc(var(--mouse-y) * -20px));
   transition: transform 0.2s ease-out;
 }
+
+/* Allow scrolling on mobile devices */
+html, body {
+  height: auto !important;
+  overflow-y: auto !important;
+  position: relative !important;
+  touch-action: pan-y !important; /* Explicitly allow vertical scrolling */
+}
+
+/* Ensure mobile-friendly scrolling with touch events */
+@media (max-width: 768px) {
+  html, body {
+    /* These properties ensure mobile scrolling works properly */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto;
+    touch-action: manipulation pan-y;
+  }
+}
+
+/* Fix for any fixed position elements that might interfere with scrolling */
+.fixed-element {
+  will-change: transform;
+  transform: translateZ(0);
+}

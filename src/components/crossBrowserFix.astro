@@ -1,41 +1,52 @@
 ---
-// crossBrowserFix.astro - Component for handling cross-browser touch/pointer events
+/**
+ * Cross-browser compatibility script for touch/pointer events
+ * Ensures proper interaction on mobile and desktop browsers
+ */
 ---
 
 <script>
   // Import touch event fix functions
-  import { setupowserInteraction } from './touchEventFix.js';
+  import { setupCrossBrowserInteraction } from './touchEventFix.js';
 
   document.addEventListener('DOMContentLoaded', () => {
-    // Detect browsers
-    const isFirefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    // Get all interactive canvases
+    const canvasElements = document.querySelectorAll('canvas');
 
-    console.log("Browser detection:", { isFirefox, isChrome, isSafari, isIOS });
-
-    console.log("Applying standard touch fixes..."); 
-    
-    // IMPORTANT: You need to decide WHICH element this standard fix applies to.
-    // 'setupowserInteraction' needs an element and optional callbacks.
-    // Example: Applying it to the whole document body (maybe not ideal?):
-    /*
-    const bodyElement = document.body; 
-    if (bodyElement) {
-        setupowserInteraction(bodyElement, {
-            // Optional callbacks if needed for general interactions
-            onStart: () => console.log("General interaction started on body"),
-            onMove: (data) => console.log("General move on body:", data.deltaX, data.deltaY),
-            onEnd: () => console.log("General interaction ended on body")
-        });
+    if (canvasElements.length > 0) {
+      console.log(`CrossBrowserFix: Found ${canvasElements.length} canvas elements`);
+      
+      // Apply the fix to each canvas
+      canvasElements.forEach((canvas, index) => {
+        // Add ID if missing for easier debugging
+        if (!canvas.id) {
+          canvas.id = `canvas-${index}`;
+        }
+        
+        console.log(`CrossBrowserFix: Setting up for ${canvas.id}`);
+        
+        // Make sure pointer events are enabled
+        canvas.style.pointerEvents = 'auto';
+        
+        // Apply the setupCrossBrowserInteraction function
+        setupCrossBrowserInteraction(canvas);
+      });
     } else {
-        console.error("Document body not found for standard interaction setup.");
+      console.warn('CrossBrowserFix: No canvas elements found on page');
+      
+      // Wait for potential delayed canvas creation
+      setTimeout(() => {
+        const delayedCanvases = document.querySelectorAll('canvas');
+        if (delayedCanvases.length > 0) {
+          console.log(`CrossBrowserFix: Found ${delayedCanvases.length} canvas elements after delay`);
+          delayedCanvases.forEach((canvas, index) => {
+            if (!canvas.id) {
+              canvas.id = `canvas-delayed-${index}`;
+            }
+            setupCrossBrowserInteraction(canvas);
+          });
+        }
+      }, 1000);
     }
-    */
-   
-    // NOTE: The AmorphousPrism canvas interactions are now handled directly by internal handlers in AmorphousPrism.astro
-    console.log("Interaction handling now managed by integrated handlers in AmorphousPrism.astro");
   });
 </script>

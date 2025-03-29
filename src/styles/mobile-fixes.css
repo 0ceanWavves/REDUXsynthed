@@ -21,3 +21,122 @@ canvas {
   pointer-events: none !important;
   touch-action: none !important;
 }
+
+/* Mobile-specific fixes for improved touch handling and scrolling */
+
+/* Global body and HTML fixes for mobile */
+html, body {
+  /* Enable momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Allow vertical scrolling while preventing horizontal scrolling */
+  overflow-x: hidden;
+  overflow-y: auto;
+  /* Explicitly enable vertical pan gestures */
+  touch-action: pan-y;
+  /* Fix for iOS bounce effect */
+  overscroll-behavior-y: none;
+  /* Ensure content doesn't shift */
+  position: relative;
+  /* Ensure proper height */
+  min-height: 100%;
+  height: auto !important;
+}
+
+/* Fix for 3D canvas elements - preserve touch interactions while allowing page scrolling */
+canvas {
+  /* Allow vertical scrolling while preserving horizontal interactions */
+  touch-action: pan-y !important;
+  pointer-events: auto;
+}
+
+/* Only elements that specifically need all touch events captured should use this */
+.touch-none-element {
+  touch-action: none !important;
+}
+
+/* Clear any fixed positioning that might interfere with scrolling */
+.mobile-clear-fixed {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+}
+
+/* Mobile navigation fixes to prevent button overlap */
+@media (max-width: 480px) {
+  /* Adjust spacing for navigation links */
+  #main-nav .nav-link {
+    font-size: 0.7rem !important; /* Even smaller text */
+    padding: 0.25rem 0.5rem !important; /* Smaller padding */
+    margin: 0 0.15rem !important; /* Reduced margins */
+    white-space: nowrap; /* Prevent text wrapping */
+  }
+  
+  /* Make logo smaller on very small screens */
+  #main-nav a.font-bold {
+    font-size: 0.9rem !important;
+  }
+  
+  /* Force smaller gaps between nav items */
+  #main-nav .flex.items-center {
+    gap: 0.25rem !important;
+  }
+  
+  /* Improve tap targets while keeping compact */
+  #main-nav a {
+    min-height: 36px !important;
+    min-width: auto !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* Medium-sized devices and smaller */
+@media (max-width: 768px) {
+  /* Ensure content is scrollable */
+  main {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Improve tap target size for better mobile usability */
+  button, 
+  a, 
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 8px;
+  }
+  
+  /* Fix overlap issues in service section */
+  .service-card-inner {
+    margin-bottom: 1.5rem !important;
+    padding: 1rem !important;
+  }
+  
+  /* Ensure proper spacing between sections */
+  [id$="-section"] {
+    padding-top: 2.5rem !important;
+    padding-bottom: 2.5rem !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  /* Fix for animated tiles to prevent overlap */
+  .tile-canvas-container {
+    height: 100% !important;
+    max-height: 200px !important;
+  }
+}
+
+/* Very small screens - additional fixes */
+@media (max-width: 360px) {
+  #main-nav {
+    padding-left: 0.25rem !important;
+    padding-right: 0.25rem !important;
+  }
+  
+  /* Hide less important elements if needed */
+  #main-nav .nav-link:nth-last-child(1) {
+    display: none;
+  }
+}

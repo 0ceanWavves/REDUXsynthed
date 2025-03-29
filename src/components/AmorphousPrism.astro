@@ -16,13 +16,29 @@
     perspective: 1000;
     -webkit-font-smoothing: antialiased;
   }
+
+  /* Force GPU acceleration for smoother performance */
+  canvas {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    touch-action: none !important; /* Prevent browser touch gestures */
+  }
+  
+  /* Make sure mobile touch works well */
+  @media (max-width: 768px) {
+    canvas {
+      touch-action: none !important;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
 </style>
 
 <!-- Canvas with WebGL-optimized attributes -->
 <canvas id="morphing-poly-canvas" class="absolute top-0 left-0 w-full h-full morphing-poly-canvas" 
   width="800" height="600"
-  style="pointer-events: auto !important; z-index: 50; touch-action: none; cursor: grab; opacity: 1; backface-visibility: hidden; transform: translateZ(0); will-change: transform; background: rgba(5,3,10,0.2);" 
-  data-interactive="true" data-priority="highest"></canvas>
+  style="pointer-events: auto !important; z-index: 50; touch-action: none !important; cursor: grab; opacity: 1; backface-visibility: hidden; transform: translateZ(0); will-change: transform; background: rgba(5,3,10,0.2);" 
+  data-interactive="true" data-priority="highest" tabindex="0"></canvas>
 
 <!-- Force element to remain visible -->
 <style>
@@ -107,9 +123,12 @@
   // TypeScript declarations to fix linter errors
   interface Window {
     __AMORPHOUS_PRISM_LOADING?: boolean;
+    __THREE_LOADING_TRACKED?: boolean;
     THREE?: any;
     __FIREFOX_WEBGL2_HELPER?: (canvas: HTMLCanvasElement) => WebGL2RenderingContext | null;
     removeWebGLErrorMessage?: () => void;
+    prismaticScene?: any;
+    applyPrismRotation?: (deltaX: number, deltaY: number) => boolean;
   }
 
   interface WebGLRendererOptions {
@@ -157,11 +176,40 @@
     let isLoading = true;
     let isMobile = window.innerWidth < 768;
 
+    // Check if THREE is already being tracked by the main layout
+    const isThreeTracked = window.__THREE_LOADING_TRACKED === true;
+
     // Load dependencies with multiple fallback options
     const loadDependencies = async () => {
       try {
         console.log("Loading dependencies - first attempt...");
-        // Try CDN URL first
+        
+        // Check if THREE is already properly loaded in window
+        if (window.THREE && !window.THREE.__isPlaceholder) {
+          console.log("Using existing THREE instance - avoiding duplicate import");
+          THREE = window.THREE;
+          
+          // Just need to load simplex-noise
+          try {
+            const simplexNoiseModule = await import('https://cdn.jsdelivr.net/npm/simplex-noise@4.0.1/dist/esm/simplex-noise.js');
+            createNoise4D = simplexNoiseModule.createNoise4D;
+            console.log("Simplex noise loaded separately");
+          } catch (noiseError) {
+            console.warn("Failed to load simplex-noise, using fallback:", noiseError);
+            createNoise4D = () => {
+              return (x, y, z, w) => Math.sin(x + y + z + w) * 0.5 + 0.5;
+            };
+          }
+          
+          // Still dispatch threeReady event for compatibility with other scripts
+          if (!isThreeTracked) {
+            window.dispatchEvent(new CustomEvent('threeReady', { detail: { THREE } }));
+          }
+          isLoading = false;
+          return { THREE, createNoise4D };
+        }
+        
+        // Otherwise load everything
         try {
           const threeModule = await import('https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js');
           const THREE = threeModule.default || threeModule;
@@ -968,46 +1016,133 @@
           });
           
           // IMPORTANT: If this click is not on our canvas, do nothing
-          if (event.target !== canvas) {
+          if (!canvas || event.target !== canvas) {
             console.log(">>> AmorphousPrism: IGNORING event - wrong target <<<");
             return;
           }
           
-          // Prevent default AND stop propagation to block SplashPrism from capturing
+          // Only prevent default on the canvas element to allow page scrolling
+          // while still enabling 3D object interaction
+          event.preventDefault();
+          event.stopPropagation();
+          
+          isUserInteracting = true;
+          morphingPausedByUser = true;
+          
+          if (canvas) {
+            canvas.style.cursor = 'grabbing';
+          }
+          document.body.style.cursor = 'grabbing'; // Use body cursor too
+          
+          // Save initial position - handle both mouse and touch events
+          if (event.type === 'touchstart') {
+            if (event.touches && event.touches[0]) {
+              previousPointerPosition = { 
+                x: event.touches[0].clientX, 
+                y: event.touches[0].clientY 
+              };
+            }
+          } else {
+            previousPointerPosition = { x: event.clientX, y: event.clientY };
+          }
+          
+          try {
+            // IMPORTANT: Set pointer capture to keep receiving events
+            if (canvas) {
+              canvas.setPointerCapture(event.pointerId);
+              console.log(">>> AmorphousPrism: Pointer capture success <<<");
+              
+              // Store in window object to expose for other scripts
+              window.prismaticScene = {
+                onTouchStart: function(coords) {
+                  console.log(">>> AmorphousPrism: External touch start <<<", coords);
+                  morphingPausedByUser = true;
+                },
+                onTouchMove: function(coords, deltas) {
+                  console.log(">>> AmorphousPrism: External touch move <<<", deltas);
+                  rotationVelocity.y = deltas.deltaX * userRotationSpeed;
+                  rotationVelocity.x = -deltas.deltaY * userRotationSpeed;
+                },
+                onTouchEnd: function() {
+                  console.log(">>> AmorphousPrism: External touch end <<<");
+                  setTimeout(() => {
+                    morphingPausedByUser = false;
+                  }, 500);
+                },
+                setInteraction: function(interacting) {
+                  isUserInteracting = interacting;
+                }
+              };
+              
+              // Add move and up handlers
+              canvas.addEventListener('pointermove', onPointerMove, { passive: false });
+              canvas.addEventListener('pointerup', onPointerUp, { passive: false });
+              canvas.addEventListener('pointercancel', onPointerUp, { passive: false });
+              
+              // Touch-specific handlers
+              canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+              canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+              canvas.addEventListener('touchend', onTouchEnd, { passive: false });
+              canvas.addEventListener('touchcancel', onTouchEnd, { passive: false });
+            }
+          } catch (err) { 
+            console.warn(">>> AmorphousPrism: Pointer capture FAILED <<<", err); 
+          }
+        }
+        
+        // Touch-specific handlers to ensure mobile works properly
+        function onTouchStart(event) {
+          console.log(">>> AmorphousPrism: Touch Start <<<");
+          if (!canvas || event.target !== canvas) return;
+          
           event.preventDefault();
           event.stopPropagation();
           
           isUserInteracting = true;
           morphingPausedByUser = true;
           canvas.style.cursor = 'grabbing';
-          document.body.style.cursor = 'grabbing'; // Use body cursor too
           
-          // Save initial position
-          previousPointerPosition = { x: event.clientX, y: event.clientY };
-          
-          try {
-            // IMPORTANT: Set pointer capture to keep receiving events
-            canvas.setPointerCapture(event.pointerId);
-            console.log(">>> AmorphousPrism: Pointer capture success <<<");
-            
-            // Add move and up handlers
-            canvas.addEventListener('pointermove', onPointerMove);
-            canvas.addEventListener('pointerup', onPointerUp);
-            canvas.addEventListener('pointercancel', onPointerUp);
-          } catch (err) { 
-            console.warn(">>> AmorphousPrism: Pointer capture FAILED <<<", err); 
+          if (event.touches && event.touches[0]) {
+            previousPointerPosition = { 
+              x: event.touches[0].clientX, 
+              y: event.touches[0].clientY 
+            };
           }
         }
         
-        function onPointerMove(event) {
-          console.log(">>> AmorphousPrism: Pointer Move Fired <<<", {
-            interacting: isUserInteracting,
-            deltaX: event.clientX - previousPointerPosition.x,
-            deltaY: event.clientY - previousPointerPosition.y
-          });
+        function onTouchMove(event) {
+          if (!isUserInteracting || !event.touches || !event.touches[0]) return;
           
+          event.preventDefault();
+          event.stopPropagation();
+          
+          const touch = event.touches[0];
+          const deltaX = touch.clientX - previousPointerPosition.x;
+          const deltaY = touch.clientY - previousPointerPosition.y;
+          
+          rotationVelocity.y = deltaX * userRotationSpeed;
+          rotationVelocity.x = -deltaY * userRotationSpeed;
+          
+          previousPointerPosition = { x: touch.clientX, y: touch.clientY };
+        }
+        
+        function onTouchEnd(event) {
+          event.preventDefault();
+          event.stopPropagation();
+          
+          isUserInteracting = false;
+          canvas.style.cursor = 'grab';
+          document.body.style.cursor = '';
+          
+          setTimeout(() => {
+            morphingPausedByUser = false;
+            if (morphProgress < 1.0) { lastMorphTime = performance.now() - morphProgress * morphInterval; }
+            else { holdStartTime = performance.now(); }
+          }, 500);
+        }
+        
+        function onPointerMove(event) {
           if (!isUserInteracting) {
-            console.log(">>> AmorphousPrism: Ignoring move - not interacting <<<");
             return;
           }
           
@@ -1022,24 +1157,12 @@
           rotationVelocity.y = deltaX * userRotationSpeed;
           rotationVelocity.x = -deltaY * userRotationSpeed; // Invert Y
           
-          // Log rotation application
-          console.log(">>> AmorphousPrism: Applied rotation <<<", {
-            velocityX: rotationVelocity.x,
-            velocityY: rotationVelocity.y
-          });
-          
           // Update previous position
           previousPointerPosition = { x: event.clientX, y: event.clientY };
         }
         
         function onPointerUp(event) {
-          console.log(">>> AmorphousPrism: Pointer Up Fired <<<", {
-            interacting: isUserInteracting,
-            pointerId: event.pointerId
-          });
-          
           if (!isUserInteracting) {
-            console.log(">>> AmorphousPrism: Ignoring up - not interacting <<<");
             return;
           }
           
@@ -1053,9 +1176,8 @@
 
           try {
             // Release pointer capture
-            if (canvas.hasPointerCapture(event.pointerId)) {
+            if (canvas.hasPointerCapture && canvas.hasPointerCapture(event.pointerId)) {
               canvas.releasePointerCapture(event.pointerId);
-              console.log(">>> AmorphousPrism: Released pointer capture <<<");
             }
             
             // Remove event listeners
@@ -1066,18 +1188,17 @@
             console.warn(">>> AmorphousPrism: Pointer release/listener removal FAILED <<<", err); 
           }
 
-          // Resume morphing after delay (unchanged)
+          // Resume morphing after delay
           setTimeout(() => {
             morphingPausedByUser = false;
             if (morphProgress < 1.0) { lastMorphTime = performance.now() - morphProgress * morphInterval; }
             else { holdStartTime = performance.now(); }
-            console.log(">>> AmorphousPrism: Resuming morphing <<<");
           }, 500);
         }
         console.log(">>> AmorphousPrism: Attaching pointer listeners to:", canvas);
         
         // IMPORTANT: Use capture=true to ensure we get the events before SplashPrism
-        canvas.addEventListener('pointerdown', onPointerDown, { capture: true });
+        canvas.addEventListener('pointerdown', onPointerDown, { capture: true, passive: false });
 
         // --- Animation loop ---
         function animate() {
@@ -1210,3 +1331,8 @@
     });
   }
 </script>
+
+<!-- 
+  The direct interaction handling script has been moved to an external JavaScript file
+  to avoid TypeScript compilation issues. See /public/prism-interaction-setup.js 
+-->

@@ -36,9 +36,31 @@ document.addEventListener('DOMContentLoaded', function() {
         canvas = document.getElementById(id);
         if (canvas) {
           console.log(`Found canvas with id: ${id}`);
+          // Enhanced pointer events setup
           canvas.style.pointerEvents = 'auto';
-          canvas.style.zIndex = '5';
-          console.log(`Canvas ${id} enabled for interaction`);
+          canvas.style.zIndex = '50'; // Higher z-index to ensure it gets events
+          canvas.style.touchAction = 'none'; // Prevent browser gestures from interfering
+          canvas.style.cursor = 'grab';
+          
+          // Add touch-specific attributes
+          canvas.setAttribute('touch-action', 'none');
+          canvas.setAttribute('data-interactive', 'true');
+          
+          // Add touch and mouse event listeners directly to ensure they work
+          const eventListeners = {
+            'mousedown': () => { canvas.style.cursor = 'grabbing'; },
+            'mouseup': () => { canvas.style.cursor = 'grab'; },
+            'mouseleave': () => { canvas.style.cursor = 'grab'; },
+            'touchstart': (e) => { e.preventDefault(); canvas.style.cursor = 'grabbing'; },
+            'touchend': () => { canvas.style.cursor = 'grab'; },
+            'touchcancel': () => { canvas.style.cursor = 'grab'; }
+          };
+          
+          Object.entries(eventListeners).forEach(([event, handler]) => {
+            canvas.addEventListener(event, handler, { passive: false });
+          });
+          
+          console.log(`Canvas ${id} enabled for interaction with enhanced event handling`);
           break;
         }
       }
@@ -52,6 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (prismBg) {
         prismBg.style.pointerEvents = 'auto';
         prismBg.style.zIndex = '6';
+        prismBg.style.touchAction = 'none';
         console.log("Prism background enabled for interaction");
       }
       
@@ -60,18 +83,30 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Verify THREE is actually valid
       if (THREE && typeof THREE === 'object') {
-        // Add any THREE-specific fixes here
-        // For example:
-        // - Modify raycaster behavior
-        // - Adjust event handling for THREE objects
-        // - Setup custom interaction with THREE elements
-        
+        // Add event handling fix for THREE Raycaster if needed
+        if (THREE.Raycaster && typeof THREE.Raycaster === 'function') {
+          // Force Raycaster to use specific event coordinates conversion
+          const originalRaycasterSetFromEvent = THREE.Raycaster.prototype.setFromCamera;
+          if (originalRaycasterSetFromEvent) {
+            THREE.Raycaster.prototype.setFromCamera = function(coords, camera) {
+              // Fix for Firefox and Safari touch issues
+              if (coords.clientX !== undefined && coords.clientY !== undefined) {
+                const rect = this._canvas ? this._canvas.getBoundingClientRect() : 
+                            document.getElementById('morphing-poly-canvas')?.getBoundingClientRect();
+                if (rect) {
+                  coords.x = ((coords.clientX - rect.left) / rect.width) * 2 - 1;
+                  coords.y = -((coords.clientY - rect.top) / rect.height) * 2 + 1;
+                }
+              }
+              return originalRaycasterSetFromEvent.call(this, coords, camera);
+            };
+          }
+        }
         console.log("THREE object is valid and available for use");
+        console.log("3D-specific interaction fixes applied with Raycaster enhancements");
       } else {
         console.warn("THREE object is not valid, skipping THREE-specific fixes");
       }
-      
-      console.log("3D-specific interaction fixes applied");
     } catch (error) {
       console.error("Error applying 3D interaction fixes:", error);
     }
@@ -126,8 +161,37 @@ document.addEventListener('DOMContentLoaded', function() {
           initializeThreeInteraction(null);
         }
       }
-    }, 3500); // Increased timeout to give more time for THREE to load
+    }, 5000); // Increased timeout to give more time for THREE to load
   }
+  
+  // Extra fallback - add MutationObserver to detect when canvas is added/modified
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'childList' || mutation.type === 'attributes') {
+        const canvas = document.getElementById('morphing-poly-canvas');
+        if (canvas && !canvas.hasAttribute('data-interaction-fixed')) {
+          canvas.setAttribute('data-interaction-fixed', 'true');
+          console.log("MutationObserver detected canvas change, applying interaction fixes");
+          canvas.style.pointerEvents = 'auto';
+          canvas.style.touchAction = 'none';
+          canvas.style.cursor = 'grab';
+          canvas.style.zIndex = '50';
+          
+          // Reinitialize THREE interaction if available
+          if (window.THREE) {
+            initializeThreeInteraction(window.THREE);
+          }
+        }
+      }
+    });
+  });
+  
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['style', 'class']
+  });
   
   console.log("Interaction fix basic styles applied. Waiting for THREE if needed.");
 });

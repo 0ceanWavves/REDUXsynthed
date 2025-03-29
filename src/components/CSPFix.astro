@@ -1,31 +1,130 @@
 ---
-// Simple component to fix Content Security Policy issues with 'eval'
+// This component addresses Content Security Policy (CSP) issues with scripts and font loading
 ---
 
 <script is:inline>
-  // This script adds the unsafe-eval directive to the CSP meta tag if needed
-  (function() {
-    try {
-      // Find any existing CSP meta tags
-      const metaTags = document.querySelectorAll('meta[http-equiv="Content-Security-Policy"]');
-      let hasUnsafeEval = false;
-      
-      metaTags.forEach(meta => {
-        const content = meta.getAttribute('content') || '';
-        if (content.includes("script-src") && !content.includes("'unsafe-eval'")) {
-          // Add unsafe-eval directive
-          meta.setAttribute('content', content.replace(
-            /(script-src[^;]*)/,
-            "$1 'unsafe-eval'"
-          ));
-          hasUnsafeEval = true;
-        }
-      });
-      
-      // If no CSP meta tags with script-src found, we don't need to do anything
-      console.log("CSP fix applied:", hasUnsafeEval ? "Modified existing CSP" : "No CSP modification needed");
-    } catch (error) {
-      console.error("Error applying CSP fix:", error);
+// Add CSP fixes for Cloudflare scripts and font loading
+(function() {
+  // Function to update existing CSP meta tag or create a new one
+  function updateCSP() {
+    const metaTags = document.getElementsByTagName('meta');
+    let cspTag = null;
+    
+    // Find existing CSP tags
+    for (let i = 0; i < metaTags.length; i++) {
+      if (metaTags[i].httpEquiv === 'Content-Security-Policy') {
+        cspTag = metaTags[i];
+        break;
+      }
     }
-  })();
+    
+    // Define allowed script sources including Cloudflare
+    const allowedScriptSources = [
+      "'self'",
+      "'unsafe-inline'",
+      "'unsafe-eval'",
+      "https://cdn.jsdelivr.net",
+      "https://unpkg.com",
+      "https://static.cloudflareinsights.com",
+      "https://*.cloudflareinsights.com",
+      "https://*.cloudflare.com",
+      "https://synthed.xyz",
+      "https://*.synthed.xyz",
+      "https://cdn-cgi"
+    ];
+    
+    // Define allowed font sources
+    const allowedFontSources = [
+      "'self'",
+      "data:",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com",
+      "https://synthed.xyz",
+      "https://*.synthed.xyz"
+    ];
+    
+    if (cspTag) {
+      // Update existing CSP
+      let cspContent = cspTag.content;
+      
+      // Update script-src directive
+      if (cspContent.includes('script-src ')) {
+        const scriptSrcPattern = /script-src ([^;]+)(;|$)/;
+        const match = cspContent.match(scriptSrcPattern);
+        
+        if (match) {
+          let scriptSources = match[1].split(' ');
+          
+          // Add missing sources
+          allowedScriptSources.forEach(source => {
+            if (!scriptSources.includes(source)) {
+              scriptSources.push(source);
+            }
+          });
+          
+          // Create updated directive
+          const updatedScriptSrc = `script-src ${scriptSources.join(' ')}`;
+          
+          // Replace in CSP
+          cspContent = cspContent.replace(scriptSrcPattern, `${updatedScriptSrc};`);
+        }
+      } else {
+        // Add script-src if it doesn't exist
+        cspContent += `; script-src ${allowedScriptSources.join(' ')}`;
+      }
+      
+      // Update font-src directive
+      if (cspContent.includes('font-src ')) {
+        const fontSrcPattern = /font-src ([^;]+)(;|$)/;
+        const match = cspContent.match(fontSrcPattern);
+        
+        if (match) {
+          let fontSources = match[1].split(' ');
+          
+          // Add missing sources
+          allowedFontSources.forEach(source => {
+            if (!fontSources.includes(source)) {
+              fontSources.push(source);
+            }
+          });
+          
+          // Create updated directive
+          const updatedFontSrc = `font-src ${fontSources.join(' ')}`;
+          
+          // Replace in CSP
+          cspContent = cspContent.replace(fontSrcPattern, `${updatedFontSrc};`);
+        }
+      } else {
+        // Add font-src if it doesn't exist
+        cspContent += `; font-src ${allowedFontSources.join(' ')}`;
+      }
+      
+      // Update the tag
+      cspTag.content = cspContent;
+      console.log('CSP updated with Cloudflare sources and font sources');
+    } else {
+      // Create a new CSP meta tag if none exists
+      const newCSPTag = document.createElement('meta');
+      newCSPTag.httpEquiv = 'Content-Security-Policy';
+      newCSPTag.content = `default-src 'self'; script-src ${allowedScriptSources.join(' ')}; font-src ${allowedFontSources.join(' ')}`;
+      document.head.appendChild(newCSPTag);
+      console.log('New CSP created with Cloudflare sources and font sources');
+    }
+  }
+  
+  // Apply CSP fixes when DOM loads
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateCSP);
+  } else {
+    updateCSP();
+  }
+})();
 </script>
+
+<style is:global>
+  /* Ensure font loading is smooth */
+  @font-face {
+    font-family: 'Axiforma';
+    font-display: swap;
+  }
+</style>

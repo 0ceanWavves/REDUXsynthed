@@ -3,8 +3,9 @@
 ---
 
 <div class="prism-container relative">
-  <!-- Expanded interactive area to cover entire viewport and placed at higher z-index -->
-  <div id="prism-background" class="prism-interactive-area absolute inset-0 cursor-grab active:cursor-grabbing" style="z-index: 20; touch-action: none;" data-interaction-type="none">
+  <!-- Updated interactive area style to allow scrolling -->
+  <div id="prism-background" class="prism-interactive-area absolute inset-0 cursor-grab active:cursor-grabbing" 
+       style="z-index: 20; touch-action: auto;" data-interaction-type="none">
     <div class="interactivity-hint absolute inset-0 flex items-center justify-center pointer-events-none">
       <div class="bg-gradient-to-r from-transparent via-white/5 to-transparent w-full h-20 animate-pulse-slow"></div>
     </div>
@@ -155,18 +156,19 @@
     100% { opacity: 0; }
   }
 
-  /* CRITICAL: Make interactive area cover the entire viewport with high priority for events */
+  /* CRITICAL: Make interactive area cover the first 70% of viewport on mobile,
+     allowing scrolling in the lower part */
   .prism-interactive-area {
     cursor: grab;
     z-index: 20; /* Higher z-index than before, but still below text */
     background-color: transparent;
     pointer-events: auto !important; /* Force pointer events to be enabled */
-    position: fixed; /* Fixed position to cover entire viewport */
+    position: absolute; /* Absolute instead of fixed */
     top: 0;
     left: 0;
-    width: 100vw; /* Full viewport width */
-    height: 100vh; /* Full viewport height */
-    touch-action: none !important; /* Prevent default touch behaviors - critical for iOS */
+    width: 100%; /* Full width */
+    height: 70vh; /* Only cover top 70% on mobile */
+    touch-action: auto !important; /* Allow normal touch behaviors for scrolling */
   }
   
   .prism-interactive-area:active {
@@ -197,11 +199,17 @@
       left: 50%;
       transform: translate(-50%, -50%);
     }
+    
+    /* Adjust prism interactive area to only cover top 60% on small devices */
+    .prism-interactive-area {
+      height: 60vh;
+    }
   }
 
-  /* Prism container */
+  /* Prism container style adjustments */
   #prism-background {
-    touch-action: none !important;
+    /* IMPORTANT: Allow normal touch behavior */
+    touch-action: auto !important;
     -webkit-user-select: none !important;
     -webkit-touch-callout: none !important;
     -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
@@ -243,7 +251,7 @@
 
 <script>
   // Import touch event fix to enhance cross-browser compatibility
-  import { setupowserInteraction } from './touchEventFix.js';
+  import { setupCrossBrowserInteraction } from './touchEventFix.js';
 
   // Extend Window interface to include our custom properties
   declare global {
@@ -273,153 +281,88 @@
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isMobile = window.innerWidth < 768;
     
-    console.log("Browser detection:", { isFirefox, isChrome, isSafari, isIOS });
+    console.log("Browser detection:", { isFirefox, isChrome, isSafari, isIOS, isMobile });
     
-    // --- AmorphousPrism Coordination: Add a listener to disable SplashPrism when AmorphousPrism becomes active ---
-    // This function will be called periodically to check if AmorphousPrism is now active
-    const splashCleanupFunctions: Array<() => void> = [];
-    let splashEventHandlersRegistered = false;
-    
-    // Function to check for and handle AmorphousPrism presence
-    function checkForAmorphousPrism() {
-      if (window.prismaticScene && window.prismaticScene.canvas) {
-        console.log("🔎 AmorphousPrism detected - removing all SplashPrism event handlers!");
-        
-        // Clean up all event handlers
-        splashCleanupFunctions.forEach(cleanup => {
-          if (typeof cleanup === 'function') {
-            cleanup();
+    // Only setup prism interaction if we're at the top of the page
+    // This helps ensure scrolling works normally
+    const setupInteraction = () => {
+      const prismBackground = document.getElementById('prism-background');
+      if (!prismBackground) return;
+      
+      // Update prism area styles to ensure scrolling works
+      prismBackground.style.touchAction = 'auto';
+      if (isMobile) {
+        // On mobile, only make the top portion interactive
+        prismBackground.style.height = '60vh';
+      }
+      
+      // Setup 3D object interaction only if the scene exists
+      if (window.prismaticScene && window.prismaticScene.prism) {
+        // Use our updated cross-browser interaction helper
+        setupCrossBrowserInteraction(prismBackground, {
+          onMove: ({ deltaX, deltaY }) => {
+            const rotationSpeed = isMobile ? 0.005 : 0.003;
+            
+            // Apply rotation via API if available
+            if (window.prismaticScene?.applyRotation) {
+              window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
+            } 
+            // Otherwise directly modify rotation
+            else if (window.prismaticScene?.prism) {
+              window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
+              window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
+            }
+          },
+          onStart: () => {
+            if (window.prismaticScene?.setInteraction) {
+              window.prismaticScene.setInteraction(true);
+            }
+            
+            // Add grabbing cursor
+            if (prismBackground) {
+              prismBackground.classList.add('cursor-grabbing');
+              prismBackground.classList.remove('cursor-grab');
+            }
+          },
+          onEnd: () => {
+            if (window.prismaticScene?.setInteraction) {
+              window.prismaticScene.setInteraction(false);
+            }
+            
+            // Reset cursor
+            if (prismBackground) {
+              prismBackground.classList.remove('cursor-grabbing');
+              prismBackground.classList.add('cursor-grab');
+            }
           }
         });
-        
-        // Reset registration flag
-        splashEventHandlersRegistered = false;
-        
-        // Clear the prism background's interaction state
-        const prismBackground = document.getElementById('prism-background');
-        if (prismBackground) {
-          // Remove all event listeners completely
-          prismBackground.replaceWith(prismBackground.cloneNode(true));
-          console.log("🧹 Completely removed all event handlers from prism-background");
-        }
-        
-        // Stop checking
-        return true;
       }
-      return false;
-    }
+      
+      // Disable the rotation arrow once user has interacted
+      prismBackground.addEventListener('pointerdown', () => {
+        const arrow = document.querySelector('.main-rotation-arrow');
+        if (arrow) {
+          arrow.style.opacity = '0';
+          arrow.style.animation = 'none';
+        }
+      }, { once: true });
+    };
     
-    // Check immediately on load
-    if (!checkForAmorphousPrism()) {
-      // If AmorphousPrism isn't active yet, set up an interval to check periodically
-      const checkInterval = setInterval(() => {
-        if (checkForAmorphousPrism()) {
-          clearInterval(checkInterval);
-        }
-      }, 500);
-      
-      // Also check when document style mutations happen (might indicate component mounting)
-      const observer = new MutationObserver((mutations) => {
-        if (checkForAmorphousPrism()) {
-          observer.disconnect();
-        }
-      });
-      
-      // Start observing
-      observer.observe(document.body, { 
-        childList: true, 
-        subtree: true,
-        attributeFilter: ['style', 'class'] 
-      });
-      
-      // Only run initial animation on all browsers, but don't set up interaction in Firefox
-      // (since it will be handled by firefox-fix.js)
-      setupInitialRotationAnimation();
-
-      // Ensure all text elements don't block interaction
-      enforcePointerEventsBehavior();
-      
-      // Chrome-specific grabbing fix
-      if (isChrome) {
-        // Force Chrome to recognize the prism as an interactive element
-        const prismBackground = document.getElementById('prism-background');
-        if (prismBackground) {
-          console.log("Applying Chrome-specific grabbing fix");
-          // Apply critical Chrome-specific styles
-          prismBackground.style.cssText = `
-            touch-action: none !important;
-            -webkit-user-select: none !important;
-            -webkit-touch-callout: none !important;
-            -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-            pointer-events: auto !important;
-            user-select: none !important;
-            cursor: grab;
-            z-index: 20;
-          `;
-          
-          // Force all parent elements to also not block events
-          let parent = prismBackground.parentElement;
-          while (parent && parent !== document.body) {
-            if (parent instanceof HTMLElement) {
-              parent.style.pointerEvents = 'auto';
-              parent.style.touchAction = 'auto';
-            }
-            parent = parent.parentElement;
-          }
-          
-          // Set document-level style to prevent Chrome from handling touch events its own way
-          document.documentElement.style.touchAction = 'auto';
-          document.documentElement.style.overscrollBehavior = 'none';
-        }
-      }
-      
-      // Setup direct interaction with the 3D prism - SKIP FOR FIREFOX
-      if (!isFirefox) {
-        console.log("Setting up normal interaction handlers (non-Firefox)");
-        setupDirectPrismInteraction(splashCleanupFunctions);
-      } else {
-        console.log("Firefox detected: using Firefox-specific handlers instead");
-      }
-      
-      // Fix z-index for prism background and ensure it gets pointer events
-      const prismBackground = document.getElementById('prism-background');
-      if (prismBackground) {
-        prismBackground.style.zIndex = '20';
-        prismBackground.style.pointerEvents = 'auto';
-        
-        // Initialize interaction tracking for Chrome
-        if (isChrome || isSafari || isIOS) {
-          prismBackground.dataset.interactionType = 'none';
-        }
-        
-        // Browser-specific styles
-        if (isFirefox) {
-          if (prismBackground) {
-            prismBackground.style.userSelect = 'none';
-          }
-        } else {
-          if (prismBackground) {
-            prismBackground.style.touchAction = 'none';
-          }
-        }
-        
-        // Force all parent elements to pass through pointer events
-        let parent = prismBackground.parentElement;
-        while (parent && parent !== document.body) {
-          if (parent instanceof HTMLElement) {
-            parent.style.pointerEvents = 'auto';
-            parent.style.touchAction = 'auto';
-          }
-          parent = parent.parentElement;
-        }
-      }
-    }
+    // Wait a bit for the scene to initialize
+    setTimeout(setupInteraction, 500);
+    
+    // Setup initial rotation animation
+    setupInitialRotationAnimation();
+    
+    // Ensure all text elements don't block interaction
+    enforcePointerEventsBehavior();
   });
   
   // Function to ensure text elements don't block interaction with the 3D object
   function enforcePointerEventsBehavior() {
-    // ENHANCED: Select all possible text and content elements
+    // Select all text elements
     const textElements = document.querySelectorAll('.splash-title, .title-word, .gradient-text, .splash-content, .content-item, .check-circle, p, h1, h2, h3, h4, h5, h6, .text-primary');
     
     textElements.forEach(el => {
@@ -435,454 +378,18 @@
         el.style.pointerEvents = 'auto';
       }
     });
-    
-    // Make sure the prism background can receive events
-    const prismBackground = document.getElementById('prism-background');
-    if (prismBackground) {
-      prismBackground.style.pointerEvents = 'auto';
-    }
-    
-    // Make sure the AmorphousPrism canvas is receiving events
-    const canvas = document.getElementById('prism-bg-canvas');
-    if (canvas) {
-      canvas.style.pointerEvents = 'auto';
-    }
-  }
-  
-  // Setup direct control of the 3D prism through the prism-background element
-  function setupDirectPrismInteraction(cleanupFunctions: Array<() => void>) {
-    const prismBackground = document.getElementById('prism-background');
-    if (!prismBackground) return;
-    
-    // Check if we're on Firefox - if so, exit this function since Firefox has its own handlers
-    if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-      console.log("Firefox detected, skipping non-Firefox interaction setup");
-      return;
-    }
-    
-    // IMPORTANT: Check if AmorphousPrism is already active and handling interactions
-    // by checking for window.prismaticScene
-    if (window.prismaticScene && window.prismaticScene.canvas) {
-      console.log("AmorphousPrism detected, skipping SplashPrism interaction setup");
-      return;
-    }
-    
-    // Browser detection
-    const isChrome = /Chrome/.test(navigator.userAgent) && !/Edge/.test(navigator.userAgent);
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                 (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    
-    // CRITICAL: Ensure proper z-index and pointer events
-    prismBackground.style.zIndex = '20';
-    prismBackground.style.pointerEvents = 'auto';
-    prismBackground.style.touchAction = 'none';
-    
-    const isMobile = window.innerWidth < 768;
-    const rotationSpeed = isMobile ? 0.005 : 0.003;
-    let isInteracting = false;
-    let previousMousePosition = { x: 0, y: 0 };
-    
-    // Store function references for removal
-    let onMouseOver: (e: MouseEvent) => void;
-    let onMouseOut: (e: MouseEvent) => void;
-
-    // For Chrome, we need separate handlers for mouse and touch
-    if (isChrome || isSafari || isIOS) {
-      console.log("Setting up separate mouse/touch handlers for Chrome/iOS");
-      
-      // Initialize interaction tracking
-      prismBackground.dataset.interactionType = 'none';
-      
-      // --- MOUSE HANDLER ---
-      let handleMouseMove: (e: MouseEvent) => void;
-      let handleMouseUp: (e: MouseEvent) => void;
-      
-      const handleMouseDown = function(e: MouseEvent) {
-        // Skip if we're currently in a touch interaction
-        if (prismBackground && prismBackground.dataset.interactionType === 'touch') return;
-        
-        // Skip if AmorphousPrism is active
-        if (window.prismaticScene && window.prismaticScene.canvas) {
-          console.log("Ignoring mouse event because AmorphousPrism is active");
-          return;
-        }
-        
-        console.log("Chrome mouse interaction started");
-        
-        // CRITICAL: Prevent default behavior to stop Chrome from doing its own handling
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Force set the interaction type
-        if (prismBackground) {
-          prismBackground.dataset.interactionType = 'mouse';
-          prismBackground.setAttribute('data-interaction-type', 'mouse');
-          
-          // Update visual feedback
-          prismBackground.classList.remove('cursor-grab');
-          prismBackground.classList.add('cursor-grabbing');
-        }
-        
-        // Track interaction state
-        isInteracting = true;
-        
-        // Get initial position
-        previousMousePosition = { x: e.clientX, y: e.clientY };
-        
-        // Update global state if available
-        if (window.prismaticScene?.setInteraction) {
-          window.prismaticScene.setInteraction(true);
-        }
-        
-        handleMouseMove = function(moveEvent: MouseEvent) {
-          // CRITICAL: Prevent default behavior to stop Chrome's scrolling
-          moveEvent.preventDefault();
-          moveEvent.stopPropagation();
-          
-          // Skip if not in a mouse interaction
-          if (!prismBackground || prismBackground.dataset.interactionType !== 'mouse') {
-            console.log("Mouse move ignored - wrong interaction type:", 
-                       prismBackground ? prismBackground.dataset.interactionType : 'element missing');
-            return;
-          }
-          
-          console.log("Processing mouse move");
-          
-          // Calculate delta
-          const deltaX = moveEvent.clientX - previousMousePosition.x;
-          const deltaY = moveEvent.clientY - previousMousePosition.y;
-          
-          // Apply rotation
-          if (window.prismaticScene?.applyRotation) {
-            window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
-          } else if (window.prismaticScene?.prism) {
-            window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
-            window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
-          }
-          
-          // Update previous position
-          previousMousePosition = { x: moveEvent.clientX, y: moveEvent.clientY };
-        };
-        
-        handleMouseUp = function(upEvent: MouseEvent) {
-          // CRITICAL: Prevent default behavior
-          if (upEvent) {
-            upEvent.preventDefault();
-            upEvent.stopPropagation();
-          }
-          
-          console.log("Chrome mouse interaction ended");
-          
-          if (prismBackground) {
-            // Reset the interaction type
-            prismBackground.dataset.interactionType = 'none';
-            prismBackground.setAttribute('data-interaction-type', 'none');
-            
-            // Update visual feedback
-            prismBackground.classList.remove('cursor-grabbing');
-            prismBackground.classList.add('cursor-grab');
-          }
-          
-          // Track interaction state
-          isInteracting = false;
-          
-          // Reset global state
-          setTimeout(() => {
-            if (window.prismaticScene?.setInteraction) {
-              window.prismaticScene.setInteraction(false);
-            }
-          }, 800);
-          
-          // Remove handlers
-          document.removeEventListener('mousemove', handleMouseMove);
-          document.removeEventListener('mouseup', handleMouseUp);
-          document.removeEventListener('mouseleave', handleMouseUp);
-        };
-        
-        // Add document-level event listeners with capture: true to ensure events are caught
-        document.addEventListener('mousemove', handleMouseMove, { capture: true });
-        document.addEventListener('mouseup', handleMouseUp, { capture: true });
-        // Also handle mouse leaving the window
-        document.addEventListener('mouseleave', handleMouseUp, { capture: true });
-      };
-      
-      // --- TOUCH HANDLER ---
-      let handleTouchMove: (e: TouchEvent) => void;
-      let handleTouchEnd: (e: TouchEvent) => void;
-      
-      const handleTouchStart = function(e: TouchEvent) {
-        // Skip if AmorphousPrism is active
-        if (window.prismaticScene && window.prismaticScene.canvas) {
-          console.log("Ignoring touch event because AmorphousPrism is active");
-          return;
-        }
-        
-        e.preventDefault();
-        
-        console.log("Chrome touch interaction started");
-        
-        if (!prismBackground) return;
-        
-        // Set the interaction type AND force it to the element's dataset
-        prismBackground.dataset.interactionType = 'touch';
-        
-        // Force the attribute to be set directly (belt and suspenders approach)
-        prismBackground.setAttribute('data-interaction-type', 'touch');
-        
-        // Track interaction state
-        isInteracting = true;
-        
-        // Get initial position
-        if (e.touches.length > 0) {
-          const touch = e.touches[0];
-          previousMousePosition = { x: touch.clientX, y: touch.clientY };
-        }
-        
-        // Update global state if available
-        if (window.prismaticScene?.setInteraction) {
-          window.prismaticScene.setInteraction(true);
-        }
-        
-        handleTouchMove = function(moveEvent: TouchEvent) {
-          moveEvent.preventDefault();
-          
-          // Only check isInteracting and log what's happening for debugging
-          if (!isInteracting) {
-            console.log("Touch move ignored - not interacting");
-            return;
-          }
-          
-          if (prismBackground) {
-            console.log("Touch interaction type:", prismBackground.dataset.interactionType);
-          }
-          
-          if (moveEvent.touches.length > 0) {
-            const touch = moveEvent.touches[0];
-            
-            // Calculate delta
-            const deltaX = touch.clientX - previousMousePosition.x;
-            const deltaY = touch.clientY - previousMousePosition.y;
-            
-            // Apply rotation
-            if (window.prismaticScene?.applyRotation) {
-              window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
-            } else if (window.prismaticScene?.prism) {
-              window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
-              window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
-            }
-            
-            // Update previous position
-            previousMousePosition = { x: touch.clientX, y: touch.clientY };
-          }
-        };
-        
-        handleTouchEnd = function(endEvent: TouchEvent) {
-          endEvent.preventDefault();
-          
-          console.log("Chrome touch interaction ended");
-          
-          if (prismBackground) {
-            // Reset the interaction type
-            prismBackground.dataset.interactionType = 'none';
-          }
-          
-          // Track interaction state
-          isInteracting = false;
-          
-          // Reset global state
-          setTimeout(() => {
-            if (window.prismaticScene?.setInteraction) {
-              window.prismaticScene.setInteraction(false);
-            }
-          }, 800);
-          
-          // Remove handlers
-          document.removeEventListener('touchmove', handleTouchMove);
-          document.removeEventListener('touchend', handleTouchEnd);
-        };
-        
-        // Add document-level event listeners with passive: false and capture: true
-        document.addEventListener('touchmove', handleTouchMove, { passive: false, capture: true });
-        document.addEventListener('touchend', handleTouchEnd, { passive: false, capture: true });
-      };
-      
-      // Add initial event listeners
-      prismBackground.addEventListener('mousedown', handleMouseDown);
-      prismBackground.addEventListener('touchstart', handleTouchStart, { passive: false, capture: true });
-      
-      // Register cleanup function
-      cleanupFunctions.push(() => {
-        // Clean up all event listeners we added
-        if (prismBackground) {
-          prismBackground.removeEventListener('mousedown', handleMouseDown);
-          prismBackground.removeEventListener('touchstart', handleTouchStart);
-          
-          prismBackground.removeEventListener('mouseover', onMouseOver);
-          prismBackground.removeEventListener('mouseout', onMouseOut);
-        }
-        
-        // Remove document-level event listeners to be safe
-        if (handleMouseMove) document.removeEventListener('mousemove', handleMouseMove);
-        if (handleMouseUp) document.removeEventListener('mouseup', handleMouseUp);
-        if (handleMouseUp) document.removeEventListener('mouseleave', handleMouseUp);
-        if (handleTouchMove) document.removeEventListener('touchmove', handleTouchMove);
-        if (handleTouchEnd) document.removeEventListener('touchend', handleTouchEnd);
-        
-        console.log("🧹 All SplashPrism Chrome/Safari event handlers removed");
-      });
-      
-    } else {
-      // Non-Firefox, non-Chrome browsers (Safari, Edge, etc.)
-      console.log("Setting up general event handlers for non-Firefox, non-Chrome browser");
-      
-      // Pointer event handlers
-      let onPointerMove: (e: PointerEvent) => void;
-      let onPointerUp: (e: PointerEvent) => void;
-      
-      // Pointer down handler for general interaction
-      function onPointerDown(event: PointerEvent) {
-        if (!prismBackground) return;
-        
-        // Skip if AmorphousPrism is active
-        if (window.prismaticScene && window.prismaticScene.canvas) {
-          console.log("Ignoring pointer event because AmorphousPrism is active");
-          return;
-        }
-        
-        event.preventDefault();
-        
-        // Update visual feedback
-        prismBackground.classList.remove('cursor-grab');
-        prismBackground.classList.add('cursor-grabbing');
-        
-        // Track interaction state
-        isInteracting = true;
-        
-        // Update global state if available
-        if (window.prismaticScene?.setInteraction) {
-          window.prismaticScene.setInteraction(true);
-        }
-        
-        // Get initial position
-        const clientX = 'clientX' in event ? event.clientX : 0;
-        const clientY = 'clientY' in event ? event.clientY : 0;
-        previousMousePosition = { x: clientX, y: clientY };
-        
-        onPointerMove = function(moveEvent: PointerEvent) {
-          if (!isInteracting) return;
-          
-          // Skip default behavior
-          moveEvent.preventDefault();
-          
-          // Get current position
-          const clientX = 'clientX' in moveEvent ? moveEvent.clientX : 0;
-          const clientY = 'clientY' in moveEvent ? moveEvent.clientY : 0;
-          
-          // Calculate delta
-          const deltaX = clientX - previousMousePosition.x;
-          const deltaY = clientY - previousMousePosition.y;
-          
-          // Apply rotation via prismaticScene API
-          if (window.prismaticScene?.applyRotation) {
-            window.prismaticScene.applyRotation(-deltaY * rotationSpeed, deltaX * rotationSpeed);
-          } else if (window.prismaticScene?.prism) {
-            window.prismaticScene.prism.rotation.y += deltaX * rotationSpeed;
-            window.prismaticScene.prism.rotation.x += -deltaY * rotationSpeed;
-          }
-          
-          // Update previous position
-          previousMousePosition = { x: clientX, y: clientY };
-        };
-        
-        onPointerUp = function(upEvent: PointerEvent) {
-          if (!prismBackground) return;
-          
-          upEvent.preventDefault();
-          
-          // Update visual feedback
-          prismBackground.classList.remove('cursor-grabbing');
-          prismBackground.classList.add('cursor-grab');
-          
-          // Track interaction state
-          isInteracting = false;
-          
-          // Update global state if available - with delay to allow momentum
-          setTimeout(() => {
-            if (window.prismaticScene?.setInteraction) {
-              window.prismaticScene.setInteraction(false);
-            }
-          }, 800);
-          
-          // Remove handlers
-          document.removeEventListener('pointermove', onPointerMove);
-          document.removeEventListener('pointerup', onPointerUp);
-          document.removeEventListener('pointercancel', onPointerUp);
-          
-          console.log('Default pointer interaction ended');
-        };
-        
-        // Add handlers
-        document.addEventListener('pointermove', onPointerMove, { passive: false });
-        document.addEventListener('pointerup', onPointerUp, { passive: false });
-        document.addEventListener('pointercancel', onPointerUp, { passive: false });
-        
-        console.log('Default pointer interaction started');
-      }
-      
-      // Add event listeners for both mouse and touch if prismBackground exists
-      if (prismBackground) {
-        prismBackground.addEventListener('pointerdown', onPointerDown);
-      }
-      
-      // Register cleanup function
-      cleanupFunctions.push(() => {
-        // Clean up all event listeners we added
-        if (prismBackground) {
-          prismBackground.removeEventListener('pointerdown', onPointerDown);
-          prismBackground.removeEventListener('mouseover', onMouseOver);
-          prismBackground.removeEventListener('mouseout', onMouseOut);
-        }
-        
-        // Remove document-level event listeners to be safe
-        if (onPointerMove) document.removeEventListener('pointermove', onPointerMove);
-        if (onPointerUp) document.removeEventListener('pointerup', onPointerUp);
-        if (onPointerUp) document.removeEventListener('pointercancel', onPointerUp);
-        
-        console.log("🧹 All SplashPrism general event handlers removed");
-      });
-    }
-    
-    // Add hover effects
-    if (prismBackground) {
-      onMouseOver = () => {
-        if (!window.prismaticScene?.canvas) {
-          prismBackground.classList.add('cursor-grab');
-        }
-      };
-      
-      onMouseOut = () => {
-        if (!window.prismaticScene?.canvas && !isInteracting) {
-          prismBackground.classList.remove('cursor-grab');
-          prismBackground.classList.remove('cursor-grabbing');
-        }
-      };
-      
-      prismBackground.addEventListener('mouseover', onMouseOver);
-      prismBackground.addEventListener('mouseout', onMouseOut);
-    }
   }
   
   // Function to add initial rotation animation to the 3D object
   function setupInitialRotationAnimation() {
-    // Get the prism-background element which contains the 3D object
+    // Get the prism-background element
     const prismBackground = document.getElementById('prism-background');
     
     if (!prismBackground) return;
     
     // Wait a bit after page load before starting animation
     setTimeout(() => {
-      // Access the scene and object (with optional chaining for safety)
+      // Access the scene and object
       const prismaticScene = window.prismaticScene;
       
       if (!prismaticScene?.prism) return;
@@ -895,8 +402,8 @@
       
       // Initial position
       let currentStep = 0;
-      const totalSteps = 180; // 3 seconds @ 60fps (increased duration)
-      const amplitude = 0.8; // Maximum rotation angle in radians (increased amplitude)
+      const totalSteps = 180; // 3 seconds @ 60fps
+      const amplitude = 0.8; // Maximum rotation angle in radians
       
       // Flag to track if user has interacted with object
       let userInteracted = false;
@@ -906,7 +413,7 @@
         userInteracted = true;
       }, { passive: true });
       
-      // Animation function - modified for more pronounced movement
+      // Animation function
       function animateInitialRotation() {
         if (userInteracted || currentStep >= totalSteps || !prismaticScene?.prism) {
           // Stop the animation if user interacted or we're done
@@ -918,13 +425,12 @@
         }
         
         // Calculate rotation based on sine wave for smooth back and forth
-        // Using different frequencies for more natural movement
         const progress = currentStep / totalSteps;
         
         // More pronounced movement with two full rotations
         const rotationOffset = amplitude * Math.sin(progress * Math.PI * 2);
         
-        // Apply rotation with optional chaining for safety
+        // Apply rotation
         if (prismaticScene?.prism) {
           prismaticScene.prism.rotation.y = originalRotation.y + rotationOffset;
           
@@ -942,6 +448,6 @@
       // Start the animation
       animateInitialRotation();
       
-    }, 800); // Start sooner after load
+    }, 800);
   }
 </script>
