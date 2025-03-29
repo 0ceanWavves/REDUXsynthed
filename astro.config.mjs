@@ -8,7 +8,8 @@ export default defineConfig({
   integrations: [tailwind(), icon()],
   output: "static",
   build: {
-    format: 'file'
+    format: 'file',
+    inlineStylesheets: 'auto'
   },
   vite: {
     server: {
@@ -29,15 +30,22 @@ export default defineConfig({
       commonjsOptions: {
         transformMixedEsModules: true
       },
-      // Reduce chunk size for better performance
-      rollupOptions: {
-        output: {
-          manualChunks: {
-            three: ['three'],
-            simplex: ['simplex-noise']
-          }
-        }
-      }
+      // Enable Vite's built-in Terser minification
+      minify: 'terser',
+      // Configure Terser options directly
+      terserOptions: {
+        compress: {
+          drop_console: true, // Remove console logs in production
+          passes: 2, // Run compression passes twice for potentially smaller output
+        },
+        mangle: true, // Mangle variable names
+        format: {
+          comments: false, // Remove comments
+        },
+      },
+      // Enable text compression
+      cssCodeSplit: true,
+      assetsInlineLimit: 4096
     },
     // Improve error reporting
     esbuild: {

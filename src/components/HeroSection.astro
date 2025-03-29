@@ -20,6 +20,9 @@ import CrossBrowserFix from "./crossBrowserFix.astro";
     
     <!-- Add cross-browser fix component -->
     <CrossBrowserFix />
+    
+    <!-- Load the direct rotation fix script after the prism is loaded -->
+    <script src="/direct-rotation-fix.js" defer></script>
   </div>
 </section>
 
@@ -46,7 +49,7 @@ import CrossBrowserFix from "./crossBrowserFix.astro";
     will-change: transform;
     z-index: 6 !important;
     pointer-events: auto !important;
-    touch-action: none !important; /* Critical for iOS */
+    touch-action: auto !important; /* Changed from none to auto for Chrome compatibility */
   }
   
   /* Apply gooey effect to the container */
@@ -94,8 +97,8 @@ import CrossBrowserFix from "./crossBrowserFix.astro";
     }
     
     if (prismContainer && heroSection) {
-      // Add touch-action: none to the prism container
-      prismContainer.style.touchAction = 'none';
+      // Add touch-action: auto to the prism container
+      prismContainer.style.touchAction = 'auto';
       
       // Log visibility for debugging
       console.log('Hero section initialized');
@@ -147,7 +150,7 @@ import CrossBrowserFix from "./crossBrowserFix.astro";
         document.querySelectorAll('#prism-bg-canvas, #prism-background').forEach(el => {
           if (el instanceof HTMLElement) {
             el.style.pointerEvents = 'auto';
-            el.style.touchAction = 'none'; // Critical for iOS/Chrome
+            el.style.touchAction = 'auto'; // Changed from 'none' to 'auto'
           }
         });
       }, 100);

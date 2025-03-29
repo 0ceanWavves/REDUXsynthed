@@ -7,6 +7,7 @@
 <script>
   // Import the improved touch event fix functions
   import { applyTouchEventFixes } from './touchEventFix.js';
+  import { applyPrismTouchFix } from './AmorphousPrismFix.js';
   
   document.addEventListener('DOMContentLoaded', () => {
     // Detect browsers
@@ -18,51 +19,14 @@
     
     console.log("Browser detection:", { isFirefox, isChrome, isSafari, isIOS });
     
-    // Apply browser-appropriate fixes
-    if (!isFirefox) {
-      // Use standard fixes for Chrome, Safari, and iOS
-      console.log("Applying standard touch fixes for non-Firefox browser");
-      applyTouchEventFixes();
-    } else {
-      // Firefox is handled separately by the dedicated firefox-fix.js script
-      console.log("Firefox detected, skipping standard touch fixes");
-    }
+    // Apply browser-appropriate fixes to non-prism elements
+    console.log("Applying standard touch fixes for all browsers");
+    applyTouchEventFixes();
     
-    // Handle common adjustments for all browsers
-    const prismCanvas = document.getElementById('prism-bg-canvas');
-    if (prismCanvas) {
-      // Common styles for all browsers
-      prismCanvas.style.pointerEvents = 'auto';
-      prismCanvas.style.zIndex = '5';
-      
-      // Browser-specific styles
-      if (isFirefox) {
-        // Firefox uses user-select: none instead of touch-action: none
-        prismCanvas.style.userSelect = 'none';
-        prismCanvas.style.mozUserSelect = 'none';
-        // Touch-action should be auto for Firefox
-        prismCanvas.style.touchAction = 'auto';
-      } else {
-        // Non-Firefox browsers need touch-action: none
-        prismCanvas.style.touchAction = 'none';
-      }
-    }
-    
-    // Fix the prism background element
-    const prismBackground = document.getElementById('prism-background');
-    if (prismBackground) {
-      // Common styles
-      prismBackground.style.pointerEvents = 'auto';
-      prismBackground.style.zIndex = '20';
-      
-      // Browser-specific styles
-      if (isFirefox) {
-        prismBackground.style.userSelect = 'none';
-        prismBackground.style.mozUserSelect = 'none';
-        prismBackground.style.touchAction = 'auto';
-      } else {
-        prismBackground.style.touchAction = 'none';
-      }
-    }
+    // Apply specialized fix to prism canvas with delay to ensure it runs after prism init
+    console.log("Setting up prism touch fix with delay");
+    setTimeout(() => {
+      applyPrismTouchFix();
+    }, 2000); // Wait 2 seconds after DOM is loaded
   });
 </script>

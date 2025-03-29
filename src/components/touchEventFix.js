@@ -16,7 +16,8 @@ export function applyTouchEventFixes() {
   console.log("Browser detection:", { isFirefox, isChrome, isSafari, isIOS });
   
   // Find all canvases and interactive 3D elements
-  const canvases = document.querySelectorAll('canvas, #prism-bg-canvas, .prism-interactive-area');
+  // IMPORTANT: EXCLUDE #prism-bg-canvas and prism-background since they are handled by AmorphousPrism.astro
+  const canvases = document.querySelectorAll('canvas:not(#prism-bg-canvas), .prism-interactive-area:not(#prism-background)');
   
   canvases.forEach(canvas => {
     if (canvas instanceof HTMLElement) {
@@ -66,21 +67,23 @@ export function applyTouchEventFixes() {
         });
       }
       
-      // Universal pointer events (Firefox uses these primarily)
-      canvas.addEventListener('pointerdown', function(e) {
-        // Don't prevent default in Firefox for pointer events
-        if (!isFirefox) {
-          e.preventDefault();
-        }
-        console.log(`${isFirefox ? 'Firefox' : 'Browser'} pointerdown captured on ${canvas.id || 'canvas'}`);
-      }, { passive: isFirefox });
-      
-      canvas.addEventListener('pointermove', function(e) {
-        // Don't prevent default in Firefox for pointer events
-        if (!isFirefox) {
-          e.preventDefault();
-        }
-      }, { passive: isFirefox });
+      // Universal pointer events - EXCLUDE BOTH prism-bg-canvas AND prism-background
+      if (canvas.id !== 'prism-bg-canvas' && canvas.id !== 'prism-background') {
+        canvas.addEventListener('pointerdown', function(e) {
+          // Don't prevent default in Firefox for pointer events
+          if (!isFirefox) {
+            e.preventDefault();
+          }
+          console.log(`${isFirefox ? 'Firefox' : 'Browser'} pointerdown captured on ${canvas.id || 'canvas'}`);
+        }, { passive: isFirefox });
+        
+        canvas.addEventListener('pointermove', function(e) {
+          // Don't prevent default in Firefox for pointer events
+          if (!isFirefox) {
+            e.preventDefault();
+          }
+        }, { passive: isFirefox });
+      }
       
       console.log(`Applied ${isFirefox ? 'Firefox' : 'standard'} touch fixes to: ${canvas.id || "canvas element"}`);
     }
@@ -96,20 +99,32 @@ export function applyTouchEventFixes() {
     document.documentElement.style.overscrollBehavior = 'none';
   }
   
-  // Fix prism background
+  // Fix prism background - COMPLETELY SKIP FOR ALL EVENT HANDLERS
   const prismBackground = document.getElementById('prism-background');
   if (prismBackground) {
+    console.log('Detected prism-background but SKIPPING event handlers to avoid conflicts with AmorphousPrism');
+    
+    // Only set some basic styles but DO NOT attach any event handlers
     prismBackground.style.pointerEvents = 'auto';
     
-    if (isFirefox) {
-      prismBackground.style.mozUserSelect = 'none';
-      prismBackground.style.userSelect = 'none';
-    } else {
-      prismBackground.style.touchAction = 'none';
-      prismBackground.style.webkitUserSelect = 'none';
+    // Check if AmorphousPrism is active before applying any styles
+    const isAmorphousPrismActive = window.prismaticScene && window.prismaticScene.canvas;
+    
+    // Only apply styles if AmorphousPrism is NOT active
+    if (!isAmorphousPrismActive) {
+      console.log('AmorphousPrism not active, applying minimal styles to prism-background');
       
-      // CRITICAL: For Chrome, set initial interaction type
-      prismBackground.dataset.interactionType = 'none';
+      if (isFirefox) {
+        prismBackground.style.userSelect = 'none';
+      } else {
+        prismBackground.style.touchAction = 'none';
+        prismBackground.style.webkitUserSelect = 'none';
+        
+        // CRITICAL: For Chrome, set initial interaction type but NO EVENT HANDLERS
+        prismBackground.dataset.interactionType = 'none';
+      }
+    } else {
+      console.log('AmorphousPrism active, skipping ALL styles for prism-background');
     }
   }
 }
@@ -117,6 +132,20 @@ export function applyTouchEventFixes() {
 // Cross-browser event setup that prioritizes the correct event type for each browser
 export function setupCrossBrowserInteraction(element, onInteractionStart, onInteractionMove, onInteractionEnd) {
   if (!element) return;
+  
+  // CRITICAL: Check if element is prism-bg-canvas or prism-background AND if AmorphousPrism is active
+  const isPrismElement = element.id === 'prism-bg-canvas' || element.id === 'prism-background';
+  const isAmorphousPrismActive = window.prismaticScene && window.prismaticScene.canvas;
+  
+  // If this is a prism element and AmorphousPrism is active, don't set up interaction
+  if (isPrismElement && isAmorphousPrismActive) {
+    console.log(`Skipping setupCrossBrowserInteraction for ${element.id} because AmorphousPrism is active`);
+    return {
+      destroy: function() {
+        // No-op since we didn't set up any listeners
+      }
+    };
+  }
   
   // Apply different event handling based on browser
   if (isFirefox) {
