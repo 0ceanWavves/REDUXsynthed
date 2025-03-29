@@ -1,0 +1,31 @@
+---
+// Simple component to fix Content Security Policy issues with 'eval'
+---
+
+<script is:inline>
+  // This script adds the unsafe-eval directive to the CSP meta tag if needed
+  (function() {
+    try {
+      // Find any existing CSP meta tags
+      const metaTags = document.querySelectorAll('meta[http-equiv="Content-Security-Policy"]');
+      let hasUnsafeEval = false;
+      
+      metaTags.forEach(meta => {
+        const content = meta.getAttribute('content') || '';
+        if (content.includes("script-src") && !content.includes("'unsafe-eval'")) {
+          // Add unsafe-eval directive
+          meta.setAttribute('content', content.replace(
+            /(script-src[^;]*)/,
+            "$1 'unsafe-eval'"
+          ));
+          hasUnsafeEval = true;
+        }
+      });
+      
+      // If no CSP meta tags with script-src found, we don't need to do anything
+      console.log("CSP fix applied:", hasUnsafeEval ? "Modified existing CSP" : "No CSP modification needed");
+    } catch (error) {
+      console.error("Error applying CSP fix:", error);
+    }
+  })();
+</script>
