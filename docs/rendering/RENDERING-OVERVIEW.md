@@ -12,7 +12,7 @@ The Synthed website rendering system is built on a modular architecture with the
    - **Interaction System**: Handles user input to manipulate the 3D object
 
 2. **Content Overlay**
-   - **HeroContent**: Contains the "CREATE DESIGN BUILD" text and other UI elements
+   - **HeroContent**: Contains the "" text and other UI elements
    - **Z-index Management**: Ensures proper stacking of 3D and text content
    - **Style Management**: Provides visual effects for better contrast and aesthetics
 

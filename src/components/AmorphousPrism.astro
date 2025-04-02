@@ -18,17 +18,8 @@ import LoadingScreen from './LoadingScreen.astro';
 <!-- Original loading screen -->
 <LoadingScreen />
 
-<!-- Z-index fix script (load this FIRST to ensure correct stacking) -->
-<script src="/js/z-index-fix.js" is:inline></script>
-
-<!-- Three.js fixes loader (load this BEFORE any Three.js code) -->
-<script src="/js/shader-extension-fix.js" is:inline></script>
-
-<!-- Performance optimizations -->
-<script src="/js/optimize-will-change.js" is:inline></script>
-
 <!-- Main initialization script -->
-<script src="/scripts/amorphous-prism-init.js" is:inline></script>
+<script type="module" src="/scripts/amorphous-prism-init.js"></script>
 
 <!-- Add a canary log script to check if scripts are executing -->
 <script is:inline>

@@ -2,40 +2,39 @@
 // rebuild/HeroContent.astro
 // Basic structure for text and buttons
 // import CrystalBulletItem from '../src/components/CrystalBulletItem.astro'; // OLD PATH
-import CrystalBulletItem from '~/components/CrystalBulletItem.astro'; // USE ALIAS
+import CrystalBulletItem from '~/components/CrystalBulletItem.astro'; // Try alias path to src/components/
+import './styles.css'; // Keep existing component styles
+
+// Example Checkmark SVG (replace your existing SVGs with this or similar)
+const checkmarkIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="icon-glow"> <polyline points="20 6 9 17 4 12"></polyline> </svg>`;
 
 const serviceItems = [
   {
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-glow">
-            <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path>
-          </svg>`,
+    icon: checkmarkIcon, // <<< USE CHECKMARK
     text: "Custom Business Applications",
     delay: 0
   },
   {
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-glow">
-            <path d="M12 18H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5l-5 4v-4z"></path>
-          </svg>`,
+    icon: checkmarkIcon, // <<< USE CHECKMARK
     text: "Modern Web & Mobile Development",
     delay: 1
   },
   {
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-glow">
-            <path d="M18 20V10m-6 10V4M6 20v-6"></path>
-          </svg>`,
+    icon: checkmarkIcon, // <<< USE CHECKMARK
     text: "Strategic Technology Consulting",
     delay: 2
   },
   {
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-glow">
-            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
-            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-            <path d="M20.4 14.5L16 10 4 20"></path>
-          </svg>`,
+    icon: checkmarkIcon, // <<< USE CHECKMARK
     text: "UI/UX Design Excellence",
     delay: 3
   }
 ];
+
+// Example Icons for Buttons (you might want different ones)
+const servicesIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" > <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /> </svg>`;
+const processIcon = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12c0-1.232-.046-2.453-.138-3.662a4.006 4.006 0 0 0-3.7-3.7 48.678 48.678 0 0 0-7.324 0 4.006 4.006 0 0 0-3.7 3.7c-.017.22-.032.441-.046.662M19.5 12l3-3m-3 3-3-3m-12 3c0 1.232.046 2.453.138 3.662a4.006 4.006 0 0 0 3.7 3.7 48.656 48.656 0 0 0 7.324 0 4.006 4.006 0 0 0 3.7-3.7c.017-.22.032-.441.046-.662M4.5 12l3 3m-3-3-3 3" /> </svg>`;
+
 ---
 <div class="hero-rebuild-text-content">
   <!-- Title from SplashTitle.astro - Modified for vertical stacking -->
@@ -63,7 +62,191 @@ const serviceItems = [
 
   <!-- Buttons -->
   <div class="hero-rebuild-buttons">
-    <a href="#placeholder" class="hero-rebuild-button">Our Services</a>
-    <a href="#placeholder" class="hero-rebuild-button">Our Process</a>
+    <a href="#placeholder" class="hero-rebuild-button">
+      <Fragment set:html={servicesIcon} /> {/* Add Services Icon */}
+      Our Services
+    </a>
+    <a href="#placeholder" class="hero-rebuild-button">
+      <Fragment set:html={processIcon} /> {/* Add Process Icon */}
+      Our Process
+    </a>
   </div>
-</div> 
+</div>
+
+<style>
+  /* Styles moved from public/title-animation.css */
+  .hero-rebuild-title-word {
+    opacity: 0; /* Start hidden */
+    transform: translateY(-100px) scale(1.5); /* Use initial transform from JS */
+    transition: none; /* Prevent transition interference */
+    will-change: transform, opacity, animation;
+    /* Specific brightness/shadow from brightness-adjustments.css */
+    /* filter: brightness(1.3); */ /* Maybe reduce or remove this for less intensity */
+    text-shadow: 0 0 15px rgba(145, 98, 255, 0.3); /* Soften shadow */
+
+    /* --- NEW/MODIFIED FONT STYLES --- */
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; /* <<< CHOOSE YOUR FONT */
+    font-weight: 700; /* Bolder */
+    letter-spacing: -0.05em; /* Tighter spacing (adjust as needed, try -0.02em to -0.1em) */
+    /* --- END NEW/MODIFIED FONT STYLES --- */
+
+    /* Add missing gradient */
+    display: inline-block; /* Needed for background clip */
+    background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #ec4899 100%); /* Adjusted Gradient Example: Purple -> Indigo -> Pink */
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    /* padding: 0.2rem 1rem; */ /* Optional padding from original docs */
+    /* text-transform: uppercase; */ /* Optional from original docs */
+    /* letter-spacing: 0.1em; */ /* Optional from original docs */
+  }
+
+  /* Optional: Adjust line height for the wrappers if needed */
+  /* This rule should ideally be in styles.css, but can be here too */
+  .hero-rebuild-title-word-wrapper {
+    display: block;
+    line-height: 1.0; /* Adjust slightly if needed (e.g., 1.0, 1.1) */
+  }
+
+  /* Animation keyframes for title words (slamDown is handled by JS Web Animations API) */
+  /* Keep pulse/float animation defined in JS */
+  /* @keyframes slamDown { ... } */
+  /* @keyframes shadowExpand { ... } */
+  /* @keyframes shake { ... } */
+
+  /* Styles from brightness-adjustments.css specific to title words */
+  .hero-rebuild-title-word {
+    /* opacity: 1 !important;  <- Controlled by JS */
+    /* visibility: visible !important; <- Controlled by JS */
+    /* transform: translateY(0) scale(1) !important; <- Controlled by JS */
+    /* filter: brightness(1.3) !important; <- Applied above, !important removed */
+    /* text-shadow: 0 0 15px rgba(145, 98, 255, 0.5) !important; <- Applied above, !important removed */
+  }
+
+  /* Chrome-specific adjustments from brightness-adjustments.css */
+  @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
+    .hero-rebuild-title-word {
+      /* filter: brightness(1.5) !important; <- We can try without !important first */
+      /* filter: brightness(1.5); */ /* Maybe reduce/remove */
+      /* text-shadow: 0 0 20px rgba(145, 98, 255, 0.6) !important; <- Try without !important */
+      text-shadow: 0 0 20px rgba(145, 98, 255, 0.4); /* Soften shadow */
+    }
+  }
+
+  /* Mobile adjustments from title-animation.css */
+  @media (max-width: 768px) {
+    .hero-rebuild-title-word {
+      /* Initial state handled by JS, !important removed */
+      /* opacity: 0 !important; */
+      /* transform: translateY(-120px) scale(1.3) !important; */
+    }
+    
+    /* No need for .animation-complete class styles here as JS handles the final state */
+    /* .hero-rebuild-title-word.animation-complete { ... } */
+  }
+
+  /* Keyframes for pulse/float (if we want CSS to handle it instead of JS) */
+  /* 
+  @keyframes floatPulse {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-10px) scale(1.02); }
+  }
+  .hero-rebuild-title-word.floating {
+      animation: floatPulse 5s ease-in-out infinite;
+  } 
+  */
+</style>
+
+<script>
+  // Script moved from public/title-animator.js
+  // Using Astro's setup, no need for IIFE or DOMContentLoaded listener
+  console.log("Title animator script executing in HeroContent.astro");
+  
+  // Function to find title words within this component's scope
+  function findTitleWords() {
+    // Selector is now simpler and scoped to the component
+    const elements = document.querySelectorAll('.hero-rebuild-title-word');
+    if (elements.length === 3) {
+      console.log("Found title words using selector: .hero-rebuild-title-word");
+      return Array.from(elements);
+    }
+    
+    console.warn("Could not find title words with .hero-rebuild-title-word");
+    return null; // Fallback removed as it's less reliable and likely unnecessary now
+  }
+  
+  // Animation code
+  function animateTitleWords() {
+    const titleWords = findTitleWords();
+    if (!titleWords) return;
+    
+    console.log("Starting title animation");
+    
+    // Define keyframes for the initial "slam down" effect
+    const floatDownKeyframes: Keyframe[] = [
+      { opacity: 0, transform: 'translateY(-100px) scale(1.5)' }, // Matches initial style
+      { opacity: 1, transform: 'translateY(10px) scale(0.95)', offset: 0.6 },
+      { transform: 'translateY(-5px) scale(1.02)', offset: 0.8 },
+      { opacity: 1, transform: 'translateY(0) scale(1)' }
+    ];
+    
+    // Explicitly type the options object
+    const floatOptions: KeyframeAnimationOptions = {
+      duration: 800,
+      fill: 'forwards', // Keeps the final state
+      easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' // Bounce easing
+    };
+    
+    // Reset initial state
+    titleWords.forEach(word => {
+      // Assert type as HTMLElement
+      const htmlWord = word as HTMLElement;
+      htmlWord.style.opacity = '0';
+      htmlWord.style.transform = 'translateY(-100px) scale(1.5)';
+    });
+    
+    // Force a reflow to ensure transition starts correctly
+    // Assert type as HTMLElement
+    void (titleWords[0] as HTMLElement).offsetWidth;
+    
+    // Animate each word with a delay using Web Animations API
+    // Assert type for animate method call
+    (titleWords[0] as HTMLElement).animate(floatDownKeyframes, { ...floatOptions, delay: 300 });
+    
+    (titleWords[1] as HTMLElement).animate(floatDownKeyframes, { ...floatOptions, delay: 1200 });
+    
+    (titleWords[2] as HTMLElement).animate(floatDownKeyframes, { ...floatOptions, delay: 2100 });
+    
+    // Add continuous floating/pulse animation after initial animation completes
+    const initialAnimationDuration = 2100 + Number(floatOptions.duration || 0); // Use Number() and provide fallback
+    
+    setTimeout(() => {
+      console.log("Starting continuous floating animation");
+      // Explicitly type keyframes
+      const floatKeyframes: Keyframe[] = [
+        { transform: 'translateY(0) scale(1)', filter: 'brightness(1.3)' }, // Base state
+        { transform: 'translateY(-8px) scale(1.03)', filter: 'brightness(1.5)', offset: 0.5 }, // Peak of pulse
+        { transform: 'translateY(0) scale(1)', filter: 'brightness(1.3)' } // Return to base
+      ];
+      
+      titleWords.forEach((word, index) => {
+        // Assert type for animate method call
+        (word as HTMLElement).animate(floatKeyframes, {
+          duration: 4000, // Slower pulse
+          iterations: Infinity,
+          delay: index * 500, // Stagger the pulse slightly
+          easing: 'ease-in-out'
+          // No need for fill: 'forwards' on infinite animations
+        });
+        // Optional: Add class if CSS handles floating
+        // word.classList.add('floating'); 
+      });
+      
+    }, initialAnimationDuration); 
+  }
+  
+  // Run the animation function
+  // Use a small delay to ensure styles are applied and elements are ready
+  setTimeout(animateTitleWords, 100); 
+  // Removing redundant later timeout as Astro handles script execution timing better
+</script> 

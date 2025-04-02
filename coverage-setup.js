@@ -18,7 +18,6 @@ const instrumenter = new Instrumenter({
 
 // Files to instrument
 const filesToInstrument = [
-    'public/js/amorphous-prism-init.js',
     'public/js/lockdown-fix.js',
     'public/js/emergency-shader-fix.js',
     'public/js/module-loader.js',

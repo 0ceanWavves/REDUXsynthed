@@ -5,8 +5,12 @@
   position: relative; /* Establishes a base stacking context */
   width: 100%;
   height: 100vh; /* Full viewport height */
-  overflow: hidden; /* Prevent scrollbars if content slightly overflows */
-  background-color: #0a0a1a; /* Or your preferred dark background */
+  min-height: 600px; /* Minimum height */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Prevent content spill */
+  background-color: #05030a; /* Dark background fallback */
 }
 
 /* Canvas container - stays in the background */
@@ -16,8 +20,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1; /* Low z-index */
-  pointer-events: auto; /* Allow canvas interaction */
+  z-index: 1; /* Behind content */
+  pointer-events: none; /* Allow clicks to pass through to canvas only */
 }
 
 /* Ensure canvas itself doesn't block */
@@ -50,15 +54,15 @@
   text-align: center;
   max-width: 800px; /* Adjust as needed */
   pointer-events: auto; /* Re-enable pointer events for the text block */
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; /* <<< Base font for consistency */
 }
 
 /* Basic text styling (Add your specific fonts/sizes/etc.) */
 .hero-rebuild-title {
-  font-size: 4rem; /* Example size */
-  font-weight: bold;
+  font-size: 4.5rem; /* Maybe slightly larger */
+  font-weight: bold; /* Already bold via title-word */
   margin-bottom: 1rem;
-  /* Add basic text shadow for visibility */
-   text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+  /* text-shadow: 0 0 10px rgba(0, 0, 0, 0.7); */ /* Shadow handled by title-word */
   line-height: 1.0; /* Adjust overall title line-height if needed */
 }
 
@@ -72,31 +76,54 @@
 
 /* --- START: Added styles for mid-content and bullets --- */
 .hero-rebuild-mid-content {
-  margin-top: 1.5rem; /* Space above the bullet points */
-  margin-bottom: 2.5rem; /* Space below the bullet points */
+  margin-top: 1.5rem;
+  margin-bottom: 2.5rem;
 }
 
 .hero-rebuild-transforming-text {
-  font-size: 1.2rem; /* Adjust as needed */
+  font-size: 1.2rem;
   opacity: 0.8;
   margin-bottom: 0.25rem;
+  font-weight: 400; /* Ensure it's not too bold */
 }
 
 .hero-rebuild-digital-solutions {
-  font-size: 2.2rem; /* Adjust as needed */
-  font-weight: bold;
-  margin-bottom: 1.5rem; /* Space before bullets */
-  /* Basic glow - replace with original gradient/shadow if desired */
-  color: #00e599;
-  text-shadow: 0 0 8px rgba(0, 230, 153, 0.6), 0 0 5px rgba(0,0,0,0.5);
+  font-size: 2.5rem; /* Maybe slightly larger */
+  font-weight: 700; /* Match title boldness */
+  margin-bottom: 1.5rem;
+  /* --- ADD Font Family --- */
+  font-family: inherit; /* Inherit from parent (.hero-rebuild-text-content) */
+  /* --- ADJUST Letter Spacing if needed --- */
+  /* letter-spacing: -0.02em; */ /* Optional: Slightly tighter */
+
+  /* Apply gradient style */
+  background: linear-gradient(90deg, #a855f7 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 8px rgba(236, 72, 153, 0.3); /* Softer shadow */
+  display: inline-block;
 }
 
 .hero-rebuild-bullets-container {
-  /* Add styles if needed for layout, e.g., width, margin */
-  max-width: 500px; /* Example max width */
-  margin: 0 auto; /* Center the container */
-  /* Styles for bullet points will come from CrystalBulletItem.astro */
+  max-width: 550px; /* Slightly wider if needed */
+  margin: 0 auto;
+  text-align: left; /* Align bullets left */
+  display: inline-block; /* Allow left alignment within centered parent */
 }
+
+/* Style for the icons (using the existing class in your SVGs) */
+.icon-glow {
+  width: 1.5em; /* Adjust size */
+  height: 1.5em;
+  margin-right: 0.75em; /* Space between icon and text */
+  vertical-align: middle; /* Align icon with text */
+  filter: drop-shadow(0 0 5px rgba(168, 85, 247, 0.6)); /* Purple glow */
+  stroke: #e9d5ff; /* Lighter purple stroke for icons */
+  /* If using checkmarks, ensure they look good with this */
+}
+
+
 /* --- END: Added styles --- */
 
 /* Basic button styling */
@@ -108,18 +135,47 @@
 }
 
 .hero-rebuild-button {
-  padding: 0.8rem 1.5rem;
-  border: 1px solid white;
+  padding: 0.8rem 1.8rem; /* Slightly more padding */
   color: white;
   text-decoration: none;
-  border-radius: 5px;
-  transition: background-color 0.3s, color 0.3s;
-  pointer-events: auto; /* Explicitly clickable */
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  pointer-events: auto;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+
+  /* --- NEW Solid Background --- */
+  background: #8b5cf6; /* Example Purple */
+  /* Or a subtle gradient: */
+  /* background: linear-gradient(90deg, #a855f7 0%, #8b5cf6 100%); */
+  border: none; /* Remove border */
+
+  /* --- Add display flex for icon --- */
+  display: inline-flex; /* Align icon and text */
+  align-items: center;
+  gap: 0.5em; /* Space between icon and text */
+}
+
+/* Remove the gradient border effect */
+.hero-rebuild-button::before {
+  /* content: ''; */ /* Remove content */
+  /* display: none; */ /* Hide it */
+   background: transparent; /* Make it transparent */
 }
 
 .hero-rebuild-button:hover {
-  background-color: white;
-  color: #0a0a1a;
+  /* Keep existing gradient or adjust */
+  background: linear-gradient(90deg, #a855f7 0%, #ec4899 100%);
+  color: white;
+  box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
+}
+
+/* Styles for button icons (you'll need to add icon SVGs in the Astro file) */
+.hero-rebuild-button svg {
+  width: 1.2em;
+  height: 1.2em;
 }
 
 /* Add title animation styles here later if desired */
