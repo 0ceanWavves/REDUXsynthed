@@ -2,27 +2,27 @@
 // ServiceBullets.astro - Component for the crystalline service bullets
 import CrystalBulletItem from './CrystalBulletItem.astro';
 
-// Define the service items
+// Define the service items with updated text to match screenshot
 const serviceItems = [
   {
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-glow">
             <path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7m0-18H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7m0-18v18"></path>
           </svg>`,
-    text: "Business Apps",
+    text: "Custom Business Applications",
     delay: 0
   },
   {
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-glow">
             <path d="M12 18H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5l-5 4v-4z"></path>
           </svg>`,
-    text: "Web & Mobile Dev",
+    text: "Modern Web & Mobile Development",
     delay: 1
   },
   {
     icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon-glow">
             <path d="M18 20V10m-6 10V4M6 20v-6"></path>
           </svg>`,
-    text: "Tech Consulting",
+    text: "Strategic Technology Consulting",
     delay: 2
   },
   {
@@ -31,7 +31,7 @@ const serviceItems = [
             <circle cx="8.5" cy="8.5" r="1.5"></circle>
             <path d="M20.4 14.5L16 10 4 20"></path>
           </svg>`,
-    text: "UI/UX Design",
+    text: "UI/UX Design Excellence",
     delay: 3
   }
 ];
@@ -58,8 +58,8 @@ const serviceItems = [
     border-radius: 0.75rem;
     overflow: hidden;
     animation: fadeIn 1s ease-out 3s both;
-    /* Added transform to move up and scale down by 25% */
-    transform: translateY(-20px) scale(0.75);
+    /* Adjusted transform to move up and scale for better visibility */
+    transform: translateY(-5px) scale(0.9);
     transform-origin: center;
   }
 
@@ -121,6 +121,12 @@ const serviceItems = [
           }
         }
       });
-    }, 4000);
+      
+      // Force the container to be visible as well
+      const container = document.querySelector('.crystal-container');
+      if (container instanceof HTMLElement) {
+        container.style.opacity = '1';
+      }
+    }, 1000); // Reduced delay for faster visibility
   });
-</script> 
+</script>

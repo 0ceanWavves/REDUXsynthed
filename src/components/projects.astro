@@ -1,6 +1,6 @@
 ---
 import ContentSection from "~/components/content-section.astro";
-import { Icon } from "astro-icon/components";
+import Icon from "./Icon.astro";
 
 const projects = [
   {
@@ -48,8 +48,8 @@ const projects = [
 
 <ContentSection title="Our Projects" id="projects">
   <Fragment slot="lead">
-    Delivering <span class="text-primary">impactful solutions</span> that drive{" "}
-    <span class="text-primary">measurable business outcomes</span>.
+    Delivering <span class="impactful">impactful solutions</span> that drive{" "}
+    <span class="measurable">measurable</span> <span class="business">business</span> <span class="outcomes">outcomes</span>.
   </Fragment>
   
   <div class="grid grid-cols-1 gap-12 md:gap-16">
@@ -111,246 +111,8 @@ const projects = [
   </div>
 </ContentSection>
 
-<style>
-  .project-item {
-    opacity: 0;
-    transform: translateY(40px);
-    position: relative;
-  }
-  
-  /* Visual connection between project title and description */
-  .connecting-line {
-    display: none;
-  }
-  
-  @media (min-width: 1024px) {
-    .connecting-line {
-      display: block;
-      position: absolute;
-      background: linear-gradient(90deg, var(--color-primary), transparent);
-      height: 2px;
-      width: 40px;
-      top: 30px;
-    }
-    
-    .project-item:nth-child(odd) .connecting-line {
-      left: -40px;
-    }
-    
-    .project-item:nth-child(even) .connecting-line {
-      right: -40px;
-      background: linear-gradient(270deg, var(--color-primary), transparent);
-    }
-  }
-  
-  /* Enhance the project title to make it stand out */
-  .project-title {
-    position: relative;
-    color: var(--color-primary);
-    display: inline-block;
-    transition: all 0.3s ease;
-  }
-  
-  .project-title::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background: var(--color-primary);
-    transform: scaleX(0);
-    transform-origin: right;
-    transition: transform 0.3s ease;
-  }
-  
-  .project-business:hover .project-title::after,
-  .project-business.highlight .project-title::after {
-    transform: scaleX(1);
-    transform-origin: left;
-  }
-  
-  /* Card styling */
-  .project-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    background: rgba(30, 30, 30, 0.2);
-    border-left: 3px solid transparent;
-    border-right: 3px solid transparent;
-    position: relative;
-  }
-  
-  .project-item:nth-child(odd) .project-card {
-    border-left-color: var(--color-primary);
-  }
-  
-  .project-item:nth-child(even) .project-card {
-    border-right-color: var(--color-primary);
-  }
-  
-  .project-card-title {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .project-card:hover,
-  .project-card.highlight {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.2);
-  }
-  
-  /* Highlight effects for linked elements */
-  .project-business.highlight .project-title {
-    text-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.5);
-    transform: translateY(-2px);
-  }
-  
-  .project-business.highlight .project-icon {
-    transform: scale(1.05);
-  }
-  
-  .project-icon {
-    position: relative;
-    transition: transform 0.3s ease;
-    color: currentColor;
-  }
-  
-  .project-icon::after {
-    content: '';
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    right: -5px;
-    bottom: -5px;
-    border-radius: 50%;
-    background: conic-gradient(from 0deg, rgba(96, 165, 250, 0.6), rgba(74, 222, 128, 0.6), rgba(96, 165, 250, 0));
-    z-index: -1;
-    opacity: 0;
-    transform: scale(0.8);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-  }
-  
-  .project-icon:hover,
-  .project-business.highlight .project-icon {
-    transform: scale(1.05);
-    color: currentColor;
-  }
-  
-  .project-icon:hover::after,
-  .project-business.highlight .project-icon::after {
-    opacity: 1;
-    transform: scale(1);
-    animation: spin 4s linear infinite;
-  }
-  
-  @keyframes spin {
-    from {
-      transform: scale(1) rotate(0deg);
-    }
-    to {
-      transform: scale(1) rotate(360deg);
-    }
-  }
-  
-  .project-tag {
-    transform: translateY(0);
-    transition: transform 0.3s ease, background-color 0.3s ease;
-  }
-  
-  .project-tag:hover {
-    transform: translateY(-3px);
-    background-color: rgba(96, 165, 250, 0.4);
-  }
-  
-  .project-section {
-    opacity: 0;
-    transform: translateX(20px);
-    border-left: 2px solid rgba(var(--color-primary-rgb), 0.3);
-    padding-left: 12px;
-    position: relative;
-  }
-  
-  .project-section::before {
-    content: '';
-    position: absolute;
-    left: -6px;
-    top: 0;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--color-primary);
-  }
-  
-  .project-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    transition: color 0.3s ease;
-  }
-  
-  .arrow-icon {
-    transition: transform 0.3s ease;
-    color: currentColor;
-  }
-  
-  .project-link:hover .arrow-icon {
-    transform: translateX(4px);
-    color: currentColor;
-  }
-  
-  .cta-button {
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .cta-button::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.2),
-      transparent
-    );
-    transition: left 0.7s ease;
-  }
-  
-  .cta-button:hover::before {
-    left: 100%;
-  }
-</style>
-
 <script>
   function setupProjectConnections() {
-    // Define dynamic color variables
-    const root = document.documentElement;
-    const primaryColor = getComputedStyle(root).getPropertyValue('--color-primary').trim();
-    
-    // Convert hex to RGB for use in rgba values
-    const hexToRgb = (hex) => {
-      // Remove # if present
-      hex = hex.replace('#', '');
-      
-      // Parse hex values
-      const r = parseInt(hex.substring(0, 2), 16);
-      const g = parseInt(hex.substring(2, 4), 16);
-      const b = parseInt(hex.substring(4, 6), 16);
-      
-      // Set the RGB variable
-      root.style.setProperty('--color-primary-rgb', `${r}, ${g}, ${b}`);
-      
-      return { r, g, b };
-    };
-    
-    // If primary color is a hex value, convert to RGB
-    if (primaryColor.startsWith('#')) {
-      hexToRgb(primaryColor);
-    }
-    
     // Set up hover synchronization between cards and business names
     const setupHoverSync = () => {
       const projectCards = document.querySelectorAll('.project-card');
@@ -432,52 +194,30 @@ const projects = [
     document.querySelectorAll('.project-item').forEach((item) => {
       observer.observe(item);
     });
-  }
-  
-  // Add background ripple effect to project cards
-  function addCardRippleEffect() {
-    // Add ripple styles
-    const style = document.createElement('style');
-    style.textContent = `
-      .project-card {
-        position: relative;
-        overflow: hidden;
-      }
+    
+    // Force visible immediately
+    setTimeout(() => {
+      document.querySelectorAll('.project-item').forEach((item) => {
+        (item as HTMLElement).style.opacity = '1';
+        (item as HTMLElement).style.transform = 'translateY(0)';
+      });
       
-      .project-card:hover,
-      .project-card.highlight {
-        background: rgba(40, 40, 50, 0.6);
-      }
-      
-      .project-card:hover::after,
-      .project-card.highlight::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 50%;
-        height: 100%;
-        background: linear-gradient(
-          90deg,
-          transparent,
-          rgba(255, 255, 255, 0.1),
-          transparent
-        );
-        animation: shimmer 2s infinite;
-      }
-      
-      @keyframes shimmer {
-        100% {
-          left: 100%;
-        }
-      }
-    `;
-    document.head.appendChild(style);
+      document.querySelectorAll('.project-section').forEach((section) => {
+        (section as HTMLElement).style.opacity = '1';
+        (section as HTMLElement).style.transform = 'translateX(0)';
+      });
+    }, 1000);
   }
   
   document.addEventListener('DOMContentLoaded', () => {
+    // Ensure CSS variables are defined
+    const root = document.documentElement;
+    if (!getComputedStyle(root).getPropertyValue('--color-primary')) {
+      root.style.setProperty('--color-primary', '#3b82f6');
+      root.style.setProperty('--color-primary-rgb', '59, 130, 246');
+    }
+    
     setupProjectConnections();
     animateProjectItems();
-    addCardRippleEffect();
   });
 </script>

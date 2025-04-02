@@ -1,238 +1,203 @@
 ---
-// src/layouts/MainLayout.astro
-// Defines the main HTML structure, includes common head, nav, footer, etc.
-
-import CommonHead from '~/components/CommonHead.astro';
-import Navigation from '~/components/Navigation.astro';
-import Footer from '~/components/footer.astro';
-import BackgroundDecorations from '~/components/BackgroundDecorations.astro';
-import LoadingScreen from '~/components/LoadingScreen.astro'; // Keep loading screen here
-import CSPFix from '~/components/CSPFix.astro'; // Add CSP fix component
-
-// Import base styles needed for the layout shell itself
-import "~/styles/index.css"; // Base styles
-import "~/styles/mobile-fixes.css"; // Base mobile fixes
-
-// Import page-specific styles (can be overridden by page using the layout)
-import "~/styles/index-page.css"; // Styles specific to pages using this layout
-
-// Props for CommonHead can be passed down from the page using this layout
-export interface Props {
-  title?: string;
-  description?: string;
-  image?: URL | string;
-}
-
-const { title, description, image } = Astro.props;
+// Get layout properties
+const { title, description } = Astro.props;
 ---
 
-<!doctype html>
-<html lang="en" class="h-full motion-safe:scroll-smooth" data-theme="dark">
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <CommonHead title={title} description={description} image={image} />
+    <!-- Basic meta tags -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     
-    <!-- Force hardware acceleration and WebGL support -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="force-rendering" content="webkit|ie-comp|ie-stand">
+    <title>{title || "Synthed"}</title>
+    <meta name="description" content={description || "Transforming ideas into digital solutions"} />
     
-    <!-- Preload critical THREE.js module only once to prevent duplicate imports -->
-    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js" 
-          as="script" fetchpriority="high" crossorigin="anonymous" />
+    <!-- Force-enable WebGL and add proper content type -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     
-    <!-- Prevent second THREE.js import -->
+    <!-- Preload Three.js to improve loading time -->
+    <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js" as="script" fetchpriority="high" crossorigin="anonymous" />
+    
+    <!-- Lockdown Fix -->
+    <script is:inline src="/js/lockdown-fix.js"></script>
+    
+    <!-- Emergency Shader Fix -->
+    <script is:inline src="/js/emergency-shader-fix.js"></script>
+    
+    <!-- Standalone shader fix -->
+    <script is:inline src="/js/shader-fix-standalone.js"></script>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/hero-layout-fix.css">
+    <link rel="stylesheet" href="/css/debug-fix.css">
+    <link rel="stylesheet" href="/css/process-fix.css">
+    <link rel="stylesheet" href="/css/loading-indicator.css">
+    
+    <!-- Load our hero layout fix -->
+    <script is:inline src="/js/fix-hero-layout.js"></script>
+    
+    <!-- Use system fonts instead of custom fonts -->
+    <link rel="stylesheet" href="/fonts/system-fonts.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    
+    <!-- Early Three.js script - Make it available before everything else -->
     <script is:inline>
-      // Track if THREE is already loaded to prevent duplicate imports
-      window.__THREE_LOADING_TRACKED = true;
+      // Create a temporary THREE placeholder to prevent errors
+      if (!window.THREE) {
+        console.log("Setting up THREE placeholder until library loads");
+        window.THREE = {
+          Vector3: function() { return {x: 0, y: 0, z: 0}; },
+          Color: function() { return {r: 0, g: 0, b: 0}; },
+          Texture: function() { return {}; },
+          __isPlaceholder: true
+        };
+      }
+      
+      // Detect mobile devices
+      window.isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+        || (window.innerWidth < 768);
+      
+      // Firefox WebGL helper
+      window.__FIREFOX_WEBGL2_HELPER = function(canvas) {
+        try {
+          if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+            return canvas.getContext('webgl2', {
+              alpha: true,
+              antialias: false,
+              depth: true,
+              failIfMajorPerformanceCaveat: false,
+              powerPreference: 'high-performance'
+            });
+          }
+        } catch (e) {
+          console.warn("Firefox WebGL2 helper failed:", e);
+        }
+        return null;
+      };
     </script>
     
-    <!-- Firefox-specific WebGL fix - must load before other scripts -->
-    <script is:inline src="/firefox-webgl-fix.js"></script>
-    
-    <!-- Clean up WebGL error messages if fallback works -->
-    <script is:inline src="/clean-webgl-errors.js"></script>
-    
-    <!-- Fix for Content Security Policy issues -->
-    <CSPFix />
-    
-    <!-- Force hardware acceleration -->
-    <style>
-      html, body, canvas {
-        transform: translateZ(0);
-        backface-visibility: hidden;
-        perspective: 1000;
-        -webkit-font-smoothing: antialiased;
-      }
-      
-      /* Force GPU rendering for Firefox */
-      @-moz-document url-prefix() {
-        canvas, .force-gpu {
-          transform: translate3d(0, 0, 0);
-          will-change: transform;
-        }
-      }
-      
-      /* Canvas interaction styles */
-      #morphing-poly-canvas {
-        touch-action: none !important;
-        -webkit-touch-callout: none !important;
-        -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
-        user-select: none !important;
-        -webkit-user-select: none !important;
-        -moz-user-select: none !important;
-        pointer-events: auto !important;
-        cursor: grab !important;
-        z-index: 50 !important;
-      }
-      
-      /* Styles specific to the MainLayout structure itself */
-      body {
-        /* Ensure body takes full height */
-        min-height: 100vh;
-        display: flex;
-        flex-direction: column;
-      }
-      main {
-        flex-grow: 1; /* Allow main content to fill available space */
-      }
-    </style>
-    
-    <!-- Script to remove gooey menu bubbles - loaded early -->
-    <script is:inline src="/remove-bubbles.js"></script>
-    
-    <!-- Inline script to remove container box around service cards -->
-    <script is:inline>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Create and add a style element to remove container styling
-        const style = document.createElement('style');
-        style.textContent = `
-          /* Target common container class names */
-          .service-bullets,
-          .crystal-container,
-          .service-container,
-          [class*="service-container"],
-          [class*="service-bullets"],
-          [class*="crystal-container"] {
-            /* Make container fully transparent */
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            backdrop-filter: none !important;
-          }
-
-          /* Make sure any background elements inside the container are hidden */
-          .service-bullets::before,
-          .crystal-container::before,
-          .service-container::before,
-          [class*="service-container"]::before,
-          [class*="service-bullets"]::before,
-          [class*="crystal-container"]::before,
-          .crystal-background {
-            display: none !important;
-            opacity: 0 !important;
-          }
-        `;
-        document.head.appendChild(style);
-
-        // Function to find and remove the outer container
-        function removeOuterContainer() {
-          // Try various selectors that might match the container
-          const containerSelectors = [
-            '.service-bullets',
-            '.crystal-container',
-            '.service-container',
-            '[class*="service-container"]',
-            '[class*="service-bullets"]',
-            '[class*="crystal-container"]'
-          ];
-          
-          // Try each selector
-          for (const selector of containerSelectors) {
-            const containers = document.querySelectorAll(selector);
-            
-            if (containers.length > 0) {
-              console.log(`Found ${containers.length} containers with selector ${selector}`);
-              
-              // For each container, remove background/border without changing children
-              containers.forEach(container => {
-                // Remove only the outer styling
-                container.style.background = 'transparent';
-                container.style.border = 'none';
-                container.style.boxShadow = 'none';
-                container.style.backdropFilter = 'none';
-              });
-            }
-          }
-        }
-
-        // Run once immediately
-        removeOuterContainer();
-        
-        // Run again after a delay to catch any dynamically loaded elements
-        setTimeout(removeOuterContainer, 1000);
-      });
-    </script>
-
-    <link rel="preload" href="/fonts/Axiforma-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-    <link rel="preload" href="/fonts/Axiforma-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
-    <link rel="stylesheet" href="/fonts/font-fallback.css" />
-    
-    <!-- Font loader script -->
-    <script is:inline src="/font-loader.js"></script>
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1" />
-    
-    <!-- Critical Path CSS -->
+    <!-- CSS Variables -->
     <style is:inline>
-      @font-face {
-        font-family: 'Axiforma';
-        src: url('/fonts/Axiforma-Medium.woff2') format('woff2');
-        font-weight: 500;
-        font-style: normal;
-        font-display: swap;
+      :root {
+        --color-primary: #06b6d4;
+        --color-primary-rgb: 6, 182, 212;
+        --color-text: #ffffff;
+        --color-offset: #94a3b8;
+        --color-background: #0f172a;
       }
-      @font-face {
-        font-family: 'Axiforma';
-        src: url('/fonts/Axiforma-Bold.woff2') format('woff2');
-        font-weight: 700;
-        font-style: normal;
-        font-display: swap;
+      
+      /* Add global styles for consistency */
+      body {
+        background-color: var(--color-background);
+        color: var(--color-text);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       }
-      body { 
-        font-family: 'Axiforma', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
-        background-color: #05030d;
-        color: white;
-        margin: 0;
-        padding: 0;
+      
+      .text-primary {
+        color: var(--color-primary);
+      }
+      
+      .text-offset {
+        color: var(--color-offset);
+      }
+      
+      /* Canvas styles */
+      #morphing-poly-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        display: block;
+      }
+      
+      .content-wrapper {
+        position: relative;
+        z-index: 10;
       }
     </style>
+    
+    <!-- Local styles -->
+    <slot name="head" />
   </head>
-  <body class="min-h-screen overflow-x-hidden overflow-y-auto text-default text-base selection:bg-secondary selection:text-white bg-[#0a0a1a]">
-    <!-- Loading screen appears first -->
-    <LoadingScreen />
-
-    <!-- Background decorations (waves, overlay, gradient) -->
-    <BackgroundDecorations />
-
-    <!-- Navigation -->
-    <Navigation />
-
-    <!-- Main content area - Pages will inject content here -->
-    <main class="relative z-10"> <!-- Ensure main content is above background decorations -->
+  <body>
+    <!-- Canvas for 3D visualization -->
+    <canvas id="morphing-poly-canvas" width="800" height="600" tabindex="0"></canvas>
+    
+    <!-- Firefox WebGL fallback container -->
+    <div id="firefox-webgl-container"></div>
+    
+    <!-- Loading indicator -->
+    <div id="morphing-poly-loading" class="loading-indicator">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Initializing visualization...</p>
+      </div>
+    </div>
+    
+    <!-- Main content wrapper for proper z-index layering -->
+    <main class="w-full h-full flex flex-col relative">
       <slot />
     </main>
-
-    <!-- Footer -->
-    <Footer />
-
-    <!-- Cursor effect element (placed here for simplicity, controlled by JS) -->
-    <div id="cursor-glow" class="hidden md:block"></div>
     
-    <!-- Critical interactive scripts - loaded at the end of body to ensure DOM is ready -->
-    <script is:inline src="/fix-interaction.js"></script>
-    <script is:inline src="/fix-touch-events.js"></script>
-    <script is:inline src="/direct-rotation-fix.js"></script>
-    <script is:inline src="/prism-direct-handler.js"></script>
-    <script is:inline src="/prism-interaction-setup.js"></script>
-    <script is:inline src="/enhanced-touch-fix.js"></script>
+    <!-- Remove debug UI -->
+    <script is:inline src="/js/remove-gooey-menu.js"></script>
+    <script is:inline src="/js/remove-debug-ui.js"></script>
+    
+    <!-- Script to ensure 3D content is visible and properly positioned -->
+    <script is:inline>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Fix z-index of text elements vs 3D canvas
+        const textElements = document.querySelectorAll('.title-word, .title-shadow, h1, h2, h3, h4, h5, h6, p, .splash-title, .splash-content');
+        textElements.forEach(element => {
+          if (element) {
+            element.style.position = 'relative';
+            element.style.zIndex = '100';
+          }
+        });
+        
+        // Ensure canvas is visible and at correct z-index
+        const morphCanvas = document.getElementById('morphing-poly-canvas');
+        if (morphCanvas) {
+          morphCanvas.style.zIndex = '5';
+          morphCanvas.style.opacity = '1';
+          morphCanvas.style.visibility = 'visible';
+        }
+        
+        // Hide any debug UI elements
+        const hideDebugElements = () => {
+          // Find elements that contain debug info text
+          document.querySelectorAll('div, span, p').forEach(el => {
+            if (
+              el.textContent && (
+                el.textContent.includes('Hold SHIFT') ||
+                el.textContent.includes('Z-axis') ||
+                el.textContent.includes('Desktop:') ||
+                el.textContent.includes('Mouse:') ||
+                el.textContent.includes('Touch:')
+              )
+            ) {
+              el.style.display = 'none';
+              el.style.visibility = 'hidden';
+              el.style.opacity = '0';
+            }
+          });
+        };
+        
+        // Run immediately and after a delay to catch dynamically added elements
+        hideDebugElements();
+        setTimeout(hideDebugElements, 500);
+        setTimeout(hideDebugElements, 1500);
+      });
+    </script>
+    
+    <!-- Load Three.js visualization after DOM is ready -->
+    <script src="/scripts/amorphous-prism-init.js" type="module"></script>
   </body>
 </html>

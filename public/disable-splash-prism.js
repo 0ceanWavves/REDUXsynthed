@@ -50,7 +50,7 @@
     // Disable each element
     elementsToDisable.forEach(id => {
       const element = document.getElementById(id);
-      if (element) {
+      if (element && !element.querySelector('.splash-content') && !element.classList.contains('splash-content')) { 
         console.log(`🛑 DISABLE-SPLASH: Disabling ${id}`);
         
         // Clone the element to remove all event listeners
@@ -148,7 +148,10 @@
             }
             
             // Check if the node is a target element
-            if (elementsToDisable.includes(node.id)) {
+            const isContentContainer = node.classList?.contains('splash-content') || node.querySelector?.('.splash-content');
+            const isTextElement = node.classList?.contains('digital-solutions-text') || node.classList?.contains('title-word') || node.classList?.contains('transforming-text');
+
+            if (elementsToDisable.includes(node.id) && !isContentContainer && !isTextElement) {
               console.log(`🛑 DISABLE-SPLASH: Re-disabling ${node.id} after DOM mutation`);
               
               // Disable the element
@@ -170,13 +173,19 @@
                 elementsToDisable.forEach(id => {
                   const childElement = node.querySelector(`#${id}`);
                   if (childElement) {
-                    console.log(`🛑 DISABLE-SPLASH: Re-disabling ${id} in added subtree containing protected elements`);
-                    childElement.style.pointerEvents = 'none';
-                    childElement.style.touchAction = 'none';
-                    childElement.style.zIndex = '1';
-                    childElement.style.opacity = '0.1';
-                    childElement.setAttribute('data-disabled', 'true');
-                    childElement.setAttribute('disabled', 'true');
+                    // *** Add check: Do not disable critical content containers/text elements ***
+                    const childIsContent = childElement?.classList?.contains('splash-content') || childElement?.closest('.splash-content');
+                    const childIsText = childElement?.classList?.contains('digital-solutions-text') || childElement?.classList?.contains('title-word') || childElement?.classList?.contains('transforming-text');
+
+                    if (childElement && !childIsContent && !childIsText) {
+                      console.log(`🛑 DISABLE-SPLASH: Re-disabling ${id} in added subtree containing protected elements`);
+                      childElement.style.pointerEvents = 'none';
+                      childElement.style.touchAction = 'none';
+                      childElement.style.zIndex = '1';
+                      childElement.style.opacity = '0.1';
+                      childElement.setAttribute('data-disabled', 'true');
+                      childElement.setAttribute('disabled', 'true');
+                    }
                   }
                 });
               } else {
@@ -184,13 +193,19 @@
                 elementsToDisable.forEach(id => {
                   const childElement = node.querySelector(`#${id}`);
                   if (childElement) {
-                    console.log(`🛑 DISABLE-SPLASH: Re-disabling ${id} in added subtree`);
-                    childElement.style.pointerEvents = 'none';
-                    childElement.style.touchAction = 'none';
-                    childElement.style.zIndex = '1';
-                    childElement.style.opacity = '0.1';
-                    childElement.setAttribute('data-disabled', 'true');
-                    childElement.setAttribute('disabled', 'true');
+                    // *** Add check: Do not disable critical content containers/text elements ***
+                    const childIsContent = childElement?.classList?.contains('splash-content') || childElement?.closest('.splash-content');
+                    const childIsText = childElement?.classList?.contains('digital-solutions-text') || childElement?.classList?.contains('title-word') || childElement?.classList?.contains('transforming-text');
+
+                    if (childElement && !childIsContent && !childIsText) {
+                      console.log(`🛑 DISABLE-SPLASH: Re-disabling ${id} in added subtree`);
+                      childElement.style.pointerEvents = 'none';
+                      childElement.style.touchAction = 'none';
+                      childElement.style.zIndex = '1';
+                      childElement.style.opacity = '0.1';
+                      childElement.setAttribute('data-disabled', 'true');
+                      childElement.setAttribute('disabled', 'true');
+                    }
                   }
                 });
               }

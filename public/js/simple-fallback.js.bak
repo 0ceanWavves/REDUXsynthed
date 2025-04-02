@@ -1,0 +1,221 @@
+/**
+ * Simple Fallback
+ * Provides a simplified 3D visualization when everything else fails
+ */
+(function() {
+  console.log("🔄 Simple Fallback: Initializing...");
+  
+  // Detect critical errors after some time
+  let hasTriedFallback = false;
+  
+  // Function to create a simple fallback
+  function createSimpleFallback() {
+    if (hasTriedFallback) return; // Only try once
+    hasTriedFallback = true;
+    
+    console.log("🔄 Simple Fallback: Creating basic 3D animation with plain THREE.js");
+    
+    try {
+      // Get the canvas
+      const canvas = document.getElementById('morphing-poly-canvas');
+      if (!canvas) return;
+      
+      // Make sure THREE is available
+      if (!window.THREE) {
+        console.error("THREE not available for fallback");
+        return;
+      }
+      
+      // Basic THREE.js setup
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color("#05030d");
+      
+      const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+      camera.position.z = 5;
+      
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      
+      // Create a simple octahedron
+      const geometry = new THREE.OctahedronGeometry(2, 1);
+      
+      // Create material with wireframe
+      const material = new THREE.MeshPhongMaterial({
+        color: '#ff00ff',
+        specular: '#00ffff',
+        wireframe: true,
+        transparent: true,
+        opacity: 0.7,
+        shininess: 100
+      });
+      
+      // Create mesh
+      const mesh = new THREE.Mesh(geometry, material);
+      scene.add(mesh);
+      
+      // Add lighting
+      const ambientLight = new THREE.AmbientLight(0x444444, 2);
+      scene.add(ambientLight);
+      
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+      directionalLight.position.set(1, 1, 1);
+      scene.add(directionalLight);
+      
+      // Handle window resize
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+      
+      // Simple animation loop
+      function animate() {
+        requestAnimationFrame(animate);
+        
+        // Rotate the mesh
+        mesh.rotation.x += 0.005;
+        mesh.rotation.y += 0.01;
+        
+        // Render the scene
+        renderer.render(scene, camera);
+      }
+      
+      // Start animation
+      animate();
+      
+      console.log("🔄 Simple Fallback: Basic 3D animation created successfully");
+      
+      // Remove any loading screens
+      const loadingElement = document.getElementById('morphing-poly-loading');
+      if (loadingElement) {
+        loadingElement.style.display = 'none';
+      }
+    } catch (error) {
+      console.error("Error creating fallback:", error);
+      
+      // Create a 2D canvas fallback as a last resort
+      createCanvas2DFallback();
+    }
+  }
+  
+  // Ultra-simple 2D canvas fallback
+  function createCanvas2DFallback() {
+    console.log("🔄 Simple Fallback: Creating 2D canvas animation as last resort");
+    
+    try {
+      const canvas = document.getElementById('morphing-poly-canvas');
+      if (!canvas || !canvas.getContext) return;
+      
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      // Animation variables
+      let time = 0;
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const size = Math.min(canvas.width, canvas.height) * 0.25;
+      
+      // Animation function
+      function drawFrame() {
+        time += 0.02;
+        
+        // Clear canvas
+        ctx.fillStyle = '#05030d';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw shape
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(time * 0.3);
+        
+        // Draw octagon with gradient
+        const sides = 8;
+        ctx.beginPath();
+        
+        for (let i = 0; i < sides; i++) {
+          const angle = (i / sides) * Math.PI * 2;
+          const pulse = 1 + Math.sin(time * 2) * 0.1;
+          const x = Math.cos(angle) * size * pulse;
+          const y = Math.sin(angle) * size * pulse;
+          
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        
+        ctx.closePath();
+        
+        // Create gradient
+        const gradient = ctx.createLinearGradient(-size, -size, size, size);
+        gradient.addColorStop(0, '#ff00ff');
+        gradient.addColorStop(1, '#00ffff');
+        
+        // Draw with shadow
+        ctx.shadowColor = '#ff00ff';
+        ctx.shadowBlur = 20;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        
+        ctx.globalAlpha = 0.3;
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // Draw inner lines
+        ctx.globalAlpha = 0.7;
+        for (let i = 0; i < sides / 2; i++) {
+          const angle1 = (i / sides) * Math.PI * 2;
+          const angle2 = ((i + 4) % sides / sides) * Math.PI * 2;
+          
+          const x1 = Math.cos(angle1) * size * pulse;
+          const y1 = Math.sin(angle1) * size * pulse;
+          const x2 = Math.cos(angle2) * size * pulse;
+          const y2 = Math.sin(angle2) * size * pulse;
+          
+          ctx.beginPath();
+          ctx.moveTo(x1, y1);
+          ctx.lineTo(x2, y2);
+          ctx.stroke();
+        }
+        
+        ctx.restore();
+        
+        // Continue animation
+        requestAnimationFrame(drawFrame);
+      }
+      
+      // Start animation
+      drawFrame();
+      
+      // Remove any loading screens
+      const loadingElement = document.getElementById('morphing-poly-loading');
+      if (loadingElement) {
+        loadingElement.style.display = 'none';
+      }
+      
+      console.log("🔄 Simple Fallback: 2D canvas animation created successfully");
+    } catch (error) {
+      console.error("Error creating 2D canvas fallback:", error);
+    }
+  }
+  
+  // Check for critical errors after a timeout
+  setTimeout(function() {
+    // Look for signs that the main implementation failed
+    const threeFailed = !window.THREE;
+    const mainFailed = document.getElementById('morphing-poly-loading') && 
+                       document.getElementById('morphing-poly-loading').style.display !== 'none';
+    
+    // Create fallback if needed
+    if (threeFailed || mainFailed) {
+      console.log("🔄 Simple Fallback: Detected issues with main implementation, activating fallback");
+      createSimpleFallback();
+    }
+  }, 5000); // Wait 5 seconds to see if main implementation loads
+  
+  console.log("🔄 Simple Fallback: Initialization complete");
+})();

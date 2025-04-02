@@ -9,7 +9,7 @@ interface Props {
 const { text, index } = Astro.props;
 ---
 
-<div class="title-word" data-index={index}>
+<div class="title-word" data-index={index} style="z-index: 1001; position: relative;">
   {text}
   <div class="title-shadow" data-index={index}></div>
 </div>
@@ -25,47 +25,71 @@ const { text, index } = Astro.props;
     position: relative;
     display: block;
     pointer-events: none;
-    z-index: 999;
+    z-index: 1001 !important;
     letter-spacing: -1px;
     margin-bottom: 5px;
 
     /* Enhanced gradient with more vibrant colors */
-    background: linear-gradient(to bottom, #00ffaa, #8162ff);
+    background: linear-gradient(to bottom, #00ffdd, #8162ff);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     text-fill-color: transparent;
-    filter: drop-shadow(0 0 8px rgba(129, 98, 255, 0.7)); /* Increased glow */
+    
+    /* Enhanced glow effect with multiple layers */
+    filter: 
+      drop-shadow(0 0 10px rgba(0, 255, 204, 0.9))
+      drop-shadow(0 0 20px rgba(129, 98, 255, 0.8)); 
+      
+    /* Add outline for better contrast against background */
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+    
+    /* Bigger font size for better visibility */
+    font-size: 110%;
   }
 
   /* Shadow elements for added depth effect */
   .title-shadow {
     position: absolute;
     width: 100%;
-    height: 15px; /* Increased size */
-    background: radial-gradient(ellipse at center, rgba(0, 255, 170, 0.6) 0%, rgba(0, 0, 0, 0) 70%);
+    height: 20px; /* Increased size */
+    background: radial-gradient(ellipse at center, rgba(0, 255, 170, 0.8) 0%, rgba(0, 0, 0, 0) 70%);
     border-radius: 50%;
     left: 0;
     bottom: -15px;
     opacity: 0;
     transform: scale(0);
     transform-origin: center;
+    z-index: 1000;
   }
 
   /* Chrome-specific fixes - Extra brightness for Chrome */
   @media screen and (-webkit-min-device-pixel-ratio: 0) and (min-resolution: 0.001dpcm) {
     .title-word {
       text-shadow: 
-        0 0 25px rgba(0, 255, 170, 0.9),
-        0 0 50px rgba(0, 255, 170, 0.5),
-        0 0 12px rgba(0, 0, 0, 0.9);
+        0 0 30px rgba(0, 255, 170, 1),
+        0 0 60px rgba(0, 255, 170, 0.7),
+        0 0 90px rgba(0, 255, 170, 0.5),
+        0 0 15px rgba(0, 0, 0, 0.9);
+    }
+  }
+
+  /* Firefox-specific enhancements */
+  @-moz-document url-prefix() {
+    .title-word {
+      text-shadow: 
+        0 0 30px rgba(0, 255, 170, 1),
+        0 0 60px rgba(0, 255, 170, 0.7),
+        0 0 20px rgba(0, 0, 0, 0.9);
     }
   }
 
   /* Post-animation hover effects */
   .title-word.animation-complete:hover {
-    filter: brightness(1.5) contrast(1.3);
-    transform: translateY(-2px) scale(1.03) !important;
+    filter: brightness(1.5) contrast(1.3)
+           drop-shadow(0 0 15px rgba(0, 255, 204, 1))
+           drop-shadow(0 0 30px rgba(129, 98, 255, 0.9));
+    transform: translateY(-2px) scale(1.05) !important;
     transition: all 0.3s ease;
   }
   
@@ -73,9 +97,35 @@ const { text, index } = Astro.props;
   @media (max-width: 768px) {
     .title-word {
       text-shadow: 
-        0 0 25px rgba(0, 255, 170, 0.9),
-        0 0 50px rgba(0, 255, 170, 0.5),
+        0 0 30px rgba(0, 255, 170, 1),
+        0 0 60px rgba(0, 255, 170, 0.7),
+        0 0 90px rgba(0, 255, 170, 0.5),
         0 0 10px rgba(0, 0, 0, 0.9);
+      
+      /* Increase font size further on mobile */
+      font-size: 115%;
     }
   }
 </style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Ensure title words are always visible by forcing opacity and z-index
+    const titleWord = document.currentScript?.parentElement;
+    if (titleWord) {
+      // Force visibility with a short delay to allow animation to start
+      setTimeout(() => {
+        titleWord.style.opacity = '1';
+        titleWord.style.transform = 'translateY(0) scale(1)';
+        titleWord.style.zIndex = '1001';
+        
+        // Add shadow effect
+        const shadow = titleWord.querySelector('.title-shadow');
+        if (shadow) {
+          shadow.style.opacity = '0.7';
+          shadow.style.transform = 'scale(1)';
+        }
+      }, 100 + parseInt(titleWord.dataset.index || '0') * 200);
+    }
+  });
+</script>

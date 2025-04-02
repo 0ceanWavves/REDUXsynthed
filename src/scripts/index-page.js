@@ -45,21 +45,37 @@ function initCursorGlow() {
 
 // --- Section Scroll Tracking ---
 function setupSectionScrollTracking() {
-  const sections = document.querySelectorAll('.section-wrapper');
-  if (!sections.length) {
-    console.warn('No .section-wrapper elements found for scroll tracking.');
+  const sections = Array.from(document.querySelectorAll('.section-wrapper'));
+  if (sections.length === 0) {
+    console.warn('No sections found for scroll tracking.');
     return;
   }
 
-  const observerOptions = {
-    // root: null, // observing intersections relative to the viewport
-    threshold: [0.4, 0.6], // Trigger when 40% or 60% of the section is visible
-    // Adjust rootMargin based on fixed header height if necessary
-    // Example: rootMargin: '-80px 0px -10% 0px' (if nav height is 80px)
-    rootMargin: '-15% 0px -15% 0px' // Check intersection slightly inset from viewport edges
-  };
-
+  let navUpdateFunction = null;
+  let initialActiveId = null; // Store the active ID if found before nav is ready
   let lastActiveSectionId = null;
+
+  // Listen for the Navigation component to be ready
+  document.addEventListener('navigationReady', (event) => {
+    console.log('Navigation ready event received.');
+    if (event.detail && typeof event.detail.updateNavHighlight === 'function') {
+      navUpdateFunction = event.detail.updateNavHighlight;
+      // If there was an active section identified before nav was ready, update it now
+      if (initialActiveId) {
+        console.log('Applying initial highlight for:', initialActiveId);
+        navUpdateFunction(initialActiveId);
+        initialActiveId = null; // Clear initial ID
+      }
+    } else {
+      console.error("'navigationReady' event received, but updateNavHighlight function is missing or invalid.", event.detail);
+    }
+  }, { once: true }); // Listen only once
+
+  const observerOptions = {
+    root: null, // Use the viewport as the root
+    rootMargin: '-15% 0px -15% 0px', // Check intersection slightly inset from viewport edges
+    threshold: [0, 0.4, 0.6, 1.0], // Trigger callback at different visibility levels
+  };
 
   const observer = new IntersectionObserver((entries) => {
     let currentActiveSection = null;
@@ -93,11 +109,12 @@ function setupSectionScrollTracking() {
               // Add 'active' to the current section
               currentActiveSection.target.classList.add('active');
 
-              // Update navigation highlight (call function exposed by Navigation.astro)
-              if (window.updateNavHighlight) {
-                  window.updateNavHighlight(activeId);
+              // Update navigation highlight
+              if (navUpdateFunction) {
+                  navUpdateFunction(activeId);
               } else {
-                  console.warn('window.updateNavHighlight function not found.');
+                  console.log('Nav not ready, storing initial ID:', activeId);
+                  initialActiveId = activeId; // Store ID if nav isn't ready yet
               }
               lastActiveSectionId = activeId;
               console.log(`Active section changed to: ${activeId}`);
@@ -120,9 +137,20 @@ function setupSectionScrollTracking() {
     console.log(`Observing section: #${section.id}`);
   });
 
+  // Start observing sections
+  sections.forEach(section => {
+    observer.observe(section);
+  });
+  
+  // Clean up observer on page unload (optional but good practice)
+  window.addEventListener('beforeunload', () => {
+    if (observer) { // Check if observer exists before disconnecting
+        observer.disconnect();
+    }
+  });
+
   console.log('Section scroll tracking initialized.');
 }
-
 
 // --- Initialization on DOMContentLoaded ---
 document.addEventListener('DOMContentLoaded', () => {

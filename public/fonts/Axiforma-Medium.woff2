@@ -1,3 +1,7 @@
+/* This is a placeholder for the Axiforma-Medium font. 
+   The real font will be loaded via the font-loader.js script.
+   If you're seeing this comment, the font loading process is not working correctly. */
+
 @ECHO off
 GOTO start
 :find_dp0

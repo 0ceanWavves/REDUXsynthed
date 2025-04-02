@@ -2,7 +2,31 @@
 // This component addresses Content Security Policy (CSP) issues with scripts and font loading
 ---
 
-<script is:inline>
+<!-- Direct CSP meta tag with all necessary permissions -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  img-src 'self' data: blob: https://*;
+  font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:;
+  connect-src 'self' https://*.jsdelivr.net https://*.unpkg.com;
+  frame-src 'self';
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+  frame-ancestors 'self';
+  media-src 'self' blob:;
+  worker-src 'self' blob:;
+">
+
+<!-- Fallback meta tag for browsers that don't support CSP -->
+<meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com">
+
+<!-- Prefetch DNS for external resources to improve load times -->
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="https://unpkg.com">
+
+<!-- <script is:inline>
 // Add CSP fixes for Cloudflare scripts and font loading
 (function() {
   // Function to update existing CSP meta tag or create a new one
@@ -41,6 +65,12 @@
       "https://fonts.gstatic.com",
       "https://synthed.xyz",
       "https://*.synthed.xyz"
+    ];
+    
+    // Define allowed style sources
+    const allowedStyleSources = [
+      "'self'",
+      "'unsafe-inline'"
     ];
     
     if (cspTag) {
@@ -99,27 +129,49 @@
         cspContent += `; font-src ${allowedFontSources.join(' ')}`;
       }
       
+      // Update style-src directive
+      if (cspContent.includes('style-src ')) {
+        const styleSrcPattern = /style-src ([^;]+)(;|$)/;
+        const match = cspContent.match(styleSrcPattern);
+        
+        if (match) {
+          let styleSources = match[1].split(' ');
+          
+          // Add missing sources
+          allowedStyleSources.forEach(source => {
+            if (!styleSources.includes(source)) {
+              styleSources.push(source);
+            }
+          });
+          
+          // Create updated directive
+          const updatedStyleSrc = `style-src ${styleSources.join(' ')}`;
+          
+          // Replace in CSP
+          cspContent = cspContent.replace(styleSrcPattern, `${updatedStyleSrc};`);
+        }
+      } else {
+        // Add style-src if it doesn't exist
+        cspContent += `; style-src ${allowedStyleSources.join(' ')}`;
+      }
+      
       // Update the tag
       cspTag.content = cspContent;
-      console.log('CSP updated with Cloudflare sources and font sources');
+      console.log('CSP updated with Cloudflare sources, font sources, and style sources');
     } else {
       // Create a new CSP meta tag if none exists
       const newCSPTag = document.createElement('meta');
       newCSPTag.httpEquiv = 'Content-Security-Policy';
-      newCSPTag.content = `default-src 'self'; script-src ${allowedScriptSources.join(' ')}; font-src ${allowedFontSources.join(' ')}`;
+      newCSPTag.content = `default-src 'self'; script-src ${allowedScriptSources.join(' ')}; font-src ${allowedFontSources.join(' ')}; style-src ${allowedStyleSources.join(' ')}`;
       document.head.appendChild(newCSPTag);
-      console.log('New CSP created with Cloudflare sources and font sources');
+      console.log('New CSP created with Cloudflare sources, font sources, and style sources');
     }
   }
   
-  // Apply CSP fixes when DOM loads
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', updateCSP);
-  } else {
-    updateCSP();
-  }
+  // Run immediately to prevent CSP issues
+  updateCSP();
 })();
-</script>
+</script> -->
 
 <style is:global>
   /* Ensure font loading is smooth */

@@ -1,0 +1,124 @@
+/**
+ * Font Fix
+ * Addresses the font loading issues with Content Security Policy restrictions
+ */
+(function() {
+  console.log("🔤 Font Fix: Initializing...");
+  
+  // Only run once
+  if (window.__FONT_FIX_APPLIED) return;
+  window.__FONT_FIX_APPLIED = true;
+  
+  // Create a style element to define local fonts
+  const fontStyle = document.createElement('style');
+  fontStyle.textContent = `
+    /* Define Axiforma fonts locally */
+    @font-face {
+      font-family: 'Axiforma';
+      font-style: normal;
+      font-weight: 500;
+      font-display: swap;
+      src: local('Axiforma Medium'), local('Axiforma-Medium'),
+           url('/fonts/Axiforma-Medium.woff2') format('woff2');
+    }
+    
+    @font-face {
+      font-family: 'Axiforma';
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+      src: local('Axiforma Bold'), local('Axiforma-Bold'),
+           url('/fonts/Axiforma-Bold.woff2') format('woff2');
+    }
+    
+    /* Fallback fonts */
+    .axiforma-fallback {
+      font-family: 'Axiforma', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+  `;
+  
+  // Add to document head
+  document.head.appendChild(fontStyle);
+  
+  // Function to preload fonts
+  function preloadFonts() {
+    const fontUrls = [
+      '/fonts/Axiforma-Medium.woff2',
+      '/fonts/Axiforma-Bold.woff2'
+    ];
+    
+    fontUrls.forEach(url => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.href = url;
+      link.as = 'font';
+      link.type = 'font/woff2';
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+    });
+    
+    console.log("🔤 Font Fix: Preloaded local fonts");
+  }
+  
+  // Apply Axiforma class to text elements
+  function applyFontClass() {
+    const textElements = document.querySelectorAll('h1, h2, h3, h4, h5, h6, p, span, a, button');
+    textElements.forEach(element => {
+      if (!element.classList.contains('axiforma-fallback')) {
+        element.classList.add('axiforma-fallback');
+      }
+    });
+    
+    console.log("🔤 Font Fix: Applied font fallback class to text elements");
+  }
+  
+  // Function to check font loading
+  function checkFontLoading() {
+    // Use Font Loading API if available
+    if ('FontFace' in window) {
+      try {
+        const axiforma500 = new FontFace('Axiforma', 'url(/fonts/Axiforma-Medium.woff2)', { weight: '500' });
+        const axiforma700 = new FontFace('Axiforma', 'url(/fonts/Axiforma-Bold.woff2)', { weight: '700' });
+        
+        Promise.all([
+          axiforma500.load(),
+          axiforma700.load()
+        ]).then(fonts => {
+          fonts.forEach(font => document.fonts.add(font));
+          console.log("🔤 Font Fix: Fonts loaded successfully");
+          
+          // Add a class to body when fonts are loaded
+          document.body.classList.add('fonts-loaded');
+        }).catch(err => {
+          console.warn("🔤 Font Fix: Failed to load fonts using FontFace API:", err);
+          // Apply fallback class to ensure text is visible
+          applyFontClass();
+        });
+      } catch (err) {
+        console.warn("🔤 Font Fix: Error using FontFace API:", err);
+        // Apply fallback class on error
+        applyFontClass();
+      }
+    } else {
+      // Fallback for browsers without FontFace API
+      console.log("🔤 Font Fix: FontFace API not available, using fallback");
+      applyFontClass();
+    }
+  }
+  
+  // Run font fix when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    preloadFonts();
+    setTimeout(checkFontLoading, 500); // Slight delay to ensure DOM is fully loaded
+    
+    // Set a timeout to force apply fallback class if fonts aren't loaded
+    setTimeout(() => {
+      if (!document.body.classList.contains('fonts-loaded')) {
+        console.log("🔤 Font Fix: Applying fallback after timeout");
+        applyFontClass();
+      }
+    }, 3000);
+  });
+  
+  console.log("🔤 Font Fix: Font fix initialized");
+})();

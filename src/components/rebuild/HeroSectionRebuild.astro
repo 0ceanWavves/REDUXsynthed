@@ -1,0 +1,19 @@
+---
+// rebuild/HeroSectionRebuild.astro
+import HeroContent from './HeroContent.astro';
+// import AmorphousPrism from '../src/components/AmorphousPrism.astro'; // OLD PATH
+import AmorphousPrism from '~/components/AmorphousPrism.astro'; // USE ALIAS
+---
+<style is:global>
+  @import './styles.css';
+</style>
+
+<section id="hero-rebuild" class="hero-rebuild-section">
+  <div class="hero-rebuild-canvas-container">
+    <!-- <AmorphousPrism client:load /> -->
+    <AmorphousPrism />
+  </div>
+  <div class="hero-rebuild-content-container">
+    <HeroContent />
+  </div>
+</section> 

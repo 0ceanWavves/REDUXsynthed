@@ -109,26 +109,48 @@ a:active, button:active, .clickable:active {
   transition: transform 0.2s ease-out;
 }
 
-/* Allow scrolling on mobile devices */
+/* Fix scrolling issues and section visibility */
 html, body {
   height: auto !important;
-  overflow-y: auto !important;
-  position: relative !important;
-  touch-action: pan-y !important; /* Explicitly allow vertical scrolling */
+  overflow: auto !important;
+  overscroll-behavior-y: auto !important;
 }
 
-/* Ensure mobile-friendly scrolling with touch events */
+.content-wrapper {
+  position: relative;
+  z-index: 60 !important; /* Higher than the morphing canvas */
+}
+
+#morphing-poly-canvas {
+  position: fixed !important; /* Keep the canvas fixed but allow scrolling */
+  touch-action: none !important;
+}
+
+.section-wrapper {
+  position: relative;
+  z-index: 60;
+  background-color: rgba(5, 3, 10, 0.85); /* Semi-transparent background */
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+}
+
+/* Make sure dividers are visible */
+.section-divider {
+  position: relative;
+  z-index: 60;
+  margin: 3rem 0;
+}
+
+/* Force all content to be visible and properly spaced */
 @media (max-width: 768px) {
-  html, body {
-    /* These properties ensure mobile scrolling works properly */
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: auto;
-    touch-action: manipulation pan-y;
+  .content-wrapper {
+    padding-top: 90vh !important; /* Push content below the hero section on mobile */
   }
-}
-
-/* Fix for any fixed position elements that might interfere with scrolling */
-.fixed-element {
-  will-change: transform;
-  transform: translateZ(0);
+  
+  .section-wrapper {
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
 }

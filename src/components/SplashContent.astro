@@ -1,18 +1,328 @@
 ---
-// SplashContent.astro - Main component for the content section
-import AnimationUtils from './AnimationUtils.astro';
-import SplashHeading from './SplashHeading.astro';
+// SplashContent.astro - Component for the content section
 import ServiceBullets from './ServiceBullets.astro';
 ---
 
-<AnimationUtils />
-
-<div class="splash-content w-full max-w-2xl text-center mt-3 md:mt-4 browser-optimized-text px-5 mx-auto" style="z-index: 90;">
+<div class="splash-content w-full max-w-2xl text-center mt-3 md:mt-4 browser-optimized-text px-5 mx-auto" style="z-index: 1000; position: relative;">
   <div class="text-white text-lg md:text-xl leading-relaxed">
-    <SplashHeading />
+    <p class="mb-1 content-item fade-in-item transforming-text" style="opacity: 1; transform: translateY(0);">Transforming ideas into</p>
+    
+    <!-- Digital Solutions heading with ENHANCED glow effect -->
+    <p class="text-primary text-2xl md:text-3xl font-bold mb-4 md:mb-5 content-item pointer-events-none digital-solutions-text glow-pulse" style="opacity: 1; transform: translateY(0);">Digital Solutions</p>
+    
+    <!-- Include the service bullets component -->
     <ServiceBullets />
   </div>
 </div>
+
+<style>
+  /* Base styling with browser optimizations */
+  .browser-optimized-text {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    position: relative;
+    z-index: 1000;
+  }
+
+  /* ENHANCED Digital Solutions text styling */
+  .digital-solutions-text {
+    /* ENHANCED: Brighter gradient with more contrast */
+    background: linear-gradient(90deg, #00ffbb, #4aefd5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    
+    /* ENHANCED: Multiple layers of shadow for extreme visibility */
+    text-shadow: 
+      0 0 30px rgba(0, 255, 170, 1),
+      0 0 60px rgba(0, 255, 170, 0.8),
+      0 0 90px rgba(0, 255, 170, 0.6),
+      0 0 15px rgba(0, 0, 0, 0.9); /* Dark shadow for contrast */
+    
+    /* ENHANCED: Much more dramatic animation with scaling */
+    animation: digitalPulse 4s ease-in-out infinite 3.5s;
+    
+    /* ENHANCED: Other styling improvements */
+    letter-spacing: 1.2px;
+    font-size: 2.7rem;
+    
+    /* ENHANCED: Add white outline for better contrast */
+    -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.5);
+    
+    /* Ensure proper z-index */
+    position: relative;
+    z-index: 1001;
+    
+    /* Add drop shadow for better visibility */
+    filter: 
+      drop-shadow(0 0 15px rgba(0, 255, 170, 0.9)) 
+      drop-shadow(0 0 30px rgba(0, 255, 170, 0.6));
+  }
+  
+  /* ENHANCED "Digital" word pulsing and glowing effect */
+  @keyframes digitalPulse {
+    0%, 100% {
+      filter: 
+        drop-shadow(0 0 10px rgba(0, 255, 170, 0.8))
+        drop-shadow(0 0 25px rgba(0, 255, 170, 0.5));
+      text-shadow: 
+        0 0 30px rgba(0, 255, 170, 1),
+        0 0 60px rgba(0, 255, 170, 0.7),
+        0 0 15px rgba(0, 0, 0, 0.9);
+      transform: scale(1);
+    }
+    50% {
+      filter: 
+        drop-shadow(0 0 20px rgba(0, 255, 170, 1))
+        drop-shadow(0 0 40px rgba(0, 255, 170, 0.8));
+      text-shadow: 
+        0 0 40px rgba(0, 255, 170, 1),
+        0 0 80px rgba(0, 255, 170, 0.8),
+        0 0 15px rgba(0, 0, 0, 0.9);
+      transform: scale(1.07);
+    }
+  }
+  
+  /* Digital letter animation */
+  .digital-letter {
+    display: inline-block;
+    background: inherit;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    text-shadow: 0 0 15px rgba(0, 255, 170, 0.7);
+    position: relative;
+  }
+  
+  /* ENHANCED Transforming text with stronger static electricity effect */
+  .transforming-text {
+    position: relative;
+    display: inline-block;
+    color: #fff;
+    
+    /* ENHANCED: Much brighter text-shadow */
+    text-shadow: 
+      0 0 20px rgba(255, 255, 255, 1),
+      0 0 40px rgba(255, 255, 255, 0.7),
+      0 0 15px rgba(0, 0, 0, 0.8); /* Dark shadow for contrast */
+    
+    /* ENHANCED: Larger font and letter spacing */
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: 0.7px;
+    
+    /* ENHANCED: Add subtle glow animation */
+    animation: textGlow 4s ease-in-out infinite 2.8s;
+    
+    /* Ensure proper z-index */
+    position: relative;
+    z-index: 1001;
+  }
+  
+  /* ENHANCED: New glow animation for transforming text */
+  @keyframes textGlow {
+    0%, 100% {
+      text-shadow: 
+        0 0 15px rgba(255, 255, 255, 0.8),
+        0 0 30px rgba(255, 255, 255, 0.4),
+        0 0 15px rgba(0, 0, 0, 0.8);
+    }
+    50% {
+      text-shadow: 
+        0 0 20px rgba(255, 255, 255, 1),
+        0 0 40px rgba(255, 255, 255, 0.7),
+        0 0 15px rgba(0, 0, 0, 0.8);
+    }
+  }
+  
+  .transforming-text::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.4) 100%);
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0;
+    animation: staticPulse 4s ease-in-out infinite;
+  }
+  
+  /* ENHANCED Static electricity animation */
+  @keyframes staticPulse {
+    0%, 100% {
+      opacity: 0;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+  
+  /* Standard fade in item animation */
+  .fade-in-item {
+    animation: fadeInUp 0.8s ease-out 2.5s both;
+  }
+
+  /* Base animations */
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* Ensure text visibility */
+  .splash-content {
+    color: white !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 1000 !important;
+    position: relative !important;
+  }
+  
+  .splash-content p {
+    opacity: 1 !important;
+    z-index: 1001 !important;
+  }
+  
+  .text-primary {
+    color: #00e599 !important;
+    pointer-events: none !important;
+  }
+  
+  /* Mobile adjustments */
+  @media (max-width: 768px) {
+    .digital-solutions-text {
+      font-size: 2.4rem;
+    }
+    
+    .transforming-text {
+      font-size: 1.4rem;
+    }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log("SplashContent: Enhanced content initialization");
+    
+    // Ensure all animation elements are properly initialized
+    setTimeout(() => {
+      // Force first paragraph to be visible
+      const firstParagraph = document.querySelector('.content-item.fade-in-item');
+      if (firstParagraph instanceof HTMLElement) {
+        firstParagraph.style.opacity = '1';
+        firstParagraph.style.transform = 'translateY(0)';
+        firstParagraph.style.zIndex = '1001';
+      }
+      
+      // Force Digital Solutions text to be visible
+      const digitalSolutionsText = document.querySelector('.digital-solutions-text');
+      if (digitalSolutionsText instanceof HTMLElement) {
+        digitalSolutionsText.style.opacity = '1';
+        digitalSolutionsText.style.transform = 'translateY(0)';
+        digitalSolutionsText.style.zIndex = '1001';
+      }
+    }, 1000); // ENHANCED: Reduced wait time to 1 second for faster visibility
+    
+    // Add static electricity effect to the "Transforming" text
+    const transformingText = document.querySelector('.transforming-text');
+    if (transformingText) {
+      // Create sparks for the static electricity effect
+      for (let i = 0; i < 20; i++) { // ENHANCED: Double the number of initial sparks
+        createStaticSpark(transformingText);
+      }
+      
+      // Set interval to continuously create new sparks
+      setInterval(() => {
+        // ENHANCED: Create multiple sparks at once
+        for (let i = 0; i < 3; i++) {
+          createStaticSpark(transformingText);
+        }
+      }, 300); // ENHANCED: More frequent sparks
+    }
+    
+    // Function to create static electricity sparks
+    function createStaticSpark(element) {
+      const spark = document.createElement('div');
+      spark.className = 'static-spark';
+      
+      // Random position around the text
+      const posX = Math.random() * 120 - 10; // Some sparks outside the text
+      const posY = Math.random() * 120 - 10;
+      
+      // Apply styles
+      spark.style.cssText = `
+        position: absolute;
+        top: ${posY}%;
+        left: ${posX}%;
+        width: 3px; /* ENHANCED: Larger sparks */
+        height: 3px;
+        background: white;
+        box-shadow: 0 0 10px white, 0 0 15px #a9f4fb; /* ENHANCED: Brighter glow */
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        z-index: 2;
+      `;
+      
+      // Set random rotation and length for lightning-like effect
+      const rotation = Math.random() * 360;
+      const length = Math.random() * 18 + 8; // ENHANCED: Longer spark effects
+      
+      // Add lightning shape for some sparks
+      if (Math.random() > 0.5) { // ENHANCED: Increased chance of lightning effect
+        spark.style.width = `${length}px`;
+        spark.style.height = '2px'; // ENHANCED: Thicker lines
+        spark.style.transform = `rotate(${rotation}deg)`;
+      }
+      
+      // Add to element
+      element.appendChild(spark);
+      
+      // ENHANCED: More dynamic animation
+      spark.animate(
+        [
+          { opacity: 0, transform: `scale(0.5) rotate(${rotation}deg)` },
+          { opacity: 1, transform: `scale(1.5) rotate(${rotation}deg)` }, // ENHANCED: Larger scale
+          { opacity: 0, transform: `scale(0.8) rotate(${rotation}deg)` }
+        ],
+        {
+          duration: 250 + Math.random() * 350, // ENHANCED: Slightly longer duration
+          easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
+          fill: 'forwards'
+        }
+      );
+      
+      // Remove after animation
+      setTimeout(() => {
+        spark.remove();
+      }, 600); // ENHANCED: Adjusted for longer duration
+    }
+  });
+</script>
 
 <!-- Import the letter animation script -->
 <script src="../scripts/letter-animation.js"></script>

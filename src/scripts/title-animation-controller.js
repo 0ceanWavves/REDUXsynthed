@@ -12,8 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function animateTitleWithSlam() {
     console.log("Starting true slam title animation");
     
-    // Get all title words
-    const titleWords = document.querySelectorAll('.title-word');
+    // Get all title words using the new class
+    const titleWords = document.querySelectorAll('.hero-rebuild-title-word');
     
     // Get impact effect elements
     const ripples = document.querySelectorAll('.impact-ripple');
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Emergency visibility fallback
   function ensureTitleVisibility() {
-    document.querySelectorAll('.title-word').forEach(word => {
+    document.querySelectorAll('.hero-rebuild-title-word').forEach(word => {
       if (word.style.opacity !== '1') {
         word.style.opacity = '1';
         word.style.visibility = 'visible';

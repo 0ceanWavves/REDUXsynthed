@@ -138,7 +138,12 @@
         
         // Remove from DOM after transition completes
         setTimeout(() => {
-          loadingOverlay.style.display = 'none';
+          // loadingOverlay.style.display = 'none'; // Keep this for fallback
+          // *** Force removal from DOM ***
+          if (loadingOverlay.parentNode) {
+            loadingOverlay.parentNode.removeChild(loadingOverlay);
+            console.log('Loading overlay forcefully removed from DOM');
+          }
           
           // Dispatch event for components that listen for it
           document.dispatchEvent(new CustomEvent('loadingScreenRemoved'));

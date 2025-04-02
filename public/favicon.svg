@@ -1,30 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 596 614" fill="none">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
   <style>
-    .primary {
-      fill: #3c9186;
-    }
-    .secondary {
-      fill: #68a896;
+    .logo {
+      fill: #8162ff;
     }
     @media (prefers-color-scheme: dark) {
-      .primary {
-        fill: #44a397;
-      }
-      .secondary {
-        fill: #5ca797;
+      .logo {
+        fill: #a98eff;
       }
     }
   </style>
-  <path
-    class="primary"
-    d="M298 114c80 0 144 65 144 144s-65 144-144 144-144-65-144-144 65-144 144-144zm0 60c-47 0-85 38-85 85s38 85 85 85 85-38 85-85-38-85-85-85z"
-  />
-  <path
-    class="secondary"
-    d="M450 179l95-39c25-9 48-12 67-8 16 0 28 4 36 16 4 8 8 20 4 36l-24 63-39 51a724 724 0 0 0-139-119zm-304 119-39-51c-16-24-24-44-28-63-0-16 0-28 8-36 8-12 16-16 36-16 16-4 39 0 67 8l95 39a760 760 0 0 0-139 119z"
-  />
-  <path
-    class="primary"
-    d="M146 315l-39 51c-16 24-24 44-28 63-0 16 0 28 8 36 8 12 16 16 36 16 16 4 39 0 67-8l95-39a761 761 0 0 1-139-119zm304 119 95 39c25 9 48 12 67 8 16 0 28-4 36-16 4-8 8-20 4-36l-24-63-39-51a724 724 0 0 1-139 119z"
-  />
+  <path class="logo" d="M75 10L50 30L25 10H10V90H25V30L50 50L75 30V90H90V10H75Z"/>
 </svg>

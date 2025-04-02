@@ -1,0 +1,30 @@
+---
+// MetaFixImport.astro - Minimal version for fixing MIME types
+---
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Preload our component modules
+    const moduleUrls = [
+      '/src/components/three/renderer/RendererManager.js',
+      '/src/components/three/geometries/PrismGeometries.js',
+      '/src/components/three/shaders/MorphingShaders.js',
+      '/src/components/three/particles/ParticleSystem.js',
+      '/src/components/three/animation/MorphingController.js',
+      '/src/components/three/interaction/InteractionManager.js',
+      '/src/components/three/config/PrismConfig.js'
+    ];
+    
+    // Create preload links
+    moduleUrls.forEach(url => {
+      const link = document.createElement('link');
+      link.rel = 'modulepreload';
+      link.href = url;
+      link.as = 'script';
+      link.crossOrigin = 'anonymous';
+      document.head.appendChild(link);
+    });
+    
+    console.log("Module preloading completed");
+  });
+</script>

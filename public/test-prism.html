@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Testing Modular Prism</title>
+  
+  <!-- Load fixes -->
+  <script src="/js/three-fix-bundle.js"></script>
+  <script src="/js/amorphous-prism-loader.js"></script>
+  
+  <!-- Preload Three.js -->
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js" as="script" fetchpriority="high" crossorigin="anonymous" />
+  
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #05030d;
+      color: white;
+      font-family: system-ui, sans-serif;
+    }
+    
+    #morphing-poly-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      cursor: grab;
+    }
+    
+    .content {
+      position: relative;
+      z-index: 100;
+      text-align: center;
+      padding-top: 15vh;
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(255, 0, 255, 0.7), 0 0 20px rgba(0, 255, 255, 0.7);
+    }
+    
+    p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto 2rem auto;
+      opacity: 0.8;
+    }
+    
+    .loading-indicator {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #0a0a1a;
+      z-index: 10;
+    }
+    
+    .spinner {
+      width: 4rem;
+      height: 4rem;
+      border: 4px solid transparent;
+      border-top-color: #ff00ff;
+      border-bottom-color: #00ffff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Canvas for Three.js -->
+  <canvas id="morphing-poly-canvas" tabindex="0"></canvas>
+  
+  <!-- Loading indicator -->
+  <div id="morphing-poly-loading" class="loading-indicator">
+    <div class="spinner"></div>
+  </div>
+  
+  <!-- Content overlaid on 3D scene -->
+  <div class="content">
+    <h1>Morphing Prism Test</h1>
+    <p>This is a test of the modular Three.js implementation with our component-based architecture.</p>
+  </div>
+  
+  <script type="module">
+    // Import our modular components
+    import { createRenderer } from '/src/components/three/renderer/RendererManager.js';
+    import { getPrismTargetGeometries, addBarycentricCoordinates } from '/src/components/three/geometries/PrismGeometries.js';
+    import { createMorphingShaderMaterial } from '/src/components/three/shaders/MorphingShaders.js';
+    import { createParticleSystem } from '/src/components/three/particles/ParticleSystem.js';
+    import { createMorphingController } from '/src/components/three/animation/MorphingController.js';
+    import { createInteractionManager } from '/src/components/three/interaction/InteractionManager.js';
+    import { prismConfig, createColorObjects } from '/src/components/three/config/PrismConfig.js';
+    
+    // Main initialization
+    async function initPrism() {
+      try {
+        console.log("Initializing test prism...");
+        
+        // Get DOM elements
+        const loadingIndicator = document.getElementById('morphing-poly-loading');
+        const canvas = document.getElementById('morphing-poly-canvas');
+        
+        if (!canvas) {
+          console.error("Canvas not found!");
+          return;
+        }
+        
+        // Load Three.js
+        let THREE;
+        
+        try {
+          const module = await import('https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js');
+          THREE = module.default || module;
+          window.THREE = THREE;
+          console.log("THREE.js loaded, version:", THREE.REVISION);
+        } catch (err) {
+          console.error("Failed to load THREE.js:", err);
+          throw err;
+        }
+        
+        // Define device type
+        const isMobile = window.innerWidth < 768;
+        
+        // Create color objects
+        const colors = createColorObjects(THREE);
+        
+        // Create renderer, scene, camera
+        const { 
+          scene, 
+          camera, 
+          renderer, 
+          clock,
+          canvas: canvasRef,
+          setAnimationFrameId
+        } = await createRenderer({ 
+          THREE, 
+          canvas, 
+          isMobile, 
+          colors 
+        });
+        
+        // Get prism geometries
+        const { targetGeometries, shapeNames } = getPrismTargetGeometries(THREE, {
+          radius: prismConfig.prismRadius,
+          depth: prismConfig.prismDepth
+        });
+        
+        // Create base geometry for morphing
+        const baseGeometry = new THREE.CylinderGeometry(1.1, 1.1, 0.4, 64, 1);
+        baseGeometry.morphAttributes.position = [];
+        const basePositionAttribute = baseGeometry.attributes.position;
+        
+        // Add barycentric coordinates for wireframe effect
+        addBarycentricCoordinates(baseGeometry, THREE);
+        
+        // Process target geometries for morphing
+        console.log(`Base geometry has ${basePositionAttribute.count} vertices.`);
+        const baseVertex = new THREE.Vector3();
+        const targetVertex = new THREE.Vector3();
+
+        for (let i = 0; i < targetGeometries.length; i++) {
+          const targetGeo = targetGeometries[i];
+          const targetPositionAttribute = targetGeo.attributes.position;
+          
+          console.log(`Processing target ${shapeNames[i]} with ${targetPositionAttribute.count} vertices.`);
+          
+          if (!targetPositionAttribute) { 
+            console.error(`Target geo ${shapeNames[i]} lacks position!`); 
+            continue; 
+          }
+
+          const morphPositions = new Float32Array(basePositionAttribute.count * 3);
+          
+          for (let j = 0; j < basePositionAttribute.count; j++) {
+            baseVertex.fromBufferAttribute(basePositionAttribute, j);
+            let closestDistSq = Infinity; 
+            let closestVertexIndex = -1;
+            
+            for (let k = 0; k < targetPositionAttribute.count; k++) {
+              targetVertex.fromBufferAttribute(targetPositionAttribute, k);
+              const distSq = baseVertex.distanceToSquared(targetVertex);
+              if (distSq < closestDistSq) { 
+                closestDistSq = distSq; 
+                closestVertexIndex = k; 
+              }
+            }
+            
+            if (closestVertexIndex !== -1) {
+              targetVertex.fromBufferAttribute(targetPositionAttribute, closestVertexIndex);
+            } else {
+              targetVertex.copy(baseVertex); // Fallback
+            }
+            
+            morphPositions[j * 3] = targetVertex.x;
+            morphPositions[j * 3 + 1] = targetVertex.y;
+            morphPositions[j * 3 + 2] = targetVertex.z;
+          }
+          
+          baseGeometry.morphAttributes.position.push(
+            new THREE.Float32BufferAttribute(morphPositions, 3)
+          );
+          
+          // Dispose target geometry after use
+          targetGeo.dispose();
+        }
+        
+        // Create shader material
+        const shaderMaterial = createMorphingShaderMaterial(THREE, {
+          colors,
+          isMobile
+        });
+        
+        // If Three.js fix is available, apply it to the material
+        if (window.fixThreeMaterial) {
+          window.fixThreeMaterial(shaderMaterial);
+        }
+        
+        // Create mesh with morphing capabilities
+        const mesh = new THREE.Mesh(baseGeometry, shaderMaterial);
+        mesh.name = "sacredGeometryMesh";
+        mesh.morphTargetInfluences = new Array(baseGeometry.morphAttributes.position.length).fill(0);
+        scene.add(mesh);
+        
+        // Create particle system
+        const particleSystem = createParticleSystem(THREE, {
+          colors,
+          isMobile,
+          config: prismConfig
+        });
+        scene.add(particleSystem);
+        
+        // Create morphing controller
+        const morphingController = createMorphingController({
+          mesh,
+          config: prismConfig,
+          clock
+        });
+        
+        // Create interaction manager
+        const interactionManager = createInteractionManager({
+          canvas: canvasRef,
+          morphingController,
+          config: {...prismConfig, isMobileDevice: isMobile}
+        });
+        
+        // Hide loading indicator
+        if (loadingIndicator) {
+          loadingIndicator.style.display = 'none';
+        }
+        
+        // Animation loop
+        function animate() {
+          const animationId = requestAnimationFrame(animate);
+          setAnimationFrameId(animationId);
+          
+          // Update morphing and rotation
+          morphingController.update({
+            isMobile,
+            mesh,
+            material: shaderMaterial,
+            particleMaterial: particleSystem.material,
+            particleSystem,
+            dampingFactor: prismConfig.dampingFactor,
+            minVelocityThreshold: prismConfig.minVelocityThreshold,
+            autoRotateSpeed: prismConfig.autoRotateSpeed
+          });
+          
+          // Render scene
+          renderer.render(scene, camera);
+        }
+        
+        // Start animation
+        console.log("Starting animation loop");
+        animate();
+        
+        console.log("Test prism initialization completed successfully");
+      } catch (error) {
+        console.error("Error in test prism initialization:", error);
+        
+        // Ensure loading indicator is hidden on error
+        const loadingIndicator = document.getElementById('morphing-poly-loading');
+        if (loadingIndicator && loadingIndicator.style.display !== 'none') {
+          loadingIndicator.style.display = 'none';
+        }
+      }
+    }
+    
+    // Run initialization when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initPrism);
+  </script>
+</body>
+</html>

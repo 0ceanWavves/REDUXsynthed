@@ -1,0 +1,33 @@
+# Enable proper MIME type handling for JavaScript modules
+<IfModule mod_mime.c>
+  AddType application/javascript .js
+  AddType application/javascript .mjs
+</IfModule>
+
+# Ensure Astro components are properly served with correct MIME type
+<FilesMatch "\.astro$">
+  ForceType application/javascript
+</FilesMatch>
+
+# Set proper CORS headers for module loading
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|mjs)$">
+    Header set Access-Control-Allow-Origin "*"
+  </FilesMatch>
+</IfModule>
+
+# Ensure proper charset for all text files
+AddDefaultCharset UTF-8
+
+# Enable compression for faster loading
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json
+</IfModule>
+
+# Set proper caching headers
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+</IfModule>

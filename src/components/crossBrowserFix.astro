@@ -5,6 +5,7 @@
  */
 ---
 
+<!--- 
 <script>
   // Import touch event fix functions
   import { setupCrossBrowserInteraction } from './touchEventFix.js';
@@ -21,6 +22,12 @@
         // Add ID if missing for easier debugging
         if (!canvas.id) {
           canvas.id = `canvas-${index}`;
+        }
+        
+        // Skip hero canvases as they have their own interaction logic
+        if (canvas.id === 'morphing-poly-canvas' || canvas.id === 'flow-bg-canvas' || canvas.id === 'splash-animation-canvas') {
+          console.log(`CrossBrowserFix: Skipping setup for hero canvas ${canvas.id}`);
+          return; // Skip this canvas
         }
         
         console.log(`CrossBrowserFix: Setting up for ${canvas.id}`);
@@ -43,6 +50,13 @@
             if (!canvas.id) {
               canvas.id = `canvas-delayed-${index}`;
             }
+            
+            // Skip hero canvases as they have their own interaction logic
+            if (canvas.id === 'morphing-poly-canvas' || canvas.id === 'flow-bg-canvas' || canvas.id === 'splash-animation-canvas') {
+              console.log(`CrossBrowserFix: Skipping setup for hero canvas ${canvas.id} (delayed)`);
+              return; // Skip this canvas
+            }
+            
             setupCrossBrowserInteraction(canvas);
           });
         }
@@ -50,3 +64,4 @@
     }
   });
 </script>
+--->

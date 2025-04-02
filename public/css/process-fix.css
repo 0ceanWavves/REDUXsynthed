@@ -1,0 +1,222 @@
+/**
+ * Process section CSS fixes
+ * Ensures proper styling for the timeline/process section
+ */
+
+/* Common styles for process steps */
+.process-step {
+  position: relative;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  background-color: rgba(15, 23, 42, 0.7);
+  border-radius: 0.5rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #7c3aed;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 10;
+}
+
+/* Step hover effect */
+.process-step:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Step titles */
+.process-step h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: #f8fafc;
+}
+
+/* Step descriptions */
+.process-step p {
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+/* Timeline line connecting steps */
+.timeline-line {
+  position: absolute;
+  width: 4px;
+  background: linear-gradient(to bottom, #7c3aed, #3b82f6);
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+/* Timeline steps container */
+.timeline-container {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+/* Timeline indicators/dots */
+.timeline-indicator {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #7c3aed;
+  border: 4px solid #1e293b;
+  z-index: 5;
+}
+
+/* Alternating step layout */
+.process-step:nth-child(odd) {
+  margin-right: 50%;
+  margin-left: 2rem;
+  border-left: 4px solid #7c3aed;
+}
+
+.process-step:nth-child(even) {
+  margin-left: 50%;
+  margin-right: 2rem;
+  border-right: 4px solid #3b82f6;
+  border-left: none;
+}
+
+/* Section header */
+.process-section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 10;
+}
+
+.process-section-header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 1rem;
+  position: relative;
+  display: inline-block;
+}
+
+.process-section-header h2:after {
+  content: '';
+  position: absolute;
+  width: 60%;
+  height: 4px;
+  background: linear-gradient(to right, #7c3aed, #3b82f6);
+  bottom: -0.5rem;
+  left: 20%;
+  border-radius: 2px;
+}
+
+.process-section-header p {
+  color: #cbd5e1;
+  max-width: 700px;
+  margin: 0 auto;
+  font-size: 1.125rem;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .timeline-line {
+    left: 2rem;
+  }
+
+  .timeline-indicator {
+    left: 2rem;
+  }
+
+  .process-step:nth-child(odd),
+  .process-step:nth-child(even) {
+    margin-left: 3rem;
+    margin-right: 1rem;
+    border-left: 4px solid #7c3aed;
+    border-right: none;
+  }
+}
+
+/* Specific icon colors */
+.step-icon-strategy {
+  color: #a78bfa;
+}
+
+.step-icon-design {
+  color: #818cf8;
+}
+
+.step-icon-testing {
+  color: #60a5fa;
+}
+
+.step-icon-launch {
+  color: #34d399;
+}
+
+/* Fix for specific project section styling */
+.impactful {
+  color: #06b6d4;
+  font-weight: 600;
+}
+
+.measurable {
+  color: #06b6d4;
+  font-weight: 600;
+}
+
+.business {
+  color: #06b6d4;
+  font-weight: 600;
+}
+
+.outcomes {
+  color: #06b6d4;
+  font-weight: 600;
+}
+
+/* Project section styles */
+.project-card {
+  background-color: rgba(15, 23, 42, 0.7);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.project-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.project-card h3 {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.project-card p {
+  color: #cbd5e1;
+}
+
+.project-section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.project-section-header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 1rem;
+}
+
+.project-section-header p {
+  color: #cbd5e1;
+  max-width: 700px;
+  margin: 0 auto;
+  font-size: 1.125rem;
+}

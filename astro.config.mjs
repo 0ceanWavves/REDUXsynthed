@@ -1,55 +1,45 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
-import icon from "astro-icon";
+import icon from "astro-icon"; // Import the integration
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://synthed.dev",
-  integrations: [tailwind(), icon()],
-  output: "static",
-  build: {
-    format: 'file',
-    inlineStylesheets: 'auto'
-  },
+  // Add MIME type configuration for JavaScript modules
   vite: {
     server: {
-      // Ensure proper MIME types are set for JS modules
       fs: {
-        strict: true,
-      },
-      middlewareMode: false,
-      hmr: {
-        overlay: true
+        // Allow serving files from the project root
+        allow: ['..']
       }
     },
-    optimizeDeps: {
-      include: ['three', 'simplex-noise'],
-      force: true // Force pre-bundling to resolve dependency issues
-    },
     build: {
-      commonjsOptions: {
-        transformMixedEsModules: true
-      },
-      // Enable Vite's built-in Terser minification
-      minify: 'terser',
-      // Configure Terser options directly
-      terserOptions: {
-        compress: {
-          drop_console: true, // Remove console logs in production
-          passes: 2, // Run compression passes twice for potentially smaller output
-        },
-        mangle: true, // Mangle variable names
-        format: {
-          comments: false, // Remove comments
-        },
-      },
-      // Enable text compression
-      cssCodeSplit: true,
-      assetsInlineLimit: 4096
+      // Improve compatibility
+      target: 'es2020',
+      // Add correct MIME types for JavaScript modules
+      assetsInlineLimit: 0
     },
-    // Improve error reporting
-    esbuild: {
-      logOverride: { 'this-is-undefined-in-esm': 'silent' }
+    optimizeDeps: {
+      exclude: ['astro-icon']
+    },
+    // Add alias for Three.js to make imports work correctly
+    resolve: {
+      alias: {
+        'virtual:astro-icon': path.resolve(__dirname, 'src/virtual-astro-icon.js'),
+        'three': path.resolve(__dirname, 'node_modules/three')
+      }
+    },
+    // Ensure ES modules are properly handled
+    ssr: {
+      noExternal: ['three']
     }
-  }
+  },
+  integrations: [
+    tailwind(),
+    icon() // Add the integration here
+    // ... other integrations
+  ]
 });

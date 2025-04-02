@@ -12,14 +12,24 @@
     // Use FontFace API if available
     if ('FontFace' in window) {
       try {
+        // Use only local fonts - we verified these exist in public/fonts/
+        const fontSources = {
+          medium: [
+            `url(${window.location.origin}/fonts/Axiforma-Medium.woff2) format("woff2")`
+          ],
+          bold: [
+            `url(${window.location.origin}/fonts/Axiforma-Bold.woff2) format("woff2")`
+          ]
+        };
+        
         // Check for Medium weight
-        const fontMedium = new FontFace('Axiforma', 'url(/fonts/Axiforma-Medium.woff2) format("woff2")', {
+        const fontMedium = new FontFace('Axiforma', fontSources.medium.join(', '), {
           weight: '500',
           style: 'normal'
         });
         
         // Check for Bold weight
-        const fontBold = new FontFace('Axiforma', 'url(/fonts/Axiforma-Bold.woff2) format("woff2")', {
+        const fontBold = new FontFace('Axiforma', fontSources.bold.join(', '), {
           weight: '700',
           style: 'normal'
         });
@@ -29,14 +39,8 @@
           console.log('Font loader: Timeout - using fallbacks');
           document.documentElement.classList.add('fonts-failed');
           
-          // Add Font failure handling
-          const style = document.createElement('style');
-          style.textContent = `
-            body, h1, h2, h3, h4, h5, h6, p, button, input, select, textarea {
-              font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-            }
-          `;
-          document.head.appendChild(style);
+          // Add font failure handling - inject system fonts as fallback
+          injectFallbackFonts();
         }, 2000); // 2 second timeout
         
         // Load the fonts
@@ -53,15 +57,24 @@
           .catch(error => {
             console.error('Font loader: Error loading fonts:', error);
             document.documentElement.classList.add('fonts-failed');
+            
+            // Use system fonts instead
+            injectFallbackFonts();
           });
       } catch (error) {
         console.error('Font loader: FontFace API error:', error);
         document.documentElement.classList.add('fonts-failed');
+        
+        // Use system fonts as fallback
+        injectFallbackFonts();
       }
     } else {
       // Fallback for browsers without FontFace API
       // Use CSS font loading detection
       document.documentElement.classList.add('no-fontface-api');
+      
+      // Add inline CSS for font fallbacks
+      injectFallbackFonts();
       
       // Set a timeout for CSS-based font loading
       setTimeout(() => {
@@ -75,6 +88,18 @@
         }
       }, 1000);
     }
+  }
+  
+  // Helper function to inject fallback fonts directly
+  function injectFallbackFonts() {
+    const style = document.createElement('style');
+    style.textContent = `
+      body, h1, h2, h3, h4, h5, h6, p, button, input, select, textarea {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+      }
+    `;
+    document.head.appendChild(style);
+    console.log('Font loader: Injected system font fallbacks');
   }
   
   // Helper function to check if a font exists using CSS
@@ -120,29 +145,17 @@
   // Run the font loading check
   checkFontLoading();
   
-  // Create alternate font files if needed
-  function createFontFallbacks() {
-    // Fonts to check
-    const fonts = [
-      { name: 'Axiforma-Medium.woff', format: 'woff' },
-      { name: 'Axiforma-Bold.woff', format: 'woff' },
-      { name: 'Axiforma-Medium.ttf', format: 'ttf' },
-      { name: 'Axiforma-Bold.ttf', format: 'ttf' }
-    ];
-    
-    fonts.forEach(font => {
-      fetch(`/fonts/${font.name}`)
-        .then(response => {
-          if (!response.ok && response.status === 404) {
-            console.log(`Font loader: ${font.name} not found, using fallback`);
-          }
-        })
-        .catch(error => {
-          console.error(`Font loader: Error checking for ${font.name}:`, error);
-        });
+  // Add special handling for font preload links
+  function updateFontPreloadLinks() {
+    const preloadLinks = document.querySelectorAll('link[rel="preload"][as="font"]');
+    preloadLinks.forEach(link => {
+      if (!link.hasAttribute('crossorigin')) {
+        link.setAttribute('crossorigin', 'anonymous');
+        console.log('Font loader: Added crossorigin to font preload:', link.href);
+      }
     });
   }
   
-  // Run fallback check
-  createFontFallbacks();
+  // Update existing preload links
+  updateFontPreloadLinks();
 })(); 

@@ -2,16 +2,15 @@
 // SplashActionButtons.astro - Component for action buttons
 ---
 
-<div class="buttons-container fixed bottom-5 left-0 right-0 mx-auto z-30 w-full max-w-screen-lg flex justify-between px-4 md:px-16 content-item" style="opacity: 1; transform: none;">
-  <!-- Moved buttons apart to match the red arrows -->
-  <a href="#features" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto shadow-lg btn-primary">
+<div class="buttons-container fixed bottom-5 left-0 right-0 mx-auto z-30 w-full max-w-screen-lg flex justify-center gap-4 px-4 md:px-16 content-item" style="opacity: 1; transform: none;">
+  <a href="#services" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto shadow-lg btn-primary">
     <!-- SVG Code Tags -->
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
     </svg>
     Our Services
   </a>
-  <a href="#process" class="bg-transparent border border-teal-400 hover:bg-teal-900/20 text-teal-300 font-medium py-2 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto shadow-lg btn-secondary">
+  <a href="#process" class="bg-transparent border border-teal-400 hover:bg-teal-900/20 text-teal-300 font-medium py-3 px-6 rounded-md transition-colors duration-300 flex items-center gap-2 pointer-events-auto shadow-lg btn-secondary">
     <!-- SVG Chart Timeline -->
     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -26,8 +25,8 @@
     transform: translateY(0) !important;
     transition: transform 0.5s ease;
     opacity: 1 !important;
-    /* Positioned much lower to match red arrows, adjusted downwards by 2 inches */
-    bottom: calc(10vh - 2in); 
+    /* Position to match screenshot */
+    bottom: 5rem;
   }
   
   .buttons-container a {
@@ -36,6 +35,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     min-width: 160px; /* Ensure buttons have a decent size */
     justify-content: center;
+    text-align: center;
   }
   
   /* Hide buttons when scrolling down */
@@ -47,8 +47,7 @@
   @media (max-width: 768px) {
     /* Adjust buttons for mobile */
     .buttons-container {
-      /* Position buttons lower on mobile, adjusted downwards by 2 inches */
-      bottom: calc(8vh - 2in); 
+      bottom: 4rem;
       flex-direction: column;
       align-items: center;
       gap: 10px;
@@ -67,9 +66,10 @@
   
   /* Fun button styles */
   .btn-primary {
-    background: linear-gradient(135deg, #a855f7, #8a2be2);
+    background: linear-gradient(135deg, #9333ea, #6366f1);
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transform: translateY(0);
+    font-size: 1rem;
   }
   
   .btn-primary:hover {
@@ -78,17 +78,32 @@
   }
   
   .btn-secondary {
-    background: rgba(15, 207, 233, 0.1);
-    border: 1px solid rgba(15, 207, 233, 0.4);
+    background: rgba(20, 184, 166, 0.1);
+    border: 1px solid rgba(20, 184, 166, 0.4);
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     transform: translateY(0);
+    font-size: 1rem;
   }
   
   .btn-secondary:hover {
     transform: translateY(-5px);
-    background: rgba(15, 207, 233, 0.2);
-    box-shadow: 0 8px 25px rgba(15, 207, 233, 0.3);
-    border-color: rgba(15, 207, 233, 0.7);
+    background: rgba(20, 184, 166, 0.2);
+    box-shadow: 0 8px 25px rgba(20, 184, 166, 0.3);
+    border-color: rgba(20, 184, 166, 0.7);
+  }
+  
+  /* Add glow effect */
+  .btn-primary svg, .btn-secondary svg {
+    filter: drop-shadow(0 0 3px currentColor);
+    transition: filter 0.3s ease;
+  }
+  
+  .btn-primary:hover svg {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+  }
+  
+  .btn-secondary:hover svg {
+    filter: drop-shadow(0 0 5px rgba(20, 184, 166, 0.8));
   }
 </style>
 
@@ -105,7 +120,7 @@
     
     // Setup buttons visibility handling
     let lastScrollY = 0;
-    let scrollAnimationFrame: number | null = null;
+    let scrollAnimationFrame = null;
     
     // Handle button visibility on scroll
     function handleButtonVisibility() {
@@ -142,18 +157,22 @@
       
       // Add a click effect
       button.addEventListener('mousedown', () => {
-        button.style.transform = 'translateY(2px) scale(0.98)';
-        button.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.3)';
+        if (button instanceof HTMLElement) {
+          button.style.transform = 'translateY(2px) scale(0.98)';
+          button.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.3)';
+        }
       });
       
       button.addEventListener('mouseup', () => {
         setTimeout(() => {
-          if (button.classList.contains('btn-primary')) {
-            button.style.transform = 'translateY(-5px)';
-            button.style.boxShadow = '0 8px 25px rgba(168, 85, 247, 0.5)';
-          } else {
-            button.style.transform = 'translateY(-5px)';
-            button.style.boxShadow = '0 8px 25px rgba(15, 207, 233, 0.3)';
+          if (button instanceof HTMLElement) {
+            if (button.classList.contains('btn-primary')) {
+              button.style.transform = 'translateY(-5px)';
+              button.style.boxShadow = '0 8px 25px rgba(168, 85, 247, 0.5)';
+            } else {
+              button.style.transform = 'translateY(-5px)';
+              button.style.boxShadow = '0 8px 25px rgba(20, 184, 166, 0.3)';
+            }
           }
         }, 150);
       });

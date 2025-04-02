@@ -1,0 +1,356 @@
+/**
+ * Amorphous Prism Initialization
+ * Separated from the main component to reduce file size and improve maintainability
+ */
+
+// Ensure we have exclusive ownership of the THREE global
+if (window.__AMORPHOUS_PRISM_LOADING) {
+  console.log("AmorphousPrism already loading, skipping duplicate initialization");
+} else {
+  // Mark as loading to prevent duplicate initialization
+  window.__AMORPHOUS_PRISM_LOADING = true;
+  
+  // Create a safe dynamic import function
+  async function safeImport(url) {
+    try {
+      return await import(url);
+    } catch (err) {
+      console.warn(`Error importing ${url}:`, err);
+      
+      // Try with src prefix if needed
+      if (!url.includes('/src/') && url.includes('/components/')) {
+        const newUrl = url.replace('/components/', '/src/components/');
+        console.log(`Retrying import with: ${newUrl}`);
+        return await import(newUrl);
+      }
+      
+      throw err;
+    }
+  }
+  
+  // Main initialization function
+  document.addEventListener('DOMContentLoaded', async function() {
+    try {
+      console.log("AmorphousPrism initialization started");
+      
+      // Get DOM elements
+      const canvas = document.getElementById('morphing-poly-canvas');
+
+      if (!canvas) {
+        console.error("Canvas element #morphing-poly-canvas not found!");
+        return;
+      }
+
+      // Load dependencies first
+      console.log("Loading dependencies...");
+      let THREE;
+      
+      // Use global THREE if available to avoid duplicate loading
+      if (window.THREE) {
+        console.log("Using existing THREE instance");
+        THREE = window.THREE;
+      } else {
+        try {
+          console.log("Importing THREE.js module");
+          const module = await import('https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js');
+          THREE = module.default || module;
+          window.THREE = THREE;
+        } catch (err) {
+          console.error("Failed to load THREE.js from module:", err);
+          
+          // Wait for CDN script to load as fallback
+          if (!window.THREE) {
+            console.log("Waiting for CDN script to load...");
+            await new Promise(resolve => {
+              const checkThree = setInterval(() => {
+                if (window.THREE) {
+                  clearInterval(checkThree);
+                  resolve();
+                }
+              }, 100);
+              
+              // Timeout after 5 seconds
+              setTimeout(() => {
+                clearInterval(checkThree);
+                resolve();
+              }, 5000);
+            });
+            
+            THREE = window.THREE;
+          }
+          
+          if (!THREE) {
+            throw new Error("THREE.js could not be loaded from any source");
+          }
+        }
+      }
+      
+      console.log("THREE.js loaded, version:", THREE?.REVISION || "unknown");
+      
+      // Now load our modular components with safe import
+      try {
+        const rendererModule = await safeImport('/src/components/three/renderer/RendererManager.js');
+        const geometriesModule = await safeImport('/src/components/three/geometries/PrismGeometries.js');
+        const shadersModule = await safeImport('/src/components/three/shaders/MorphingShaders.js');
+        const particlesModule = await safeImport('/src/components/three/particles/ParticleSystem.js');
+        const animationModule = await safeImport('/src/components/three/animation/MorphingController.js');
+        const interactionModule = await safeImport('/src/components/three/interaction/InteractionManager.js');
+        const configModule = await safeImport('/src/components/three/config/PrismConfig.js');
+        
+        // Extract function references
+        const { createRenderer } = rendererModule;
+        const { getPrismTargetGeometries, addBarycentricCoordinates } = geometriesModule;
+        const { createMorphingShaderMaterial } = shadersModule;
+        const { createParticleSystem } = particlesModule;
+        const { createMorphingController } = animationModule;
+        const { createInteractionManager } = interactionModule;
+        const { prismConfig, createColorObjects } = configModule;
+        
+        console.log("Modular components loaded");
+        
+        // Define device type
+        const isMobile = window.isMobileDevice || window.innerWidth < 768;
+        
+        // Create color objects
+        const colors = createColorObjects(THREE);
+        
+        // Create renderer, scene, camera
+        const { 
+          scene, 
+          camera, 
+          renderer, 
+          clock,
+          canvas: canvasRef,
+          cleanup: cleanupRenderer,
+          setAnimationFrameId
+        } = await createRenderer({ 
+          THREE, 
+          canvas, 
+          isMobile, 
+          colors 
+        });
+        
+        // Get prism geometries
+        const { targetGeometries, shapeNames } = getPrismTargetGeometries(THREE, {
+          radius: prismConfig.prismRadius * 2, // Make the prism larger for better visibility
+          depth: prismConfig.prismDepth * 1.5  // Make the prism thicker for better visibility
+        });
+        
+        // Create base geometry for morphing
+        const baseGeometry = new THREE.CylinderGeometry(2.2, 2.2, 0.6, 64, 1);
+        baseGeometry.morphAttributes.position = [];
+        const basePositionAttribute = baseGeometry.attributes.position;
+        
+        // Add barycentric coordinates for wireframe effect
+        addBarycentricCoordinates(baseGeometry, THREE);
+        
+        // Process target geometries for morphing
+        console.log(`Base geometry has ${basePositionAttribute.count} vertices.`);
+        const baseVertex = new THREE.Vector3();
+        const targetVertex = new THREE.Vector3();
+
+        for (let i = 0; i < targetGeometries.length; i++) {
+          const targetGeo = targetGeometries[i];
+          const targetPositionAttribute = targetGeo.attributes.position;
+          
+          console.log(`Processing target ${shapeNames[i]} with ${targetPositionAttribute.count} vertices.`);
+          
+          if (!targetPositionAttribute) { 
+            console.error(`Target geo ${shapeNames[i]} lacks position!`); 
+            continue; 
+          }
+
+          const morphPositions = new Float32Array(basePositionAttribute.count * 3);
+          
+          for (let j = 0; j < basePositionAttribute.count; j++) {
+            baseVertex.fromBufferAttribute(basePositionAttribute, j);
+            let closestDistSq = Infinity; 
+            let closestVertexIndex = -1;
+            
+            for (let k = 0; k < targetPositionAttribute.count; k++) {
+              targetVertex.fromBufferAttribute(targetPositionAttribute, k);
+              const distSq = baseVertex.distanceToSquared(targetVertex);
+              if (distSq < closestDistSq) { 
+                closestDistSq = distSq; 
+                closestVertexIndex = k; 
+              }
+            }
+            
+            if (closestVertexIndex !== -1) {
+              targetVertex.fromBufferAttribute(targetPositionAttribute, closestVertexIndex);
+            } else {
+              targetVertex.copy(baseVertex); // Fallback
+            }
+            
+            morphPositions[j * 3] = targetVertex.x;
+            morphPositions[j * 3 + 1] = targetVertex.y;
+            morphPositions[j * 3 + 2] = targetVertex.z;
+          }
+          
+          baseGeometry.morphAttributes.position.push(
+            new THREE.Float32BufferAttribute(morphPositions, 3)
+          );
+          
+          // Dispose target geometry after use
+          targetGeo.dispose();
+        }
+        
+        // Create shader material with increased visibility and opacity
+        const shaderMaterial = createMorphingShaderMaterial(THREE, {
+          colors: {
+            ...colors,
+            // Increase brightness of colors for better visibility
+            shape1: colors.shape1,
+            shape2: colors.shape2,
+            wireframe: colors.wireframe
+          },
+          isMobile,
+          // Increase wireframe thickness and opacity
+          wireframeThickness: isMobile ? 0.08 : 0.05,
+          faceOpacity: 0.8 // Increase face opacity
+        });
+        
+        // If Three.js fix is available, apply it to the material
+        if (window.fixThreeMaterial) {
+          window.fixThreeMaterial(shaderMaterial);
+        }
+        
+        // Create mesh with morphing capabilities
+        const mesh = new THREE.Mesh(baseGeometry, shaderMaterial);
+        mesh.name = "sacredGeometryMesh";
+        mesh.morphTargetInfluences = new Array(baseGeometry.morphAttributes.position.length).fill(0);
+        scene.add(mesh);
+        
+        // Create particle system with increased visibility
+        const particleSystem = createParticleSystem(THREE, {
+          colors,
+          isMobile,
+          config: {
+            ...prismConfig,
+            particleCount: isMobile ? 300 : 500, // Increase particle count
+            particleSpreadFactor: 4.0, // Increase particle spread
+            particleSizeBase: 8, // Increase particle size
+            particleSizeVariation: 12,
+            mobileParticleSizeBase: 5, // Increase mobile particle size
+            mobileParticleSizeVariation: 8
+          }
+        });
+        scene.add(particleSystem);
+        
+        // Add ambient and directional light to improve visibility
+        const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
+        
+        // Create morphing controller
+        const morphingController = createMorphingController({
+          mesh,
+          config: prismConfig,
+          clock
+        });
+        
+        // Create interaction manager
+        const interactionManager = createInteractionManager({
+          canvas: canvasRef,
+          morphingController,
+          config: {...prismConfig, isMobileDevice: isMobile}
+        });
+        
+        // Animation loop
+        function animate() {
+          const animationId = requestAnimationFrame(animate);
+          setAnimationFrameId(animationId);
+          
+          // Update morphing and rotation
+          morphingController.update({
+            isMobile,
+            mesh,
+            material: shaderMaterial,
+            particleMaterial: particleSystem.material,
+            particleSystem,
+            dampingFactor: prismConfig.dampingFactor,
+            minVelocityThreshold: prismConfig.minVelocityThreshold,
+            autoRotateSpeed: prismConfig.autoRotateSpeed * 1.5 // Increase rotation speed
+          });
+          
+          // Update time uniform for animations
+          if (shaderMaterial.uniforms && shaderMaterial.uniforms.uTime) {
+            shaderMaterial.uniforms.uTime.value = clock.getElapsedTime();
+          }
+          
+          if (particleSystem.material && particleSystem.material.uniforms && particleSystem.material.uniforms.uTime) {
+            particleSystem.material.uniforms.uTime.value = clock.getElapsedTime();
+          }
+          
+          // Render scene
+          renderer.render(scene, camera);
+        }
+        
+        // Start animation
+        console.log("Starting animation loop");
+        animate();
+        
+        // Let the original loading screen handle hiding itself
+        console.log("AmorphousPrism initialization completed successfully");
+        
+        // Set up cleanup on page navigation
+        document.addEventListener('astro:before-swap', () => {
+          console.log("Cleaning up AmorphousPrism...");
+          
+          // Cancel animation frame
+          const animationId = setAnimationFrameId(null);
+          if (animationId) {
+            cancelAnimationFrame(animationId);
+          }
+          
+          // Clean up event listeners
+          interactionManager.cleanup();
+          
+          // Clean up renderer resources
+          cleanupRenderer();
+          
+          // Dispose THREE.js objects
+          scene.traverse(object => {
+            if (object.geometry) {
+              object.geometry.dispose();
+            }
+            if (object.material) {
+              if (Array.isArray(object.material)) {
+                object.material.forEach(mat => {
+                  // Dispose textures in uniforms if they exist
+                  Object.values(mat.uniforms || {}).forEach(uniform => {
+                    if (uniform && uniform.value instanceof THREE.Texture) {
+                      uniform.value.dispose();
+                    }
+                  });
+                  mat.dispose();
+                });
+              } else {
+                // Dispose textures in uniforms
+                Object.values(object.material.uniforms || {}).forEach(uniform => {
+                  if (uniform && uniform.value instanceof THREE.Texture) {
+                    uniform.value.dispose();
+                  }
+                });
+                object.material.dispose(); // Dispose the material itself
+              }
+            }
+          });
+          
+          console.log("AmorphousPrism cleanup complete.");
+        }, { once: true });
+      } catch (error) {
+        console.error("Error in modular component loading:", error);
+        // Try to load the simple fallback
+        if (window.createSimpleFallback) {
+          window.createSimpleFallback();
+        }
+      }
+    } catch (error) {
+      console.error("Error in AmorphousPrism initialization:", error);
+    }
+  });
+}

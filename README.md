@@ -108,3 +108,45 @@ The site is optimized for:
 - Firefox (latest)
 - Safari/iOS Safari (latest)
 - Mobile Chrome and Firefox
+
+## Recent Updates and Fixes
+
+The site has undergone several important updates to fix various issues:
+
+1. **Improved Scrolling**: Fixed scrolling issues that prevented users from seeing content beyond the hero section.
+2. **Content Security Policy (CSP)**: Implemented a comprehensive CSP system to allow necessary resources.
+3. **Build Process**: Resolved build errors related to script imports and directives.
+4. **3D Rendering**: Enhanced the 3D morphing object with better fallbacks and interaction.
+5. **Cross-Browser Compatibility**: Added fixes for various browsers, especially Firefox and mobile browsers.
+6. **THREE.js Loading**: Fixed issues with THREE.js loading by implementing a robust loader system with CDN fallbacks
+7. **Module Import Fixes**: Added a module path fixer to ensure proper import paths for dynamic imports
+8. **Fallback Rendering**: Added a simple fallback rendering system when the main 3D object fails to load
+9. **Font Loading**: Enhanced font loader with CDN fallbacks and error handling
+
+See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for detailed information about these fixes and solutions to common issues.
+
+## Troubleshooting
+
+If you encounter any issues while running or building the site, please refer to the [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) document, which contains detailed information about:
+
+- Content Security Policy (CSP) issues
+- Scrolling problems
+- Build errors
+- Rendering issues
+- 3D morphing object customization
+
+The troubleshooting guide provides specific solutions and code examples for each type of issue.
+
+## Customization
+
+The 3D morphing object can be customized by modifying the shapes, colors, and animation settings. See [3D-MORPHING.md](./docs/3D-MORPHING.md) for detailed instructions.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgements
+
+- [Three.js](https://threejs.org/) - 3D graphics library
+- [Astro](https://astro.build/) - Static site generator
+- [TailwindCSS](https://tailwindcss.com/) - CSS framework

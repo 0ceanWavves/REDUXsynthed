@@ -1,0 +1,99 @@
+---
+import "@fontsource-variable/inter";
+import MainLayout from '~/layouts/MainLayout.astro';
+import SectionDivider from '~/components/SectionDivider.astro';
+
+// Define meta data for this specific page
+const title = "Morphing Icosahedron Demo | Synthed";
+const description = "Interactive demonstration of a morphing 3D icosahedron using Three.js morph targets.";
+const image = "/social.jpg"; // Path relative to public folder
+---
+
+<MainLayout title={title} description={description} image={image}>
+  <div class="relative z-30 px-4 md:px-8 py-12 md:py-16 mx-auto w-full max-w-7xl content-wrapper">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-white">
+        Morphing Icosahedron
+      </h1>
+      <p class="text-xl text-slate-300 max-w-3xl mx-auto">
+        A demonstration of 3D morphing geometry using Three.js morph targets
+      </p>
+    </div>
+
+    <!-- Icosahedron Container -->
+    <div id="ico-morph-container" class="w-full max-w-3xl mx-auto aspect-[4/3] relative bg-slate-900 rounded-xl overflow-hidden shadow-2xl border border-cyan-900/30 mb-12">
+      <!-- Loading Indicator -->
+      <div id="ico-morph-loading" class="absolute inset-0 flex items-center justify-center text-white font-mono bg-slate-900 z-10">
+        <div class="flex flex-col items-center">
+          <div class="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <span>Loading Morphing Shape...</span>
+        </div>
+      </div>
+      <!-- Canvas -->
+      <canvas id="ico-morph-canvas" class="block w-full h-full"></canvas>
+    </div>
+
+    <!-- Description and Code -->
+    <div class="grid md:grid-cols-2 gap-8">
+      <div class="bg-slate-800/50 p-6 rounded-lg backdrop-blur-sm border border-slate-700/50">
+        <h2 class="text-2xl font-bold mb-4 text-white">How It Works</h2>
+        <p class="text-slate-300 mb-4">
+          This demo uses Three.js morph targets to smoothly transition between different shapes:
+        </p>
+        <ul class="list-disc list-inside text-slate-300 space-y-2">
+          <li>Base shape: Standard icosahedron (20-sided polyhedron)</li>
+          <li>Spiky shape: Vertices pushed outward along normals</li>
+          <li>Smooth shape: Vertices pulled inward toward center</li>
+        </ul>
+        <p class="text-slate-300 mt-4">
+          The morphing is controlled by animating the <code class="bg-slate-700 px-1 rounded">morphTargetInfluences</code>
+          values over time, which determines how much each target shape affects the final geometry.
+        </p>
+      </div>
+      
+      <div class="bg-slate-800/50 p-6 rounded-lg backdrop-blur-sm border border-slate-700/50">
+        <h2 class="text-2xl font-bold mb-4 text-white">Technical Details</h2>
+        <p class="text-slate-300 mb-4">
+          The implementation uses several advanced WebGL and Three.js features:
+        </p>
+        <ul class="list-disc list-inside text-slate-300 space-y-2">
+          <li>BufferGeometry with pre-calculated vertices</li>
+          <li>MorphTargets for smooth transitions</li>
+          <li>MeshStandardMaterial with realistic lighting</li>
+          <li>Orbital controls for interactive viewing</li>
+          <li>Responsive canvas sizing with ResizeObserver</li>
+        </ul>
+        <p class="text-slate-300 mt-4">
+          <a href="https://github.com/synthedxyz/examples" class="text-cyan-400 hover:text-cyan-300 underline">
+            View source code on GitHub →
+          </a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back to home link -->
+  <div class="text-center py-8">
+    <a href="/" class="inline-flex items-center text-cyan-400 hover:text-cyan-300">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+      </svg>
+      Back to Home
+    </a>
+  </div>
+</MainLayout>
+
+<!-- Shader fixes -->
+<script is:inline src="/js/fix-shader-compatibility.js"></script>
+<script is:inline src="/js/emergency-shader-fix.js"></script>
+
+<!-- Import our Icosahedron morphing script -->
+<script type="module" src="/scripts/icosahedron-morph-init.js"></script>
+
+<style>
+  /* Add any page-specific styles here */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9em;
+  }
+</style> 

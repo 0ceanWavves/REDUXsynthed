@@ -1,0 +1,20 @@
+/* Debug controls fix - hides the debug information in bottom right */
+[class*="dg ac"], /* dat.GUI */
+#debug-ui,
+#debug-controls,
+#stats,
+#fps-meter,
+.debug-panel,
+.debug-info,
+.controls-info,
+/* Target text content specific to your debug info */
+div:has(> *:contains("Hold SHIFT")),
+div:has(> *:contains("Z-axis")),
+/* Last resort - position-based targeting */
+div[style*="position: fixed"][style*="bottom: 0"][style*="right: 0"],
+div[style*="position: absolute"][style*="bottom: 0"][style*="right: 0"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}

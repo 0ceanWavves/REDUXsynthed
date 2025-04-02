@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Three.js Colorspace Fragment Fix Demo</title>
+  
+  <!-- IMPORTANT: Load our fixes BEFORE Three.js -->
+  <script src="/js/three-fix-bundle.js"></script>
+  
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
+  <script>
+    // Simple Three.js scene with a custom shader
+    document.addEventListener('DOMContentLoaded', function() {
+      // Scene setup
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+      
+      // Create a simple ShaderMaterial that would normally cause the error
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const material = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0.0 },
+          uColor1: { value: new THREE.Color(0xff00ff) },
+          uColor2: { value: new THREE.Color(0x00ffff) },
+        },
+        vertexShader: `
+          varying vec3 vPosition;
+          
+          void main() {
+            vPosition = position;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+          }
+        `,
+        fragmentShader: `
+          uniform float uTime;
+          uniform vec3 uColor1;
+          uniform vec3 uColor2;
+          varying vec3 vPosition;
+          
+          void main() {
+            // Mix colors based on position and time
+            vec3 color = mix(uColor1, uColor2, sin(uTime + vPosition.x) * 0.5 + 0.5);
+            gl_FragColor = vec4(color, 1.0);
+            
+            // This would normally cause the error because it's missing:
+            // #include <colorspace_fragment>
+          }
+        `,
+        transparent: true
+      });
+      
+      // Create cube and add to scene
+      const cube = new THREE.Mesh(geometry, material);
+      scene.add(cube);
+      
+      // Position camera
+      camera.position.z = 3;
+      
+      // Animation loop
+      function animate() {
+        requestAnimationFrame(animate);
+        
+        // Update time uniform
+        material.uniforms.uTime.value = performance.now() * 0.001;
+        
+        // Rotate cube
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+        
+        // Render
+        renderer.render(scene, camera);
+      }
+      
+      // Start animation
+      animate();
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    });
+  </script>
+</body>
+</html>

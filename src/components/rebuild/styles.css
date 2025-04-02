@@ -1,0 +1,136 @@
+/* rebuild/styles.css */
+
+/* Basic section layout */
+.hero-rebuild-section {
+  position: relative; /* Establishes a base stacking context */
+  width: 100%;
+  height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Prevent scrollbars if content slightly overflows */
+  background-color: #0a0a1a; /* Or your preferred dark background */
+}
+
+/* Canvas container - stays in the background */
+.hero-rebuild-canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1; /* Low z-index */
+  pointer-events: auto; /* Allow canvas interaction */
+}
+
+/* Ensure canvas itself doesn't block */
+.hero-rebuild-canvas-container #morphing-poly-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: none; /* Prevent default touch actions if needed */
+}
+
+
+/* Content container - overlayed on top */
+.hero-rebuild-content-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10; /* Higher z-index than canvas */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none; /* Allow clicks to pass through container to buttons etc. */
+  padding: 2rem; /* Add some padding */
+  box-sizing: border-box;
+}
+
+.hero-rebuild-text-content {
+  color: white;
+  text-align: center;
+  max-width: 800px; /* Adjust as needed */
+  pointer-events: auto; /* Re-enable pointer events for the text block */
+}
+
+/* Basic text styling (Add your specific fonts/sizes/etc.) */
+.hero-rebuild-title {
+  font-size: 4rem; /* Example size */
+  font-weight: bold;
+  margin-bottom: 1rem;
+  /* Add basic text shadow for visibility */
+   text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+  line-height: 1.0; /* Adjust overall title line-height if needed */
+}
+
+.hero-rebuild-subtitle {
+  font-size: 1.5rem; /* Example size */
+  margin-bottom: 2rem;
+  opacity: 0.9;
+   /* Add basic text shadow for visibility */
+   text-shadow: 0 0 8px rgba(0, 0, 0, 0.7);
+}
+
+/* --- START: Added styles for mid-content and bullets --- */
+.hero-rebuild-mid-content {
+  margin-top: 1.5rem; /* Space above the bullet points */
+  margin-bottom: 2.5rem; /* Space below the bullet points */
+}
+
+.hero-rebuild-transforming-text {
+  font-size: 1.2rem; /* Adjust as needed */
+  opacity: 0.8;
+  margin-bottom: 0.25rem;
+}
+
+.hero-rebuild-digital-solutions {
+  font-size: 2.2rem; /* Adjust as needed */
+  font-weight: bold;
+  margin-bottom: 1.5rem; /* Space before bullets */
+  /* Basic glow - replace with original gradient/shadow if desired */
+  color: #00e599;
+  text-shadow: 0 0 8px rgba(0, 230, 153, 0.6), 0 0 5px rgba(0,0,0,0.5);
+}
+
+.hero-rebuild-bullets-container {
+  /* Add styles if needed for layout, e.g., width, margin */
+  max-width: 500px; /* Example max width */
+  margin: 0 auto; /* Center the container */
+  /* Styles for bullet points will come from CrystalBulletItem.astro */
+}
+/* --- END: Added styles --- */
+
+/* Basic button styling */
+.hero-rebuild-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  pointer-events: auto; /* Make sure buttons are clickable */
+}
+
+.hero-rebuild-button {
+  padding: 0.8rem 1.5rem;
+  border: 1px solid white;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+  pointer-events: auto; /* Explicitly clickable */
+}
+
+.hero-rebuild-button:hover {
+  background-color: white;
+  color: #0a0a1a;
+}
+
+/* Add title animation styles here later if desired */
+.hero-rebuild-title-word {
+  /* display: inline-block; */ /* Removed for vertical stacking */
+  /* Add any specific styles for the word spans themselves */
+}
+
+.hero-rebuild-title-word-wrapper {
+  /* Ensures each word is on its own line */
+  display: block;
+  /* Adjust line-height or margin if needed for spacing */
+  line-height: 0.9; /* Example: Tighter line height */
+} 

@@ -343,7 +343,7 @@
       // Disable the rotation arrow once user has interacted
       prismBackground.addEventListener('pointerdown', () => {
         const arrow = document.querySelector('.main-rotation-arrow');
-        if (arrow) {
+        if (arrow instanceof HTMLElement) {
           arrow.style.opacity = '0';
           arrow.style.animation = 'none';
         }

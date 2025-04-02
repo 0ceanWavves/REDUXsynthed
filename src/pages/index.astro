@@ -1,12 +1,14 @@
 ---
 import "@fontsource-variable/inter";
 import MainLayout from '~/layouts/MainLayout.astro';
-import HeroSection from '~/components/HeroSection.astro';
+// import HeroSection from '~/components/HeroSection.astro'; // Commented out old hero
 import Features from '~/components/features.astro';
 import Process from '~/components/process.astro';
 import Projects from '~/components/projects.astro';
 import SectionDivider from '~/components/SectionDivider.astro';
-import FlowBackgroundController from '~/components/FlowBackgroundController.astro'; // Interactive background
+// import AmorphousPrism from '~/components/AmorphousPrism.astro'; // Now imported within HeroSectionRebuild
+// import HeroSectionRebuild from '../../rebuild/HeroSectionRebuild.astro'; // Old path
+import HeroSectionRebuild from '~/components/rebuild/HeroSectionRebuild.astro'; // Corrected path
 
 // Define meta data for this specific page
 const title = "Synthed - Custom Software & Application Development";
@@ -25,21 +27,12 @@ const sections = [
 
 <MainLayout title={title} description={description} image={image}>
 
-  <!-- Interactive Flow Background specific to this page's layout -->
-  <FlowBackgroundController
-    opacity={1.0}
-    zIndex={0} 
-    colorMode="vibrant"
-    animationIntensity="medium"
-    responsive={true}
-    enableStars={true}
-    enableNebula={true}
-    enablePulse={true}
-    enableCenter={true}
-  />
+  <!-- Commented out AmorphousPrism call as it's handled within HeroSectionRebuild -->
+  <!-- <AmorphousPrism /> -->
 
   <!-- Hero section -->
-  <HeroSection />
+  <!-- <HeroSection /> --> <!-- Commented out old hero -->
+  <HeroSectionRebuild /> <!-- Use the rebuilt hero -->
 
   <!-- Main content wrapper -->
   <div class="relative z-30 px-4 md:px-8 py-4 md:py-8 mx-auto w-full content-wrapper"
@@ -60,11 +53,21 @@ const sections = [
 
 </MainLayout>
 
+<!-- Remove GooeyMenu - must load before any other scripts -->
+<script is:inline src="/js/remove-gooey-menu.js"></script>
+
+<!-- Remove Debug UI - Load after GooeyMenu removal -->
+<script is:inline src="/js/remove-debug-ui.js"></script>
+
+<!-- Standalone shader fix -->
+<script is:inline src="/js/shader-fix-standalone.js"></script>
+
 <!-- Import title animation controller -->
 <script src="../scripts/title-animation-controller.js"></script>
 
 <!-- Import our custom animation scripts -->
 <script src="../scripts/letter-animation.js"></script>
+<script src="../scripts/digital-text-effects.js"></script>
 
 <!-- Import the page-specific JavaScript -->
 <script src="../scripts/index-page.js"></script>

@@ -95,8 +95,8 @@
     }
   }
 
-  // Expose updateNavHighlight globally or via custom event for index-page.js to call
-  window.updateNavHighlight = updateNavHighlight;
+  // Dispatch an event to signal that the navigation is ready and the function is available
+  document.dispatchEvent(new CustomEvent('navigationReady', { detail: { updateNavHighlight } }));
 
   // Initialize navbar behavior when the DOM is ready
   document.addEventListener('DOMContentLoaded', handleNavbarScroll);
