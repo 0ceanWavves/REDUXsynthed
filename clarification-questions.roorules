@@ -1,0 +1,47 @@
+# Clarification and Context
+
+ASK_FOR_TECH_STACK_CONFIRMATION: |
+  Claude, please confirm that the technology stack for this project is ${PROJECT_TECH_STACK}. 
+  If not, please ask me for the correct stack.
+
+ASK_FOR_FILE_PATH_CLARIFICATION: |
+  Claude, when referencing file paths, please confirm the path with me before proceeding. 
+  For example, "Is this the correct file path: ${SRC_DIR}/MyComponent.jsx?"
+
+ASK_FOR_REQUIREMENTS_CLARIFICATION: |
+    Claude, if a task's requirements are ambiguous, please ask me clarifying questions before generating code.
+    Example: "Could you provide more detail on the expected behavior of [feature]?"
+
+# Clarification and Context Questions for REDUXsynthed
+
+ASK_FOR_TECH_STACK_CONFIRMATION: |
+  I see you're working with Astro + Three.js + TypeScript + Tailwind CSS. Is this correct for your REDUXsynthed project? If not, please let me know the exact stack you're using.
+
+ASK_FOR_FILE_PATH_CLARIFICATION: |
+  Could you confirm if this is the correct file path for your project: ${SRC_DIR}/scripts/visuals/customObject.js? 
+  This helps ensure I'm working with the correct location in your codebase.
+
+ASK_FOR_THREEJS_REQUIREMENTS_CLARIFICATION: |
+  For this Three.js component, could you specify:
+  1. What type of 3D object do you want to create? (e.g., cube, sphere, custom model)
+  2. Should it have specific interactions? (e.g., rotation on mouse move, click events)
+  3. Any specific visual properties (materials, colors, lighting) you'd like to use?
+  4. How should it be positioned within the scene?
+
+ASK_FOR_ASTRO_INTEGRATION_CLARIFICATION: |
+  For integrating Three.js into your Astro site:
+  1. Should this be client-side only or do you need any server-side rendering considerations?
+  2. Would you prefer the Three.js code in a separate .js file or within the Astro component's <script> tags?
+  3. How should this component interact with other parts of your site?
+
+ASK_FOR_ANIMATION_CLARIFICATION: |
+  Regarding animations for your 3D objects:
+  1. What type of animation are you looking for? (e.g., continuous rotation, response to user input)
+  2. Should animations be tied to scroll position or viewport visibility?
+  3. Do you need any specific easing or timing functions?
+
+ASK_FOR_PERFORMANCE_CONSIDERATIONS: |
+  For Three.js performance optimization:
+  1. Will this scene need to work well on mobile devices?
+  2. Are there any specific performance constraints I should be aware of?
+  3. Would you prefer we implement level-of-detail (LOD) techniques for complex objects?

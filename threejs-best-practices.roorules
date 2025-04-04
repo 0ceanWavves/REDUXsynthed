@@ -1,0 +1,100 @@
+# Three.js Best Practices for REDUXsynthed
+
+# Scene Setup
+THREEJS_SCENE_SETUP: |
+  # Scene Setup Best Practices
+  - Use consistent scene creation pattern across the project
+  - Set appropriate background color or transparency as needed
+  - Initialize scenes with proper lighting based on the object requirements
+  - Add relevant helpers during development (axesHelper, gridHelper)
+  - Always implement proper cleanup for all Three.js objects
+
+# Camera Setup
+THREEJS_CAMERA_SETUP: |
+  # Camera Setup Best Practices
+  - Use PerspectiveCamera for 3D scenes with proper FOV (usually 50-75 degrees)
+  - Position camera at appropriate distance based on object size
+  - Set near and far planes to minimize depth buffer issues (0.1 and 1000 are common)
+  - For UI-oriented 3D elements, consider OrthographicCamera
+  - Implement proper aspect ratio handling on window resize
+
+# Renderer Setup
+THREEJS_RENDERER_SETUP: |
+  # Renderer Setup Best Practices
+  - Use WebGLRenderer with appropriate options (antialias: true, alpha: true)
+  - Set pixel ratio to handle high-DPI displays (Math.min(window.devicePixelRatio, 2))
+  - Match renderer size to container size
+  - Implement proper resize handling
+  - Add appropriate shadow map settings if shadows are used
+  - Dispose of renderer on component unmount
+
+# Geometry and Materials
+THREEJS_GEOMETRY_MATERIALS: |
+  # Geometry and Materials Best Practices
+  - Reuse geometries and materials when possible
+  - Use appropriate level of detail for geometry (e.g., segments in spheres)
+  - Prefer BufferGeometry over Geometry for performance
+  - Choose appropriate materials based on needs (MeshStandardMaterial for realistic, MeshBasicMaterial for performance)
+  - Dispose of geometries and materials when no longer needed
+  - Use instancing for repeated objects
+
+# Controls
+THREEJS_CONTROLS: |
+  # Controls Best Practices
+  - Use OrbitControls for interactive scenes
+  - Set appropriate control limits (min/max distance, pan boundaries)
+  - Enable damping for smoother interaction
+  - Implement controls.update() in animation loop when using damping
+  - Consider different control types based on use case (TrackballControls, FlyControls, etc.)
+  - Add touch support for mobile
+
+# Animation Loop
+THREEJS_ANIMATION_LOOP: |
+  # Animation Loop Best Practices
+  - Use requestAnimationFrame for the animation loop
+  - Store and cancel the animation frame ID on cleanup
+  - Calculate deltaTime for framerate-independent animations
+  - Update controls in the animation loop
+  - Keep the loop as efficient as possible
+  - Use Object3D.onBeforeRender for object-specific updates
+
+# Performance Optimization
+THREEJS_PERFORMANCE: |
+  # Performance Optimization Best Practices
+  - Minimize draw calls by merging geometries when possible
+  - Use appropriate material complexity (Basic > Lambert > Phong > Standard)
+  - Implement levels of detail (LOD) for complex objects
+  - Optimize textures: power-of-two dimensions, compressed formats
+  - Use frustum culling for large scenes
+  - Implement proper object disposal
+  - Use instances for repeated objects
+
+# Mobile Compatibility
+THREEJS_MOBILE: |
+  # Mobile Compatibility Best Practices
+  - Reduce polygon count for mobile
+  - Use simpler materials on mobile
+  - Implement touch controls
+  - Consider device performance and battery life
+  - Test on actual mobile devices
+  - Implement progressive enhancement
+
+# Loading 3D Models
+THREEJS_MODEL_LOADING: |
+  # 3D Model Loading Best Practices
+  - Prefer glTF format for models
+  - Implement proper loading managers
+  - Add loading indicators
+  - Handle loading errors gracefully
+  - Optimize models before importing
+  - Apply proper scale and position after loading
+
+# Integration with Astro
+THREEJS_ASTRO_INTEGRATION: |
+  # Astro Integration Best Practices
+  - Initialize Three.js in client-side scripts only
+  - Load Three.js dynamically to reduce initial bundle size
+  - Consider using islands architecture for isolated 3D components
+  - Implement proper cleanup on component unmount
+  - Handle Astro hydration properly
+  - Use client:only directive for pure Three.js components 

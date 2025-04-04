@@ -1,0 +1,26 @@
+# Project Configuration for Synthed Redux (REDUXsynthed)
+
+# Project Details
+PROJECT_NAME: Synthed Redux (REDUXsynthed)
+PROJECT_REPO_URL: https://github.com/0ceanWavves/REDUXsynthed
+PROJECT_TECH_STACK: Astro + Three.js + TypeScript + Tailwind CSS
+PRIMARY_COLOR: #cc00ff
+SECONDARY_COLOR: #00ccff
+PROJECT_ROOT: E:\projects\synthedredux
+
+# Directory Structure
+GUIDELINES_DIR: ${PROJECT_ROOT}\.cursor\rules
+SRC_DIR: ${PROJECT_ROOT}\src
+COMPONENTS_DIR: ${SRC_DIR}\components
+UTILS_DIR: ${SRC_DIR}\utils
+SCRIPTS_DIR: ${SRC_DIR}\scripts
+STYLES_DIR: ${SRC_DIR}\styles
+THREEJS_DIR: ${SRC_DIR}\scripts\visuals
+
+# Naming Conventions
+COMPONENT_NAMING: PascalCase
+FUNCTION_NAMING: camelCase
+VARIABLE_NAMING: camelCase
+CSS_CLASS_NAMING: kebab-case
+CONSTANT_NAMING: UPPER_SNAKE_CASE
+THREEJS_OBJECTS_NAMING: camelCase

@@ -1,0 +1,52 @@
+# Duplicate Function/Component Prevention
+
+# Check for existing functions/components before creation
+CHECK_DUPLICATE_FUNCTION: |
+  Claude, use code_analyzer to search ${UTILS_DIR} for any functions related to [task description]. 
+  Only generate a new function if nothing suitable exists.
+
+CHECK_DUPLICATE_COMPONENT: |
+    Claude, using code_analyzer on ${COMPONENTS_DIR}, is there already a component that handles [describe functionality]?
+
+CHECK_DUPLICATE_FILE_EXISTS: |
+    Claude, using file_system_manager, check if files like ${COMPONENTS_DIR}/NewComponent/NewComponent.jsx (adjust path/extension) exist in ${PROJECT_ROOT}.
+
+# Modular Refactoring
+CHECK_MONOLITHIC: |
+  Claude, analyze [file_path] in my project. Is it too large? Suggest refactoring into smaller units.
+
+CHECK_REUSE: |
+  Claude, before extracting, use code_analyzer to check ${PROJECT_ROOT} if suitable utility functions/components already exist.
+
+# Duplicate Checking for REDUXsynthed Project
+
+# Check for existing Three.js functions or modules before creation
+CHECK_DUPLICATE_THREEJS_FUNCTION: |
+  Let me search for any existing Three.js utility functions in your project related to [functionality]. 
+  This ensures we don't create redundant code.
+
+CHECK_DUPLICATE_THREEJS_OBJECT: |
+  Let me check if there's already a similar 3D object in your code. I'll search through ${THREEJS_DIR} to see if an object like [object type] exists.
+
+# Check for existing scene and renderer setups
+CHECK_SCENE_SETUP: |
+  Let me check your existing scene setup in ${SCRIPTS_DIR}/visuals/ to ensure consistency with other 3D visualizations in your project.
+
+# Modular Refactoring for Three.js
+CHECK_THREEJS_MODULE_SIZE: |
+  This Three.js module appears to be handling multiple responsibilities. Consider refactoring it into separate modules for [specific functions].
+
+CHECK_THREEJS_REUSE: |
+  Before creating a new utility, let me check if we can reuse any of your existing Three.js helpers or utilities from ${SCRIPTS_DIR}/visuals/ or ${UTILS_DIR}.
+
+# Integration with Astro
+CHECK_ASTRO_INTEGRATION: |
+  Let me check your existing Astro components to see how Three.js is currently integrated into your project structure.
+
+# Performance Checks
+CHECK_PERFORMANCE_IMPACT: |
+  This Three.js implementation might impact performance. Let me review the existing code to ensure we follow the same optimization patterns used elsewhere in your project.
+
+# Material and Shader Reuse
+CHECK_MATERIAL_REUSE: |
+  Let me check if there are existing materials in ${SCRIPTS_DIR}/visuals/materials.js that we can reuse for this new object rather than creating new ones.
