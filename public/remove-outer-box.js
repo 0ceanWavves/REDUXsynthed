@@ -219,7 +219,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const icon = this.querySelector('.service-icon');
         if (icon) {
           icon.style.background = 'rgba(74, 87, 255, 0.5)';
-          icon.style.transform = 'scale(1.1)';
         }
       });
       
@@ -231,7 +230,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const icon = this.querySelector('.service-icon');
         if (icon) {
           icon.style.background = 'rgba(74, 87, 255, 0.3)';
-          icon.style.transform = 'scale(1)';
         }
       });
       
