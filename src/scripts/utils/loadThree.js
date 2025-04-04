@@ -51,7 +51,7 @@ function configureThreeJS(THREE) {
  * Function to safely load THREE.js using CDN
  * @returns {Promise<Object|null>} Resolves with the THREE object if found and configured, or null.
  */
-export async function loadThree() {
+export default async function loadThree() {
   console.log("🔍 Checking for existing THREE.js instance (src)");
   try {
     // Check if THREE is already properly loaded (likely via import)
