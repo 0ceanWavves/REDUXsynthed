@@ -196,17 +196,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Force title words to be visible (additional safety measure)
-  setTimeout(() => {
-    document.querySelectorAll('.title-word').forEach(word => {
-      if (word instanceof HTMLElement) {
-        word.style.opacity = '1';
-        word.style.transform = 'translateY(0) scale(1)';
-      }
-    });
-    console.log('Forced title word visibility (safety check).');
-  }, 500); // Reduced delay slightly
-
   // Special fix for Chrome mobile scrolling performance/behavior
   if (isMobile) {
     // Apply passive listeners to potentially improve scroll performance

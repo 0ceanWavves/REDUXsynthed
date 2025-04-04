@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amorphous Prism</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden; /* Prevent scrollbars caused by canvas */
+            background-color: #000; /* Optional: Set background color */
+            height: 100vh; /* Ensure body takes full viewport height */
+            /* Removed flex centering, canvas should fill body */
+        }
+        /* Style the canvas directly */
+        #morphing-poly-canvas {
+            position: absolute; /* Or relative/static depending on layout needs */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: grab; /* Default cursor */
+            touch-action: none; /* For touch interactions */
+            z-index: 5; /* Match Astro component */
+            /* background: rgba(5,3,10,0.2); */ /* Optional background from Astro */
+        }
+        /* Remove old #prism-container style */
+        /* canvas style from before is ok, kept below */
+        canvas {
+             display: block; /* Prevent extra space below canvas */
+        }
+    </style>
+</head>
+<body>
+    <!-- Replaced div with canvas -->
+    <canvas id="morphing-poly-canvas"></canvas>
+    
+    <!-- Optional: Add a container for potential error messages -->
+    <!-- <div id="error-message-container" style="position: absolute; top: 10px; left: 10px; color: red; z-index: 10;"></div> -->
+    
+    <script type="module" src="/scripts/amorphous-prism-init.js"></script>
+</body>
+</html> 

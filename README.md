@@ -47,106 +47,67 @@ The site addresses various cross-browser compatibility issues:
 - **Responsive Design**: Mobile-optimized layouts and interactions
 - **Performance Optimizations**: Uses requestAnimationFrame for smooth animations
 
+## Interactive Visualization Structure (`src/scripts/`)
+
+The interactive 3D visualization in the hero section is built using Three.js and organized into modular JavaScript files within the `src/scripts/` directory. This allows for better separation of concerns and easier maintenance.
+
+**Key Modules:**
+
+- **`amorphous-prism-init.js`**: The main entry point and orchestrator. It handles:
+    - Loading Three.js (`utils/loadThree.js`).
+    - Checking WebGL compatibility and initiating fallbacks (`utils/fallback.js`).
+    - Setting up the scene, camera, renderer, and lighting (`core/sceneSetup.js`).
+    - Creating materials (`visuals/materials.js`).
+    - Generating the morphing geometry (`geometry/mainGeometry.js`).
+    - Creating the main solid mesh and the wireframe overlay (`visuals/wireframe.js`).
+    - Creating the background starfield particles (`visuals/backgroundParticles.js`).
+    - Setting up user interaction controls (`controls/interaction.js`).
+    - Starting the animation loop (`animation/animationLoop.js`).
+
+- **`constants.js`**: Contains all magic numbers and configuration values (colors, speeds, sizes, etc.) used across the visualization modules.
+
+- **`core/`**:
+    - `sceneSetup.js`: Sets up the core THREE.Scene, camera, renderer, and lighting.
+
+- **`geometry/`**:
+    - `mainGeometry.js`: Creates the base Icosahedron geometry and defines/calculates the morph targets (Cube, Octahedron, etc.).
+    - `shapes.js`: Provides functions to calculate points on the surface of different geometric shapes (used for morph targets).
+    - `morphTargetCalculator.js`: Helper module to calculate the vertex positions for morph targets based on the base geometry and shape functions.
+
+- **`visuals/`**:
+    - `materials.js`: Creates and exports the materials used for the solid mesh (`solidMaterial`) and the wireframe (`edgesMaterial`).
+    - `wireframe.js`: Creates the `EdgesGeometry` and `LineSegments` object for the wireframe overlay and adds it to the scene.
+    - `backgroundParticles.js`: Creates the static background particle system (starfield).
+
+- **`animation/`**:
+    - `animationLoop.js`: Contains the main `requestAnimationFrame` loop. It handles:
+        - Updating morph target influences over time.
+        - Applying rotation based on user interaction or auto-rotation.
+        - Rotating the background particle system.
+        - Rendering the scene.
+
+- **`controls/`**:
+    - `interaction.js`: Manages user input (mouse/touch drag) to control the rotation of the main object, including inertia/damping effects and pausing/resuming auto-rotation.
+
+- **`utils/`**:
+    - `loadThree.js`: Utility to load the Three.js library, potentially from a CDN.
+    - `fallback.js`: Checks for WebGL support and can initiate a 2D canvas fallback visualization.
+    - `smoothstep.js`: Standard smoothstep interpolation function.
+    - `textureUtils.js`: Utilities related to textures, currently includes `createCircleTexture` for particles.
+
+**Data Flow:**
+
+1.  `AmorphousPrism.astro` includes `<script src="../scripts/amorphous-prism-init.js"></script>`.
+2.  `amorphous-prism-init.js` runs, imports necessary modules, and orchestrates the setup.
+3.  Constants are imported from `constants.js`.
+4.  Geometry and materials are created by their respective modules.
+5.  Meshes (solid, wireframe, particles) are created and added to the scene by the init script or specialized modules.
+6.  Interaction listeners are set up.
+7.  The animation loop is started, receiving references to the scene objects it needs to update.
+8.  The animation loop continuously updates object properties (rotation, morphing) and renders the scene.
+
 ## Development
 
 To run the site locally:
 
-```bash
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
 ```
-
-To build for production:
-
-```bash
-npm run build
-```
-
-## File Structure
-
-```
-src/
-├── assets/        # Static assets like images
-├── components/    # UI components
-│   ├── CommonHead.astro        # Meta tags and head scripts
-│   ├── Navigation.astro        # Main navigation
-│   ├── BackgroundDecorations.astro  # Background elements
-│   ├── HeroSection.astro       # Hero section
-│   ├── Features.astro          # Features section
-│   ├── Process.astro           # Process section
-│   ├── Projects.astro          # Projects section
-│   └── ...                     # Other components
-├── layouts/       # Layout templates
-│   └── MainLayout.astro        # Main site layout
-├── pages/         # Page templates
-│   └── index.astro             # Main landing page
-├── scripts/       # Client-side JavaScript
-│   └── index-page.js           # Index page script
-└── styles/        # Stylesheets
-    ├── index.css               # Base styles
-    ├── mobile-fixes.css        # Mobile-specific styles
-    └── index-page.css          # Index page styles
-```
-
-## Interactive Elements
-
-The site includes several interactive elements:
-
-- **3D Prism**: Interactive 3D element in the hero section
-- **Flow Background**: Animated background with customizable settings
-- **Section Highlighting**: Visual indicators for active sections
-- **Cursor Effect**: Custom cursor glow effect on desktop
-
-## Browser Support
-
-The site is optimized for:
-
-- Chrome/Edge (latest)
-- Firefox (latest)
-- Safari/iOS Safari (latest)
-- Mobile Chrome and Firefox
-
-## Recent Updates and Fixes
-
-The site has undergone several important updates to fix various issues:
-
-1. **Improved Scrolling**: Fixed scrolling issues that prevented users from seeing content beyond the hero section.
-2. **Content Security Policy (CSP)**: Implemented a comprehensive CSP system to allow necessary resources.
-3. **Build Process**: Resolved build errors related to script imports and directives.
-4. **3D Rendering**: Enhanced the 3D morphing object with better fallbacks and interaction.
-5. **Cross-Browser Compatibility**: Added fixes for various browsers, especially Firefox and mobile browsers.
-6. **THREE.js Loading**: Fixed issues with THREE.js loading by implementing a robust loader system with CDN fallbacks
-7. **Module Import Fixes**: Added a module path fixer to ensure proper import paths for dynamic imports
-8. **Fallback Rendering**: Added a simple fallback rendering system when the main 3D object fails to load
-9. **Font Loading**: Enhanced font loader with CDN fallbacks and error handling
-
-See [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) for detailed information about these fixes and solutions to common issues.
-
-## Troubleshooting
-
-If you encounter any issues while running or building the site, please refer to the [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) document, which contains detailed information about:
-
-- Content Security Policy (CSP) issues
-- Scrolling problems
-- Build errors
-- Rendering issues
-- 3D morphing object customization
-
-The troubleshooting guide provides specific solutions and code examples for each type of issue.
-
-## Customization
-
-The 3D morphing object can be customized by modifying the shapes, colors, and animation settings. See [3D-MORPHING.md](./docs/3D-MORPHING.md) for detailed instructions.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgements
-
-- [Three.js](https://threejs.org/) - 3D graphics library
-- [Astro](https://astro.build/) - Static site generator
-- [TailwindCSS](https://tailwindcss.com/) - CSS framework

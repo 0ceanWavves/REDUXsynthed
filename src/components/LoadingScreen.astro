@@ -65,100 +65,33 @@
 </style>
 
 <script>
-  // This script handles the loading screen behavior
+  // This script handles ONLY the loading screen fade-out
   document.addEventListener('DOMContentLoaded', () => {
     console.log('Loading screen initialized');
-    
-    // Function to trigger title animation
-    function triggerTitleAnimation() {
-      console.log('Triggering title animation directly');
-      
-      // Get title word elements
-      const titleWords = document.querySelectorAll('.title-word');
-      if (!titleWords.length) {
-        console.warn('No title words found to animate');
-        return;
-      }
-      
-      console.log(`Found ${titleWords.length} title words to animate`);
-      
-      // Animate words with staggered timing
-      titleWords.forEach((word, index) => {
-        if (word instanceof HTMLElement) {
-          // Reset to initial state
-          word.style.opacity = '0';
-          word.style.transform = 'translateY(-120px) scale(1.3)';
-          
-          // Animate with delay
-          setTimeout(() => {
-            word.style.animation = `slamDown 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.475) forwards`;
-            
-            // Add completed class
-            setTimeout(() => {
-              word.classList.add('animation-complete');
-              
-              // Add shake animation
-              setTimeout(() => {
-                word.style.animation = `shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both`;
-                
-                // Force visibility
-                setTimeout(() => {
-                  word.style.opacity = '1';
-                  word.style.transform = 'translateY(0) scale(1)';
-                  word.style.visibility = 'visible';
-                }, 500);
-              }, 800);
-            }, 700);
-            
-            // Animate shadow
-            const shadow = document.querySelector(`.title-shadow[data-index="${index}"]`);
-            if (shadow instanceof HTMLElement) {
-              setTimeout(() => {
-                shadow.style.animation = `shadowExpand 0.5s ease forwards`;
-              }, 350);
-            }
-          }, 300 + (index * 350));
-        }
-      });
-    }
-    
-    // Trigger animation after a slight delay to ensure DOM is ready
-    setTimeout(triggerTitleAnimation, 500);
   });
-  
+
   // Hide loading screen when everything is fully loaded
   window.addEventListener('load', () => {
     console.log('Window loaded, preparing to hide loading screen');
-    
+
     // Give a slight delay to ensure everything is ready
     setTimeout(() => {
       const loadingOverlay = document.getElementById('loading-overlay');
       if (loadingOverlay) {
         loadingOverlay.classList.add('hidden');
-        
+
         // Remove from DOM after transition completes
         setTimeout(() => {
-          // loadingOverlay.style.display = 'none'; // Keep this for fallback
-          // *** Force removal from DOM ***
           if (loadingOverlay.parentNode) {
             loadingOverlay.parentNode.removeChild(loadingOverlay);
             console.log('Loading overlay forcefully removed from DOM');
           }
-          
+
           // Dispatch event for components that listen for it
           document.dispatchEvent(new CustomEvent('loadingScreenRemoved'));
           console.log('Loading screen removed, event dispatched');
-          
-          // Directly trigger title animation again as a failsafe
-          const titleWords = document.querySelectorAll('.title-word');
-          titleWords.forEach((word, index) => {
-            if (word instanceof HTMLElement && !word.classList.contains('animation-complete')) {
-              word.classList.add('animation-complete');
-              console.log(`Forced visibility for title word ${index}`);
-            }
-          });
-        }, 500);
+        }, 500); // Match transition duration
       }
-    }, 500);
+    }, 500); // Delay before starting fade out
   });
 </script>

@@ -63,10 +63,8 @@ export const vertexShader = `
 `;
 
 // Fragment shader with wireframe effect based on barycentric coordinates
-// IMPORTANT: Extension directive MUST be the first thing in the shader
-// MetaMask-friendly version with extensions at the beginning
-export const fragmentShader = `#extension GL_OES_standard_derivatives : enable
-
+// REMOVE problematic extension directive at the beginning and handle it through the extensions object
+export const fragmentShader = `
 // Varyings received from Vertex Shader
 varying vec3 vBarycentric;
 varying vec3 vNormal;
@@ -98,15 +96,8 @@ void main() {
     // Calculate edge factor with fallback for environments without derivative support
     float edge = 0.0;
     
-    // Try to use derivatives if available, otherwise use fallback
-    #ifdef GL_OES_standard_derivatives
-        vec3 d = fwidth(vBarycentric);
-        vec3 a3 = smoothstep(vec3(0.0), d * (uWireframeThickness * 20.0 + 1.0), vBarycentric);
-        edge = clamp(1.0 - min(min(a3.x, a3.y), a3.z), 0.0, 1.0);
-    #else
-        // Fallback for environments where derivatives aren't available (MetaMask)
-        edge = safeEdgeFactor(vBarycentric, uWireframeThickness);
-    #endif
+    // Always use the safe edge factor calculation - more reliable across platforms
+    edge = safeEdgeFactor(vBarycentric, uWireframeThickness);
 
     // Calculate base colors - simplified for better compatibility
     float normalMix = smoothstep(-0.5, 0.8, vNormal.y);
@@ -129,11 +120,6 @@ void main() {
     
     // Final color with pre-multiplied alpha for better blending
     gl_FragColor = vec4(finalColor * finalOpacity, finalOpacity);
-    
-    // Color space correction
-    #if defined(TONE_MAPPING)
-      gl_FragColor.rgb = toneMapping(gl_FragColor.rgb);
-    #endif
 }`;
 
 /**
@@ -187,86 +173,14 @@ export function createMorphingShaderMaterial(THREE, options) {
       }
     });
     
-    // Add error handler for shader compilation failures
-    material.onError = function() {
-      console.error("Shader compilation error - switching to fallback material");
-      // Allow external code to handle this error
-    };
-    
     // Apply global fixes if available (from our MetaMask fix script)
     if (window.__fixShaderExtensions) {
       material.fragmentShader = window.__fixShaderExtensions(material.fragmentShader);
     }
     
-    // Add a special onBeforeCompile for MetaMask compatibility
-    const originalOnBeforeCompile = material.onBeforeCompile;
-    material.onBeforeCompile = function(shader, renderer) {
-      // Call the original if it exists
-      if (originalOnBeforeCompile) {
-        originalOnBeforeCompile.call(this, shader, renderer);
-      }
-      
-      // Apply MetaMask fixes
-      try {
-        // Fix extension directives
-        if (shader.fragmentShader && shader.fragmentShader.includes('#extension')) {
-          // Use our global helper if available
-          if (window.__fixShaderExtensions) {
-            shader.fragmentShader = window.__fixShaderExtensions(shader.fragmentShader);
-          } else {
-            // Manual extraction and reordering of extensions
-            const extensionRegex = /#extension\s+([a-zA-Z0-9_]+)\s*:\s*([a-zA-Z0-9_]+)/g;
-            const extensions = [];
-            let match;
-            
-            // Extract all extensions
-            while ((match = extensionRegex.exec(shader.fragmentShader)) !== null) {
-              extensions.push(match[0]);
-            }
-            
-            // Remove them from the shader
-            shader.fragmentShader = shader.fragmentShader.replace(extensionRegex, '');
-            
-            // Add them at the beginning
-            if (extensions.length > 0) {
-              shader.fragmentShader = extensions.join('\n') + '\n' + shader.fragmentShader;
-            }
-          }
-        }
-        
-        // Ensure color space fragment exists (for MetaMask compatibility)
-        if (shader.fragmentShader && !shader.fragmentShader.includes('colorspace_fragment')) {
-          const endOfMain = shader.fragmentShader.lastIndexOf('}');
-          if (endOfMain !== -1) {
-            // Add minimal color correction
-            const colorSpaceChunk = `
-              #if defined(TONE_MAPPING)
-                gl_FragColor.rgb = toneMapping(gl_FragColor.rgb);
-              #endif
-            `;
-            
-            shader.fragmentShader = 
-              shader.fragmentShader.substring(0, endOfMain) + 
-              colorSpaceChunk + 
-              shader.fragmentShader.substring(endOfMain);
-          }
-        }
-      } catch (e) {
-        console.error("Error in MetaMask compatibility shader fix:", e);
-        setTimeout(() => {
-          if (material.onError) material.onError();
-        }, 0);
-      }
-    };
-    
-    // Fallback for emergency situations
-    material.customProgramCacheKey = function() {
-      return 'morphing-shader-' + THREE.REVISION + '-metamask-safe';
-    };
-    
     return material;
-  } catch (e) {
-    console.error("Failed to create shader material:", e);
+  } catch (err) {
+    console.error("Failed to create shader material:", err);
     
     // Return a basic fallback material
     return new THREE.MeshBasicMaterial({

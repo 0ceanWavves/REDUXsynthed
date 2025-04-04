@@ -3,7 +3,7 @@
 import * as C from '../constants.js';
 import { smoothstep } from '../utils/smoothstep.js';
 import { interactionState } from '../controls/interaction.js'; // Import shared state
-import { calculateReactiveRadius } from '../visuals/reactiveShell.js'; // <<< NEW IMPORT
+// import { calculateReactiveRadius } from '../visuals/reactiveShell.js'; // <<< REMOVED IMPORT
 
 let rafId = null; // To store requestAnimationFrame ID for potential cleanup
 
@@ -14,132 +14,115 @@ let morphProgress = 0;       // Progress of the current morph (0 to 1)
 let timeSinceLastMorph = 0;  // Time elapsed since the last morph completed
 let isMorphing = false;      // Flag indicating if a morph transition is active
 
-// --- NEW: Get base particle radius based on screen size ---
-const isMobile = window.innerWidth < 768;
-const baseAtmosphereRadius = isMobile ? C.PARTICLE_RADIUS_MOBILE : C.PARTICLE_RADIUS_DESKTOP;
-let currentTargetRadius = baseAtmosphereRadius * C.PARTICLE_RADIUS_FACTOR_BASE; // Initialize
+// --- REMOVED PARTICLE RADIUS STATE ---
+// const isMobile = window.innerWidth < 768;
+// const baseAtmosphereRadius = isMobile ? C.PARTICLE_RADIUS_MOBILE : C.PARTICLE_RADIUS_DESKTOP;
+// let currentTargetRadius = baseAtmosphereRadius * C.PARTICLE_RADIUS_FACTOR_BASE; // Initialize
 
-export function startAnimationLoop(scene, camera, renderer, morphMesh, morphTargetNames, particlesData, clock) {
-  if (!window.THREE) throw new Error("THREE not available for animation loop.");
-  const THREE = window.THREE;
+// --- REMOVED LERP HELPER ---
 
+// REMOVED particlesData from function signature
+export function startAnimationLoop({ scene, camera, renderer, mainMesh, interactionState, THREE }) {
+  // Check if THREE is loaded (used directly or via window)
+  if (!THREE && !window.THREE) throw new Error("THREE not available for animation loop.");
+  THREE = THREE || window.THREE;
+
+  const morphMesh = mainMesh; // Use mainMesh directly
   const numTargets = morphMesh.geometry.morphAttributes.position?.length ?? 0;
-  const rotationSlerpFactor = 0.1; // Smoothing factor for rotation (0 to 1)
+  const morphTargetNames = morphMesh.userData.morphTargetNames || []; // Get names if stored in userData
+  const rotationSlerpFactor = C.ROTATION_LERP_FACTOR; // Use constant
+  const clock = new THREE.Clock(); // Create clock inside the function
 
-  // Ensure initial rotation state is synced
+  // --- REMOVED PARTICLE SETUP ---
+  // const particleGeometry = particlesData.geometry;
+  // const particlePositions = particleGeometry.attributes.position; // BufferAttribute
+  // const particleInitialRadii = particlesData.initialRadii; // Plain array
+  // const particleCount = particlePositions.count;
+  // const particleLerpFactor = 0.05; // How fast particles move to target radius (adjust)
+  // const isMobile = window.innerWidth < 768;
+  // const baseAtmosphereRadius = isMobile ? C.PARTICLE_RADIUS_MOBILE : C.PARTICLE_RADIUS_DESKTOP;
+  // let currentTargetShellRadius = baseAtmosphereRadius * C.PARTICLE_RADIUS_FACTOR_BASE; // Global target radius for the shell
+
+  // --- Initial Rotation Setup ---
   interactionState.targetRotation.copy(morphMesh.quaternion);
 
+  // --- REMOVED Temp Vector ---
 
   function animateScene() {
-    rafId = requestAnimationFrame(animateScene); // Store ID for cleanup
-    const delta = clock.getDelta();
-    const elapsedTime = clock.getElapsedTime();
+    rafId = requestAnimationFrame(animateScene);
+    const delta = Math.min(clock.getDelta(), C.MAX_DELTA_TIME); // Cap delta time
+    // const elapsedTime = clock.getElapsedTime(); // Keep if needed for shaders later
 
-    // --- Calculate Reactive Radius --- <<< NEW BLOCK
-    if (numTargets > 0 && isMorphing) { // Only calculate when morphing
-      currentTargetRadius = calculateReactiveRadius(
-        currentTargetIndex,
-        nextTargetIndex,
-        morphProgress,
-        morphTargetNames,
-        baseAtmosphereRadius
-      );
-    } else if (numTargets > 0 && !isMorphing) {
-       // When not morphing, ensure radius snaps to the current shape's target radius
-       const currentShapeName = currentTargetIndex === -1 ? 'Base' : morphTargetNames[currentTargetIndex];
-       const currentFactor = targetRadiusFactors[currentShapeName] ?? C.PARTICLE_RADIUS_FACTOR_BASE; // <<< Needs targetRadiusFactors from reactiveShell.js - REFACTOR NEEDED?
-       // --> Let's recalculate instead of importing the map
-       currentTargetRadius = calculateReactiveRadius(
-           currentTargetIndex, 
-           currentTargetIndex === -1 ? 0 : currentTargetIndex, // Morph TO itself when not morphing
-           0, // Progress is 0
-           morphTargetNames, 
-           baseAtmosphereRadius
-       );
-    }
-    // --- END NEW BLOCK ---
+    // --- REMOVED Target Shell Radius Calculation ---
 
-    // --- Particle Animation ---
-    if (particlesData?.material?.uniforms) {
-        particlesData.material.uniforms.uTime.value = elapsedTime; // Use .value
-        // --- NEW: Update target radius uniform ---
-        if (!particlesData.material.uniforms.uTargetRadius) {
-            // Add uniform if it doesn't exist (first frame)
-            particlesData.material.uniforms.uTargetRadius = { value: currentTargetRadius };
-        } else {
-            particlesData.material.uniforms.uTargetRadius.value = currentTargetRadius;
-        }
-    }
+    // --- REMOVED Particle Position Update (JS) --- 
+    // for (let i = 0; i < particleCount; i++) { ... }
+    // particlePositions.needsUpdate = true; 
+
+    // --- REMOVED Particle Shader Uniform Update ---
+    // if (particlesData?.material?.uniforms) { ... }
 
     // --- Morphing Logic ---
-    if (numTargets > 0) { // Only run morphing if targets exist
+    if (numTargets > 0) { 
         timeSinceLastMorph += delta;
 
         if (isMorphing) {
-            morphProgress += delta;
-            // Calculate influence using smoothstep for easing
-            const influence = smoothstep(0, 1, morphProgress / C.MORPH_DURATION);
+            morphProgress += delta; 
+            const influence = smoothstep(0, 1, morphProgress / C.MORPH_DURATION); 
 
-            // Ensure influences array exists and has the correct length
             if (!morphMesh.morphTargetInfluences || morphMesh.morphTargetInfluences.length !== numTargets) {
               console.warn("Reinitializing morphTargetInfluences array.");
               morphMesh.morphTargetInfluences = new Array(numTargets).fill(0);
             }
 
-            // Apply influences: fade out current, fade in next
-            if (currentTargetIndex >= 0) { // Only fade out if coming FROM a target
+            if (currentTargetIndex >= 0) {
               morphMesh.morphTargetInfluences[currentTargetIndex] = 1.0 - influence;
             }
-            // Always apply influence to the target we are moving towards
             morphMesh.morphTargetInfluences[nextTargetIndex] = influence;
 
-
-            // Check if morph transition is complete
             if (morphProgress >= C.MORPH_DURATION) {
-              // Snap influences to final state
               if (currentTargetIndex >= 0) morphMesh.morphTargetInfluences[currentTargetIndex] = 0;
               morphMesh.morphTargetInfluences[nextTargetIndex] = 1;
-
-              // Update state for next cycle
-              currentTargetIndex = nextTargetIndex; // The target we just reached is now current
+              currentTargetIndex = nextTargetIndex; 
               isMorphing = false;
               morphProgress = 0;
-              timeSinceLastMorph = 0; // Reset hold timer
+              timeSinceLastMorph = 0; 
             }
         } else {
-            // Not currently morphing, check if it's time to start the next one
             if (timeSinceLastMorph >= C.HOLD_DURATION) {
                 isMorphing = true;
                 morphProgress = 0;
-                // Cycle to the next target (0 -> 1 -> ... -> N-1 -> 0)
                 nextTargetIndex = (currentTargetIndex + 1) % numTargets;
-
-                // Log the transition
-                const fromShape = currentTargetIndex === -1 ? 'Base' : morphTargetNames[currentTargetIndex];
-                const toShape = morphTargetNames[nextTargetIndex];
+                const fromShape = currentTargetIndex === -1 ? 'Base' : (morphTargetNames[currentTargetIndex] || `Target ${currentTargetIndex}`);
+                const toShape = morphTargetNames[nextTargetIndex] || `Target ${nextTargetIndex}`;
                 console.log(`🔄 Morphing from ${fromShape} to ${toShape}`);
             }
         }
-    } // End if (numTargets > 0)
+    } 
 
+    // Apply automatic rotation if enabled
+    if (interactionState.autoRotate && !interactionState.isDragging) {
+        const autoRotationEuler = new THREE.Euler(C.ROTATION_SPEED_X, C.ROTATION_SPEED_Y, 0, 'XYZ');
+        const autoRotationQuaternion = new THREE.Quaternion().setFromEuler(autoRotationEuler);
+        interactionState.targetRotation.multiplyQuaternions(autoRotationQuaternion, interactionState.targetRotation);
+        interactionState.targetRotation.normalize();
+    }
 
     // Smoothly interpolate the mesh's ACTUAL rotation towards the TARGET rotation
     morphMesh.quaternion.slerp(interactionState.targetRotation, rotationSlerpFactor);
-
 
     // --- Rendering ---
     renderer.render(scene, camera);
   } // End animateScene function
 
   // --- Initial State before starting loop ---
-  currentTargetIndex = -1; // Start at base shape
-  isMorphing = false;      // Don't start morphing immediately
-  timeSinceLastMorph = 0;  // Start the hold timer immediately
-  // Ensure morph influences are zeroed initially
+  currentTargetIndex = -1; 
+  nextTargetIndex = 0; // Ensure nextTargetIndex is initialized
+  isMorphing = false;      
+  timeSinceLastMorph = 0;  
   if (morphMesh.morphTargetInfluences) {
       morphMesh.morphTargetInfluences.fill(0);
   }
-
 
   console.log("▶️ Starting Animation Loop...");
   animateScene(); // Start the loop
@@ -148,16 +131,9 @@ export function startAnimationLoop(scene, camera, renderer, morphMesh, morphTarg
   return () => {
       console.log("⏹️ Stopping Animation Loop...");
       cancelAnimationFrame(rafId);
+      clock.stop(); // Stop the clock as well
   };
 }
 
-// --- Helper Map (needed if accessing factors directly) ---
-// Duplicate this from reactiveShell.js or refactor reactiveShell.js to export it.
-// For simplicity here, let's duplicate it (less ideal design-wise).
-const targetRadiusFactors = {
-    'Base': C.PARTICLE_RADIUS_FACTOR_BASE,
-    'Cube': C.PARTICLE_RADIUS_FACTOR_CUBE,
-    'Octahedron': C.PARTICLE_RADIUS_FACTOR_OCTA,
-    'Dodecahedron': C.PARTICLE_RADIUS_FACTOR_DODECA,
-    'Tetrahedron': C.PARTICLE_RADIUS_FACTOR_TETRA,
-}; 
+// --- REMOVED Helper Map ---
+// const targetRadiusFactors = { ... }; 

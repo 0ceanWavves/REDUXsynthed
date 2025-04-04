@@ -1,6 +1,6 @@
 ---
 // rebuild/HeroSectionRebuild.astro
-import HeroContent from './HeroContent.astro';
+// import HeroContent from './HeroContent.astro'; // REMOVED: Content handled by overlay in AmorphousPrism
 // import AmorphousPrism from '../src/components/AmorphousPrism.astro'; // OLD PATH
 import AmorphousPrism from '~/components/AmorphousPrism.astro'; // USE ALIAS
 ---
@@ -13,7 +13,7 @@ import AmorphousPrism from '~/components/AmorphousPrism.astro'; // USE ALIAS
     <!-- <AmorphousPrism client:load /> -->
     <AmorphousPrism />
   </div>
-  <div class="hero-rebuild-content-container">
-    <HeroContent />
-  </div>
+  <!-- <div class="hero-rebuild-content-container"> -->
+    <!-- <HeroContent /> --> <!-- REMOVED: Content handled by overlay in AmorphousPrism -->
+  <!-- </div> -->
 </section> 

@@ -78,48 +78,30 @@ export function createParticleSystem(isMobile) {
   particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
   particleGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
   particleGeometry.setAttribute('customColor', new THREE.BufferAttribute(colorAttributes, 3));
-  particleGeometry.setAttribute('initialRadius', new THREE.BufferAttribute(initialRadii, 1));
 
   const particleMaterial = new THREE.ShaderMaterial({
     uniforms: {
         uTime: { value: 0.0 },
         pointTexture: { value: particleTexture },
-        uTargetRadius: { value: atmosphereRadius * C.PARTICLE_RADIUS_FACTOR_BASE },
-        uBaseAtmosphereRadius: { value: atmosphereRadius }
     },
     vertexShader: `
       attribute float size;
       attribute vec3 customColor;
-      attribute float initialRadius;
       varying vec3 vColor;
       uniform float uTime;
-      uniform float uTargetRadius;
-      uniform float uBaseAtmosphereRadius;
-
-      float lerp(float a, float b, float t) {
-        return a + (b - a) * t;
-      }
 
       void main() {
         vColor = customColor;
         vec3 pos = position;
-        float currentParticleRadius = length(pos.xz);
-        
-        float initialRadiusFactor = initialRadius / uBaseAtmosphereRadius;
-        float targetParticleRadius = uTargetRadius * initialRadiusFactor;
-
-        float smoothedRadius = lerp(currentParticleRadius, targetParticleRadius, 0.1);
-
-        vec3 direction = normalize(pos);
-        pos = direction * smoothedRadius;
 
         float angle = atan(pos.x, pos.z) + uTime * 0.2;
         float radius = length(pos.xz);
-        pos.x = cos(angle) * radius + sin(pos.y * 1.5 + uTime * 0.6) * 0.1;
-        pos.z = sin(angle) * radius + cos(pos.x * 1.5 + uTime * 0.5) * 0.1;
-        pos.y += sin(length(direction * initialRadius) * 0.5 + uTime * 0.7) * 0.15;
+        vec3 animatedPos = pos;
+        animatedPos.x = cos(angle) * radius + sin(pos.y * 1.5 + uTime * 0.6) * 0.1;
+        animatedPos.z = sin(angle) * radius + cos(pos.x * 1.5 + uTime * 0.5) * 0.1;
+        animatedPos.y += sin(length(pos) * 0.5 + uTime * 0.7) * 0.15;
 
-        vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+        vec4 mvPosition = modelViewMatrix * vec4(animatedPos, 1.0);
         gl_PointSize = size * (400.0 / -mvPosition.z);
         gl_Position = projectionMatrix * mvPosition;
       }
@@ -143,5 +125,5 @@ export function createParticleSystem(isMobile) {
   particleSystem.name = "particleSystem";
 
   console.log("✨ Particle system created");
-  return { system: particleSystem, material: particleMaterial };
+  return { system: particleSystem, material: particleMaterial, geometry: particleGeometry, initialRadii: initialRadii };
 } 
