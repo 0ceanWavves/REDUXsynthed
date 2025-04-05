@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const canvasBounds = canvas.getBoundingClientRect();
     const touch = event.touches[0];
     
-    const isOutsideCanvas = 
+    const isOutsideCanvas =
       touch.clientX < canvasBounds.left ||
       touch.clientX > canvasBounds.right ||
       touch.clientY < canvasBounds.top ||
@@ -40,5 +40,31 @@ document.addEventListener('DOMContentLoaded', () => {
     canvasContainer.classList.add('mobile-interaction-fixed');
   }
   
-  console.log('Mobile interaction fix applied');
+  // Ensure buttons are properly clickable
+  const buttons = document.querySelectorAll('.overlay-button');
+  buttons.forEach(button => {
+    // Add event listener to prevent event propagation to canvas
+    button.addEventListener('touchstart', (event) => {
+      event.stopPropagation();
+    }, { passive: false });
+    
+    // Add click handler to ensure smooth scrolling to target sections
+    button.addEventListener('click', (event) => {
+      const href = button.getAttribute('href');
+      if (href && href.startsWith('#')) {
+        const targetId = href.substring(1);
+        const targetElement = document.getElementById(targetId);
+        
+        if (targetElement) {
+          event.preventDefault();
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }
+    });
+  });
+  
+  console.log('Mobile interaction fix applied with enhanced button handling');
 });

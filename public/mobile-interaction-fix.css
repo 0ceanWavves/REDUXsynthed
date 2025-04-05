@@ -22,14 +22,35 @@
 .canvas-container.mobile-interaction-fixed #content-overlay {
   touch-action: auto !important;
   pointer-events: auto !important;
+  z-index: 10 !important;
+}
+
+/* Ensure the content wrapper is properly positioned */
+.canvas-container.mobile-interaction-fixed #content-overlay .content-wrapper {
+  position: relative !important;
+  z-index: 20 !important;
+  pointer-events: auto !important;
 }
 
 /* Interactive elements should always be clickable */
 .canvas-container.mobile-interaction-fixed button,
 .canvas-container.mobile-interaction-fixed a,
-.canvas-container.mobile-interaction-fixed .service-item {
+.canvas-container.mobile-interaction-fixed .service-item,
+.canvas-container.mobile-interaction-fixed .overlay-button {
   pointer-events: auto !important;
-  touch-action: auto !important;
+  touch-action: manipulation !important;
+  position: relative !important;
+  z-index: 1002 !important;
+}
+
+/* Specific styling for the buttons container */
+.canvas-container.mobile-interaction-fixed .buttons {
+  display: flex !important;
+  gap: 1rem !important;
+  margin-top: 1.5rem !important;
+  position: relative !important;
+  z-index: 1002 !important;
+  pointer-events: auto !important;
 }
 
 /* Add a subtle indicator when the canvas is being interacted with on mobile */
@@ -43,5 +64,21 @@
     overscroll-behavior-y: auto;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Enhanced button styling for mobile */
+  .canvas-container.mobile-interaction-fixed .buttons {
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 300px !important;
+    margin: 1.5rem auto !important;
+  }
+  
+  .canvas-container.mobile-interaction-fixed .overlay-button {
+    width: 100% !important;
+    text-align: center !important;
+    padding: 1rem !important;
+    margin-bottom: 0.5rem !important;
+    font-size: 1.1rem !important;
   }
 }

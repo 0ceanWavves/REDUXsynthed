@@ -1,0 +1,42 @@
+/**
+ * Title Animation Initial Styles
+ * 
+ * These styles set up the initial state for the title word animations
+ * that will be animated using vanilla JavaScript instead of GSAP.
+ */
+
+/* Initial state for title words - hidden and slightly offset */
+.title-word {
+  opacity: 0;
+  transform: translateY(20px) scale(0.95);
+  display: inline-block;
+  margin-right: 0.5rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  position: relative;
+  z-index: 1001;
+  transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Title block container */
+.title-block {
+  margin-bottom: 1rem;
+  position: relative;
+  z-index: 1001;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .title-word {
+    font-size: 2rem;
+    margin-right: 0.3rem;
+  }
+  
+  .title-block {
+    justify-content: center;
+    text-align: center;
+  }
+}
