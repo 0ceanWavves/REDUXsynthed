@@ -18,12 +18,12 @@
       priority: 2,
       loaded: false
     },
-    { 
-      src: '/js/three-instance-manager.js', 
-      id: 'three-instance-manager',
-      priority: 3,
-      loaded: false
-    }
+    // { 
+    //   src: '/js/three-instance-manager.js', 
+    //   id: 'three-instance-manager',
+    //   priority: 3,
+    //   loaded: false
+    // },
   ];
   
   // Track if we've already initialized

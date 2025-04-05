@@ -33,11 +33,11 @@
       id: "webgl-compatibility-fix",
       critical: false
     },
-    { 
-      src: "/js/three-instance-manager.js",
-      id: "three-instance-manager",
-      critical: false
-    }
+    // {
+    //   src: "/js/three-instance-manager.js", // <-- Commented out
+    //   id: "three-instance-manager",
+    //   critical: false
+    // }
   ];
   
   // Track loaded scripts

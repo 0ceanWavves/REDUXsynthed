@@ -1,6 +1,7 @@
 ---
 // AmorphousPrism.astro - Minimalist loader for the 3D visualization
 import LoadingScreen from './LoadingScreen.astro';
+import './AmorphousPrismOverlay.css';
 ---
 
 <!-- New container for both canvas and overlay -->
@@ -38,8 +39,8 @@ import LoadingScreen from './LoadingScreen.astro';
         <h2>Digital Solutions</h2>
       </div>
       <div class="buttons">
-        <button class="overlay-button">Our Services</button>
-        <button class="overlay-button">Our Process</button>
+        <a href="#services-section" class="overlay-button">Our Services</a>
+        <a href="#process-section" class="overlay-button">Our Process</a>
       </div>
     </div>
   </div>
@@ -51,10 +52,10 @@ import LoadingScreen from './LoadingScreen.astro';
 <!-- Original loading screen (might need adjustment if it covers overlay) -->
 <LoadingScreen />
 
-<!-- ADD correct script import -->
+<!-- REMOVED incorrect script import -->
 <script>
-  // Import the CSS for the overlay
-  import './AmorphousPrismOverlay.css';
+  // Import the CSS for the overlay - REMOVED FROM HERE
+  // import './AmorphousPrismOverlay.css'; 
 </script>
 <!-- Load Three.js fixes before any Three.js code -->
 <script is:inline src="/three-fix-loader.js"></script>
@@ -215,5 +216,10 @@ import LoadingScreen from './LoadingScreen.astro';
     font-size: 1.2rem;
     margin-bottom: 0.5rem;
     color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* Add smooth scrolling globally */
+  :global(html) {
+    scroll-behavior: smooth;
   }
 </style>
