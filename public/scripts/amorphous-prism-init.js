@@ -1,4 +1,4 @@
-import { loadThree } from './utils/loadThree.js';
+import loadThree from './utils/loadThree.js';
 import { fallbackCheck } from './utils/fallback.js';
 import { setupSceneAndCamera } from './core/sceneSetup.js';
 import { createMorphGeometry } from './geometry/mainGeometry.js';
