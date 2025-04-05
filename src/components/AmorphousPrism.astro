@@ -91,6 +91,15 @@ import './AmorphousPrismOverlay.css';
 <!-- Load local GSAP from public directory -->
 <script is:inline src="/gsap.min.js"></script>
 
+<!-- Scene exposer to make THREE.js scene accessible for debugging -->
+<script is:inline src="/scripts/scene-exposer.js"></script>
+
+<!-- Load debug helper for shape transitions (development only) -->
+<script is:inline src="/scripts/debug-shape-transitions.js"></script>
+
+<!-- Load shape transition styles -->
+<link rel="stylesheet" href="/scripts/shape-transition.css">
+
 <!-- Animation script for title words using local GSAP -->
 <script is:inline>
   document.addEventListener('DOMContentLoaded', function() {

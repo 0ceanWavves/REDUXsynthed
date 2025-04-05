@@ -1,0 +1,116 @@
+/* Shape Transition CSS for Amorphous Prism
+   This file enhances the shape-specific transitions for the morphing geometry */
+
+/* Base transition properties for all shape changes */
+.content-wrapper {
+  transition: all 0.7s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Ensure shape-specific classes properly apply to the overlay */
+#content-overlay.tetrahedron-shape .title-word {
+  color: rgba(255, 100, 100, 0.95);
+  text-shadow: 0 0 15px rgba(255, 100, 100, 0.5);
+}
+
+#content-overlay.cube-shape .title-word {
+  color: rgba(100, 100, 255, 0.95);
+  text-shadow: 0 0 15px rgba(100, 100, 255, 0.5);
+}
+
+#content-overlay.octahedron-shape .title-word {
+  color: rgba(100, 255, 100, 0.95);
+  text-shadow: 0 0 15px rgba(100, 255, 100, 0.5);
+}
+
+#content-overlay.icosahedron-shape .title-word {
+  color: rgba(255, 100, 255, 0.95);
+  text-shadow: 0 0 15px rgba(255, 100, 255, 0.5);
+}
+
+#content-overlay.dodecahedron-shape .title-word {
+  color: rgba(255, 255, 100, 0.95);
+  text-shadow: 0 0 15px rgba(255, 255, 100, 0.5);
+}
+
+/* Shape-specific button styling */
+#content-overlay.tetrahedron-shape .overlay-button {
+  background: linear-gradient(135deg, rgba(255, 100, 100, 0.8), rgba(255, 150, 100, 0.8));
+}
+
+#content-overlay.cube-shape .overlay-button {
+  background: linear-gradient(135deg, rgba(100, 100, 255, 0.8), rgba(100, 150, 255, 0.8));
+}
+
+#content-overlay.octahedron-shape .overlay-button {
+  background: linear-gradient(135deg, rgba(100, 255, 100, 0.8), rgba(150, 255, 100, 0.8));
+}
+
+#content-overlay.icosahedron-shape .overlay-button {
+  background: linear-gradient(135deg, rgba(255, 100, 255, 0.8), rgba(255, 150, 255, 0.8));
+}
+
+#content-overlay.dodecahedron-shape .overlay-button {
+  background: linear-gradient(135deg, rgba(255, 255, 100, 0.8), rgba(255, 255, 150, 0.8));
+}
+
+/* Complete the octahedron and dodecahedron styles that were missing in the original CSS */
+#content-overlay.octahedron-shape .tagline {
+  transform: translateY(-8px);
+  opacity: 0.92;
+}
+
+#content-overlay.octahedron-shape .services {
+  transform: translateX(15px) scale(0.97);
+  opacity: 0.95;
+}
+
+#content-overlay.octahedron-shape .digital-solutions {
+  transform: translateX(-15px) scale(0.97);
+  opacity: 0.95;
+}
+
+#content-overlay.octahedron-shape .buttons {
+  transform: translateY(5px) scale(0.97);
+  opacity: 0.9;
+}
+
+#content-overlay.dodecahedron-shape .tagline {
+  transform: translateY(8px);
+  opacity: 0.92;
+}
+
+#content-overlay.dodecahedron-shape .services {
+  transform: translateX(-10px) scale(0.96);
+  opacity: 0.9;
+}
+
+#content-overlay.dodecahedron-shape .digital-solutions {
+  transform: translateY(-5px) scale(0.96);
+  opacity: 0.9;
+}
+
+#content-overlay.dodecahedron-shape .buttons {
+  transform: translateY(-10px) scale(0.93);
+  opacity: 0.85;
+}
+
+/* Add subtle glow effects based on current shape */
+#content-overlay.tetrahedron-shape {
+  background: radial-gradient(circle at center, rgba(255, 100, 100, 0.05) 0%, transparent 70%);
+}
+
+#content-overlay.cube-shape {
+  background: radial-gradient(circle at center, rgba(100, 100, 255, 0.05) 0%, transparent 70%);
+}
+
+#content-overlay.octahedron-shape {
+  background: radial-gradient(circle at center, rgba(100, 255, 100, 0.05) 0%, transparent 70%);
+}
+
+#content-overlay.icosahedron-shape {
+  background: radial-gradient(circle at center, rgba(255, 100, 255, 0.05) 0%, transparent 70%);
+}
+
+#content-overlay.dodecahedron-shape {
+  background: radial-gradient(circle at center, rgba(255, 255, 100, 0.05) 0%, transparent 70%);
+}

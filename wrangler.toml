@@ -1,4 +1,4 @@
-name = "synthed-website"
+name = 'reduxsynthed'
 compatibility_date = "2023-10-30"
 
 # Assets configuration
@@ -20,4 +20,4 @@ patterns = ["**/*.css"]
 
 # Environment-specific configurations
 [env.production]
-name = "synthed-website"
+name = 'reduxsynthed'

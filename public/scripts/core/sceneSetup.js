@@ -1,6 +1,9 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js'; // Import directly
 import * as C from '../constants.js';
 
+// Store the scene globally for debugging
+let globalScene = null;
+
 export function setupSceneAndCamera(canvas, THREEInstance) {
   // Use passed THREE instance or fall back to direct import
   const LocalTHREE = THREEInstance || THREE;
@@ -10,6 +13,9 @@ export function setupSceneAndCamera(canvas, THREEInstance) {
 
   const scene = new LocalTHREE.Scene();
   scene.background = new LocalTHREE.Color(C.FALLBACK_BG_COLOR);
+  
+  // Store scene globally for debugging
+  globalScene = scene;
 
   const camera = new LocalTHREE.PerspectiveCamera(
     C.CAMERA_FOV,
@@ -26,6 +32,12 @@ export function setupSceneAndCamera(canvas, THREEInstance) {
   });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
+  
+  // Store scene reference on canvas element for debugging
+  if (canvas) {
+    canvas.__threeScene = scene;
+    console.log("✅ Scene reference stored on canvas element for debugging");
+  }
   
   // Add Lighting (Moved from old init, using constants from src/constants)
   const ambientLight = new LocalTHREE.AmbientLight(C.AMBIENT_COLOR, C.AMBIENT_INTENSITY);
