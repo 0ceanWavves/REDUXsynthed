@@ -55,8 +55,10 @@ import LoadingScreen from './LoadingScreen.astro';
 <script>
   // Import the CSS for the overlay
   import './AmorphousPrismOverlay.css';
-  import '/scripts/amorphous-prism-init.js';
 </script>
+
+<!-- Use script tag with src attribute for public directory scripts -->
+<script type="module" src="/scripts/amorphous-prism-init.js"></script>
 
 <!-- Add a canary log script to check if scripts are executing -->
 <script is:inline>
