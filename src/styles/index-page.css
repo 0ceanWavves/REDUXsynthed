@@ -74,6 +74,8 @@ body::after {
   background: transparent;
   overflow: visible; /* Allow potential overflows like shadows */
   z-index: 10; /* Ensure content is above background elements */
+  height: auto; /* Allow content to determine height */
+  min-height: 100vh; /* Ensure it takes at least the viewport height */
 }
 
 /* Enhanced section wrappers */

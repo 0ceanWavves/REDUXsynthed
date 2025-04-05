@@ -17,7 +17,7 @@
   color: white; /* Base text color */
   text-align: center;
   z-index: 10; /* Ensure overlay is above canvas (z-index 5) */
-  touch-action: none; /* Prevent browser touch actions (scroll/zoom) on overlay */
+  touch-action: auto; /* Allow scrolling on the overlay */
 }
 
 /* The actual content block inside the overlay */
