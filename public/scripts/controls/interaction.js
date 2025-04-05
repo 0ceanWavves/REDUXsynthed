@@ -1,5 +1,5 @@
 // public/scripts/controls/interaction.js
-// import * as THREE from 'three'; // Assuming THREE is globally available
+import * as THREE_MOD from 'three'; // Import THREE.js module explicitly
 import * as C from '../constants.js';
 
 // --- Shared State ---
@@ -8,9 +8,9 @@ export const interactionState = {
     isDragging: false,
     autoRotate: true,
     // Store target rotation as quaternion for smooth interpolation by animation loop
-    targetRotation: new THREE.Quaternion(),
+    targetRotation: new THREE_MOD.Quaternion(), // Use imported THREE
     // --- NEW: Add velocity and damping --- 
-    rotationVelocity: new THREE.Vector2(0, 0), // Store velocity (x, y axes)
+    rotationVelocity: new THREE_MOD.Vector2(0, 0), // Use imported THREE
     dampingFactor: 0.95, // How quickly velocity decays (closer to 1 = slower decay)
 };
 
@@ -78,14 +78,14 @@ function updateRotationFromVelocity() {
     if (Math.abs(interactionState.rotationVelocity.x) < 0.0001 && 
         Math.abs(interactionState.rotationVelocity.y) < 0.0001 &&
         !interactionState.isDragging) // Ensure we stop only if not dragging
-    { 
+    {
         stopVelocityUpdateLoop();
         return;
     }
 
     // Calculate rotation delta from velocity for this frame
-    const deltaRotationQuaternion = new THREE.Quaternion().setFromEuler(
-        new THREE.Euler(
+    const deltaRotationQuaternion = new THREE_MOD.Quaternion().setFromEuler(
+        new THREE_MOD.Euler(
             interactionState.rotationVelocity.x, // Apply velocity directly (already includes sensitivity)
             interactionState.rotationVelocity.y,
             0,
@@ -118,8 +118,7 @@ function stopVelocityUpdateLoop() {
 
 // --- Setup Function ---
 export function setupInteractionListeners(canvas, initialQuaternion) {
-    if (!window.THREE) throw new Error("THREE not available for interaction setup.");
-    const THREE = window.THREE;
+    const THREE = THREE_MOD; // Assign imported module to local THREE variable
 
     // Initialize target rotation with the mesh's starting rotation
     interactionState.targetRotation.copy(initialQuaternion);
