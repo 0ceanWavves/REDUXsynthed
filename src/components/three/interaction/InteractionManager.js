@@ -265,7 +265,7 @@ export function createInteractionManager(options) {
     window.addEventListener('mouseup', onPointerUp);
     
     canvas.addEventListener('touchstart', onPointerDown, { passive: false });
-    canvas.addEventListener('touchmove', onPointerMove, { passive: false });
+    canvas.addEventListener('touchmove', onPointerMove, { passive: true }); // Allow default scroll behavior
     window.addEventListener('touchend', onPointerUp);
     window.addEventListener('touchcancel', onPointerUp);
   }
