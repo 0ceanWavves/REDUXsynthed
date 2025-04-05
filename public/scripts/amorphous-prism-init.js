@@ -8,9 +8,6 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.m
 import { fallbackCheck } from './utils/fallback.js';
 import { setupSceneAndCamera } from './core/sceneSetup.js';
 
-// Create a module object to expose functions globally
-window.amorphousPrismModule = {};
-
 // Import geometry and visual components
 import { createMorphGeometry } from './geometry/mainGeometry.js';
 import { createMaterials } from './visuals/materials.js';
@@ -43,8 +40,6 @@ const ALL_SHAPE_CLASSES = [
 
 // Function to apply the correct class based on the shape name
 export function applyShapeSpecificStyles(shapeName) {
-  // Expose this function globally for debugging
-  window.amorphousPrismModule.applyShapeSpecificStyles = applyShapeSpecificStyles;
   // --- DEBUG LOG --- 
   console.log(`applyShapeSpecificStyles called with shapeName: "${shapeName}" (Type: ${typeof shapeName})`);
   // --- END DEBUG LOG ---

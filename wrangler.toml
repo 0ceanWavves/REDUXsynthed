@@ -21,3 +21,7 @@ patterns = ["**/*.css"]
 # Environment-specific configurations
 [env.production]
 name = 'reduxsynthed'
+routes = [
+  { pattern = "synthed.xyz", custom_domain = true },
+  { pattern = "www.synthed.xyz", custom_domain = true }
+] 
