@@ -88,41 +88,52 @@ import './AmorphousPrismOverlay.css';
   }
 </script>
 
-<!-- START: Vanilla JS Animation Script (No GSAP dependency) -->
+<!-- Load local GSAP from public directory -->
+<script is:inline src="/gsap.min.js"></script>
+
+<!-- Animation script for title words using local GSAP -->
 <script is:inline>
-  // Function to run the animation without GSAP
-  function animateTitleWords() {
-    const titleWords = document.querySelectorAll('.title-word');
-
-    if (titleWords.length > 0) {
-      console.log("Animating title words with vanilla JS...");
-      
-      // Initial state - ensure these match the CSS initial state
-      titleWords.forEach(word => {
-        word.style.opacity = '0';
-        word.style.transform = 'translateY(20px) scale(0.95)';
-        word.style.transition = 'opacity 0.45s ease, transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-      });
-      
-      // Animate each word with staggered delay
-      titleWords.forEach((word, index) => {
-        setTimeout(() => {
-          word.style.opacity = '1';
-          word.style.transform = 'translateY(0) scale(1)';
-        }, 500 + (index * 180)); // 500ms initial delay, then 180ms between each word
-      });
-    } else {
-      console.warn("Title words not found for animation.");
-    }
-  }
-
-  // Run the animation after DOM is fully loaded
   document.addEventListener('DOMContentLoaded', function() {
+    // Function to run the animation with GSAP
+    function animateTitleWords() {
+      const titleWords = document.querySelectorAll('.title-word');
+      
+      if (titleWords.length > 0) {
+        console.log("Animating title words with GSAP...");
+        
+        // Initial state
+        gsap.set(titleWords, {
+          opacity: 0,
+          y: 20,
+          scale: 0.95
+        });
+        
+        // Animate each word with staggered delay
+        gsap.to(titleWords, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.45,
+          ease: "back.out(1.7)",
+          stagger: 0.18,
+          delay: 0.5
+        });
+      } else {
+        console.warn("Title words not found for animation.");
+        
+        // Fallback to ensure visibility if animation fails
+        document.querySelectorAll('.title-word').forEach(word => {
+          word.style.opacity = '1';
+          word.style.visibility = 'visible';
+          word.style.transform = 'translateY(0) scale(1)';
+        });
+      }
+    }
+
     // Add a small delay to ensure styles are fully applied
     setTimeout(animateTitleWords, 100);
   });
 </script>
-<!-- END: Vanilla JS Animation Script -->
 
 <style>
   /* Enhanced button styling for better visibility and interaction */
