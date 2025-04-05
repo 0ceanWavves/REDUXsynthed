@@ -60,6 +60,38 @@ export function createFallbackVisualization(canvas) {
   drawFallback();
 }
 
+/**
+ * Checks for WebGL compatibility and initiates fallback if necessary.
+ * @param {string} requiredLevel - Minimum WebGL level (e.g., 'webgl', 'webgl2').
+ * @returns {boolean} True if compatible, false if fallback initiated.
+ */
+export function fallbackCheck(requiredLevel = 'webgl') {
+  if (typeof window === 'undefined') return false; // Cannot run check server-side
+
+  const canvas = document.createElement('canvas');
+  let gl;
+  try {
+    gl = canvas.getContext(requiredLevel);
+  } catch (e) {
+    console.error("Error getting WebGL context:", e);
+    gl = null;
+  }
+
+  if (!gl) {
+    console.warn(`WebGL level '${requiredLevel}' not supported. Initiating fallback.`);
+    const targetCanvas = document.getElementById('morphing-poly-canvas'); // Or get canvas ID dynamically
+    if (targetCanvas) {
+      createFallbackVisualization(targetCanvas);
+    } else {
+      console.error("Target canvas not found for fallback!");
+    }
+    return false; // Indicate incompatibility / fallback
+  }
+
+  console.log(`WebGL level '${requiredLevel}' supported.`);
+  return true; // Indicate compatibility
+}
+
 // Function to potentially clear the fallback if THREE loads later
 export function clearFallbackVisualization(canvas) {
     if (canvas.dataset.fallbackActive === 'true') {
