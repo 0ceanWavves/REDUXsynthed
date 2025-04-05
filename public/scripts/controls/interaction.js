@@ -16,6 +16,22 @@ let previousPointerPosition = { x: 0, y: 0 };
 let autoRotateTimeoutId = null;
 let animationFrameId = null;
 // let dragThreshold = 5; // Optional: pixels threshold to start drag
+
+/**
+ * Helper function to check if a pointer event is within the canvas bounds
+ * @param {PointerEvent} event - The pointer event to check
+ * @param {HTMLElement} canvas - The canvas element
+ * @returns {boolean} - True if the pointer is within the canvas bounds
+ */
+function isPointerWithinCanvas(event, canvas) {
+    const canvasBounds = canvas.getBoundingClientRect();
+    return (
+        event.clientX >= canvasBounds.left &&
+        event.clientX <= canvasBounds.right &&
+        event.clientY >= canvasBounds.top &&
+        event.clientY <= canvasBounds.bottom
+    );
+}
 // let pointerDownPos = { x: 0, y: 0 }; // Optional: for threshold check
 
 function resumeAutoRotate() {
@@ -152,30 +168,39 @@ export function setupOverlayInteractionListeners(canvas, initialQuaternion) { //
     // --- Event Listeners on Overlay (for Down) and Window (for Move/Up) --- 
     const onOverlayPointerDown = (event) => {
         const targetIsInteractiveUI = contentWrapper.contains(event.target) && event.target.closest('button, a');
-
-        if (!targetIsInteractiveUI) {
-            handleCanvasPointerDown(event, canvas); 
-            event.preventDefault(); 
+        
+        // Only handle interaction if within canvas bounds and not on interactive UI
+        if (isPointerWithinCanvas(event, canvas) && !targetIsInteractiveUI) {
+            handleCanvasPointerDown(event, canvas);
+            event.preventDefault();
             // Set dragging immediately if not using threshold
             interactionState.isDragging = true;
             if (canvas) canvas.style.cursor = 'grabbing';
             startVelocityUpdateLoop();
         } else {
-            console.log("Pointer down on interactive UI, not calling canvas handler.");
+            console.log("Pointer down outside canvas or on interactive UI, not calling canvas handler.");
         }
     };
 
     const onWindowPointerMove = (event) => {
         if (interactionState.isDragging) {
-            handleCanvasPointerMove(event); // Pass event to use clientX/Y
-            event.preventDefault(); 
+            // Only continue dragging if within canvas bounds
+            if (isPointerWithinCanvas(event, canvas)) {
+                handleCanvasPointerMove(event); // Pass event to use clientX/Y
+                event.preventDefault();
+            } else {
+                // If pointer moves outside canvas, stop dragging
+                handleCanvasPointerUp(event, canvas);
+            }
         }
     };
 
     const onWindowPointerUp = (event) => {
-        // Call the core up handler regardless of where the up happens
-        handleCanvasPointerUp(event, canvas);
-        // isDragging is reset inside handleCanvasPointerUp now
+        // Only call the handler if we were actually dragging
+        if (interactionState.isDragging) {
+            handleCanvasPointerUp(event, canvas);
+            // isDragging is reset inside handleCanvasPointerUp now
+        }
     };
 
     // Attach listeners

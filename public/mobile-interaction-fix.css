@@ -1,0 +1,47 @@
+/**
+ * Mobile Interaction Fix CSS
+ * 
+ * Additional styles to ensure proper touch behavior on mobile devices
+ * for the 3D canvas and surrounding content.
+ */
+
+/* Apply specific touch behavior to the canvas container */
+.canvas-container.mobile-interaction-fixed {
+  /* Ensure the container doesn't interfere with page scrolling */
+  touch-action: auto !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* The canvas itself should still capture all pointer events for rotation */
+.canvas-container.mobile-interaction-fixed #morphing-poly-canvas {
+  touch-action: none !important;
+  pointer-events: auto !important;
+}
+
+/* Content outside the canvas should scroll normally */
+.canvas-container.mobile-interaction-fixed #content-overlay {
+  touch-action: auto !important;
+  pointer-events: auto !important;
+}
+
+/* Interactive elements should always be clickable */
+.canvas-container.mobile-interaction-fixed button,
+.canvas-container.mobile-interaction-fixed a,
+.canvas-container.mobile-interaction-fixed .service-item {
+  pointer-events: auto !important;
+  touch-action: auto !important;
+}
+
+/* Add a subtle indicator when the canvas is being interacted with on mobile */
+@media (max-width: 768px) {
+  .canvas-container.mobile-interaction-fixed #morphing-poly-canvas:active {
+    opacity: 0.95; /* Subtle visual feedback when interacting */
+  }
+  
+  /* Ensure the page can scroll normally on mobile */
+  body, html {
+    overscroll-behavior-y: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

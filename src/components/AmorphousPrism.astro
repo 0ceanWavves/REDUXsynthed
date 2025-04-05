@@ -7,7 +7,7 @@ import LoadingScreen from './LoadingScreen.astro';
 <div class="canvas-container" style="position: relative; width: 100%; height: 100%; overflow: hidden;">
   <!-- Canvas for Three.js -->
   <canvas id="morphing-poly-canvas" class="absolute top-0 left-0 w-full h-full morphing-poly-canvas"
-    style="display: block; width: 100%; height: 100%; pointer-events: auto !important; z-index: 5; touch-action: none !important; cursor: grab; opacity: 1; backface-visibility: hidden; transform: translateZ(0);"
+    style="display: block; width: 100%; height: 100%; pointer-events: auto !important; z-index: 5; cursor: grab; opacity: 1; backface-visibility: hidden; transform: translateZ(0);"
     data-interactive="true" data-priority="highest" tabindex="0">
   </canvas>
 
@@ -58,6 +58,12 @@ import LoadingScreen from './LoadingScreen.astro';
 </script>
 <!-- Load Three.js fixes before any Three.js code -->
 <script is:inline src="/three-fix-loader.js"></script>
+
+<!-- Mobile interaction fix to prevent scroll issues -->
+<script is:inline src="/mobile-interaction-fix.js"></script>
+
+<!-- Mobile interaction CSS -->
+<link rel="stylesheet" href="/mobile-interaction-fix.css">
 
 <!-- Use script tag with src attribute for public directory scripts -->
 <script type="module" src="/scripts/amorphous-prism-init.js"></script>
