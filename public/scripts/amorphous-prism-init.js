@@ -3,7 +3,7 @@ import { fallbackCheck } from './utils/fallback.js';
 import { setupSceneAndCamera } from './core/sceneSetup.js';
 import { createMorphGeometry } from './geometry/mainGeometry.js';
 import { createMaterials } from './visuals/materials.js';
-import { createParticles } from './visuals/particles.js';
+import { createParticleSystem } from './visuals/particles.js';
 import { createAndAddWireframe } from './visuals/wireframe.js';
 import { setupInteractionListeners, interactionState } from './controls/interaction.js';
 import { startAnimationLoop } from './animation/animationLoop.js';
@@ -65,7 +65,7 @@ async function initAmorphousPrism() {
 
         // 8. Create Particles (Optional, based on visuals/particles.js)
         // --- REMOVED PARTICLE CREATION ---
-        // const particles = createParticles(scene, THREE, materials.particles); 
+        // const particles = createParticleSystem(scene, THREE, materials.particles); 
         // console.log("✨ Particles created.");
 
 
