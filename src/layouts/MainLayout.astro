@@ -11,7 +11,7 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     
-    <title>{title || "Synthed"}</title>
+    <title>Synched</title>
     <meta name="description" content={description || "Transforming ideas into digital solutions"} />
     
     <!-- Force-enable WebGL and add proper content type -->
@@ -51,8 +51,11 @@ const { title, description } = Astro.props;
     <link rel="stylesheet" href="/fonts/system-fonts.css">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
     
     <!-- Early Three.js script - Make it available before everything else -->
     <script is:inline>
