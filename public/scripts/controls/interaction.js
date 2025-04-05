@@ -1,186 +1,209 @@
-// public/scripts/controls/interaction.js
-import * as THREE_MOD from 'three'; // Import THREE.js module explicitly
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js'; // Import directly
 import * as C from '../constants.js';
 
 // --- Shared State ---
-// Exporting the state object allows the animation loop to read it directly
 export const interactionState = {
     isDragging: false,
     autoRotate: true,
-    // Store target rotation as quaternion for smooth interpolation by animation loop
-    targetRotation: new THREE_MOD.Quaternion(), // Use imported THREE
-    // --- NEW: Add velocity and damping --- 
-    rotationVelocity: new THREE_MOD.Vector2(0, 0), // Use imported THREE
-    dampingFactor: 0.95, // How quickly velocity decays (closer to 1 = slower decay)
+    targetRotation: new THREE.Quaternion(),
+    rotationVelocity: new THREE.Vector2(0, 0),
+    // Use damping factor from constants if available, otherwise default
+    dampingFactor: C.DAMPING_FACTOR || 0.95, 
 };
 
 // --- Internal variables ---
-let previousPointerPosition = { x: 0, y: 0 }; // Renamed for clarity
+let previousPointerPosition = { x: 0, y: 0 };
 let autoRotateTimeoutId = null;
-let boundPointerUp = null; // To store bound listener for removal
-let boundTouchEnd = null; // To store bound listener for removal
-let boundTouchCancel = null;
-let animationFrameId = null; // For the velocity update loop
+let animationFrameId = null;
+// let dragThreshold = 5; // Optional: pixels threshold to start drag
+// let pointerDownPos = { x: 0, y: 0 }; // Optional: for threshold check
 
 function resumeAutoRotate() {
-    clearTimeout(autoRotateTimeoutId); // Clear any pending timeout
+    clearTimeout(autoRotateTimeoutId);
     autoRotateTimeoutId = setTimeout(() => {
-        // Check dragging state again before resuming, user might have started again
         if (!interactionState.isDragging) {
            interactionState.autoRotate = true;
-           console.log("⏱️ Auto-rotation resumed");
+           console.log("⏱️ Auto-rotation resumed (src)");
         }
-    }, C.ROTATION_RESUME_DELAY);
+    }, C.ROTATION_RESUME_DELAY || 2500);
 }
 
-// --- Event Handlers ---
-function handlePointerDown(x, y, canvas) {
-    interactionState.isDragging = true;
-    interactionState.autoRotate = false; // Pause rotation
-    clearTimeout(autoRotateTimeoutId); // Stop pending resume
-    previousPointerPosition = { x, y };
-    interactionState.rotationVelocity.set(0, 0); // Reset velocity on new drag
-    if (canvas) canvas.style.cursor = 'grabbing';
-    startVelocityUpdateLoop(); // Start applying velocity if not already running
+// --- Core Interaction Handlers (Called directly) ---
+// These functions contain the logic for updating the interaction state
+function handleCanvasPointerDown(event, canvasElement) {
+    console.log("Canvas Pointer Down Handled (via Overlay Check)");
+    // pointerDownPos = { x: event.clientX, y: event.clientY }; // Optional: Store for threshold
+    previousPointerPosition = { x: event.clientX, y: event.clientY }; // Always store previous
+    // Do not set isDragging = true immediately if using threshold
+    // interactionState.isDragging = true; 
+    interactionState.autoRotate = false;
+    clearTimeout(autoRotateTimeoutId);
+    interactionState.rotationVelocity.set(0, 0);
+    // Don't start velocity loop immediately if using threshold
+    // startVelocityUpdateLoop();
 }
 
-function handlePointerMove(x, y) {
-    if (!interactionState.isDragging) return;
+function handleCanvasPointerMove(event) {
+    // --- Optional Threshold Check --- 
+    // if (!interactionState.isDragging) {
+    //     const dx = event.clientX - pointerDownPos.x;
+    //     const dy = event.clientY - pointerDownPos.y;
+    //     if (Math.sqrt(dx*dx + dy*dy) >= dragThreshold) {
+    //         interactionState.isDragging = true; // Start dragging!
+    //         if (canvasElement) canvasElement.style.cursor = 'grabbing'; // Need canvasElement passed here
+    //         startVelocityUpdateLoop();
+    //     } else {
+    //          return; // Not dragging yet
+    //     }
+    // }
+    // --- End Optional Threshold Check --- 
+    
+    // If not using threshold, isDragging was set on down
+    if (!interactionState.isDragging) return; 
+
     const deltaMove = {
-        x: x - previousPointerPosition.x,
-        y: y - previousPointerPosition.y
+        x: event.clientX - previousPointerPosition.x,
+        y: event.clientY - previousPointerPosition.y
     };
-
-    // --- NEW: Update velocity instead of directly rotating --- 
-    // Apply sensitivity and add to current velocity
-    interactionState.rotationVelocity.x += deltaMove.y * C.ROTATION_DRAG_SENSITIVITY * 0.1; // Adjust sensitivity multiplier as needed
-    interactionState.rotationVelocity.y += deltaMove.x * C.ROTATION_DRAG_SENSITIVITY * 0.1;
-
-    previousPointerPosition = { x, y };
+    const sensitivity = (C.ROTATION_DRAG_SENSITIVITY || 0.005) * 1.5; // Slightly increased sensitivity
+    // Update velocity based on drag
+    interactionState.rotationVelocity.x += deltaMove.y * sensitivity * 0.1; // Apply sensitivity here
+    interactionState.rotationVelocity.y += deltaMove.x * sensitivity * 0.1; // Apply sensitivity here
+    previousPointerPosition = { x: event.clientX, y: event.clientY };
 }
 
-function handlePointerUp(canvas) {
-    if (!interactionState.isDragging) return; // Only act if we were dragging
-    interactionState.isDragging = false;
-    if (canvas) canvas.style.cursor = 'grab';
-    resumeAutoRotate(); // Start timer to resume auto-rotation
-    // NOTE: Velocity update loop continues until velocity decays
+function handleCanvasPointerUp(event, canvasElement) {
+    // Always reset dragging state on pointer up, regardless of previous state
+    if (interactionState.isDragging) {
+        console.log("Canvas Pointer Up Handled (Was Dragging)");
+        if (canvasElement) canvasElement.style.cursor = 'grab';
+        resumeAutoRotate();
+        // Velocity loop will stop itself based on isDragging=false being set below
+    } else {
+        console.log("Canvas Pointer Up Handled (Was Not Dragging)");
+    }
+    interactionState.isDragging = false; // <<< Ensure this is always set
 }
 
-// --- NEW: Velocity Update Loop ---
+// --- Velocity Update Loop (Updates targetRotation based on velocity) ---
 function updateRotationFromVelocity() {
     if (!interactionState.isDragging) {
-        // Apply damping only when not dragging
         interactionState.rotationVelocity.multiplyScalar(interactionState.dampingFactor);
     }
-
-    // Stop update loop if velocity is negligible
-    if (Math.abs(interactionState.rotationVelocity.x) < 0.0001 && 
+    if (Math.abs(interactionState.rotationVelocity.x) < 0.0001 &&
         Math.abs(interactionState.rotationVelocity.y) < 0.0001 &&
-        !interactionState.isDragging) // Ensure we stop only if not dragging
-    {
+        !interactionState.isDragging) {
         stopVelocityUpdateLoop();
         return;
     }
-
-    // Calculate rotation delta from velocity for this frame
-    const deltaRotationQuaternion = new THREE_MOD.Quaternion().setFromEuler(
-        new THREE_MOD.Euler(
-            interactionState.rotationVelocity.x, // Apply velocity directly (already includes sensitivity)
+    const deltaRotationQuaternion = new THREE.Quaternion().setFromEuler(
+        new THREE.Euler(
+            interactionState.rotationVelocity.x,
             interactionState.rotationVelocity.y,
             0,
             'XYZ'
         )
     );
-
-    // Apply the delta to the target rotation quaternion
     interactionState.targetRotation.multiplyQuaternions(deltaRotationQuaternion, interactionState.targetRotation);
     interactionState.targetRotation.normalize();
-
-    // Request next frame
     animationFrameId = requestAnimationFrame(updateRotationFromVelocity);
 }
 
 function startVelocityUpdateLoop() {
-    if (animationFrameId === null) { // Only start if not already running
-        console.log("Starting velocity update loop");
+    if (animationFrameId === null) {
+        // console.log("Starting velocity update loop (src)");
         animationFrameId = requestAnimationFrame(updateRotationFromVelocity);
     }
 }
 
 function stopVelocityUpdateLoop() {
     if (animationFrameId !== null) {
-        console.log("Stopping velocity update loop");
+        // console.log("Stopping velocity update loop (src)");
         cancelAnimationFrame(animationFrameId);
         animationFrameId = null;
     }
 }
 
-// --- Setup Function ---
-export function setupInteractionListeners(canvas, initialQuaternion) {
-    const THREE = THREE_MOD; // Assign imported module to local THREE variable
+// --- Setup Function (Modified for Overlay Direct Calls) ---
+export function setupOverlayInteractionListeners(canvas, initialQuaternion) { // Renamed for clarity
+    if (!THREE) throw new Error("THREE not available for interaction setup (src).");
 
-    // Initialize target rotation with the mesh's starting rotation
+    const contentOverlay = document.getElementById('content-overlay');
+    const contentWrapper = contentOverlay?.querySelector('.content-wrapper');
+
+    if (!canvas || !contentOverlay || !contentWrapper) {
+        console.error("Cannot setup interaction: Missing canvas, content-overlay, or content-wrapper.");
+        return () => {}; // Return no-op cleanup
+    }
+
+    if (!initialQuaternion) {
+        console.warn("Initial quaternion not provided to interaction setup (src).");
+        initialQuaternion = new THREE.Quaternion();
+    }
+
+    // Reset state on setup
     interactionState.targetRotation.copy(initialQuaternion);
+    interactionState.isDragging = false;
+    interactionState.autoRotate = true;
+    interactionState.rotationVelocity.set(0, 0);
+    stopVelocityUpdateLoop();
+    clearTimeout(autoRotateTimeoutId);
 
-    // --- Mouse Listeners ---
-    const onMouseDown = (e) => handlePointerDown(e.clientX, e.clientY, canvas);
-    const onMouseMove = (e) => handlePointerMove(e.clientX, e.clientY);
-    // Use bound function for listeners attached to window/document for easy removal
-    boundPointerUp = () => handlePointerUp(canvas);
-    const onMouseLeave = () => handlePointerUp(canvas); // Stop drag if mouse leaves canvas
+    // --- Event Listeners on Overlay (for Down) and Window (for Move/Up) --- 
+    const onOverlayPointerDown = (event) => {
+        const targetIsInteractiveUI = contentWrapper.contains(event.target) && event.target.closest('button, a');
 
-    canvas.addEventListener('mousedown', onMouseDown);
-    // Attach mousemove and mouseup to window to capture drag outside canvas
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', boundPointerUp);
-    canvas.addEventListener('mouseleave', onMouseLeave); // Handle leaving canvas element
-
-    // --- Touch Listeners ---
-    const onTouchStart = (e) => {
-        if (e.touches.length === 1) {
-            // e.preventDefault(); // Prevent default only if needed (can prevent scroll)
-            handlePointerDown(e.touches[0].clientX, e.touches[0].clientY, canvas);
+        if (!targetIsInteractiveUI) {
+            handleCanvasPointerDown(event, canvas); 
+            event.preventDefault(); 
+            // Set dragging immediately if not using threshold
+            interactionState.isDragging = true;
+            if (canvas) canvas.style.cursor = 'grabbing';
+            startVelocityUpdateLoop();
+        } else {
+            console.log("Pointer down on interactive UI, not calling canvas handler.");
         }
     };
-    const onTouchMove = (e) => {
-        if (e.touches.length === 1) {
-             e.preventDefault(); // Usually prevent default on touchmove to avoid scroll during drag
-            handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
+
+    const onWindowPointerMove = (event) => {
+        if (interactionState.isDragging) {
+            handleCanvasPointerMove(event); // Pass event to use clientX/Y
+            event.preventDefault(); 
         }
     };
-     // Use bound function for listeners attached to window/document for easy removal
-    boundTouchEnd = (e) => {
-         // Check if the interaction is ending (no touches left) and we were dragging
-         if (e.touches.length === 0 && interactionState.isDragging) {
-            handlePointerUp(canvas);
-         }
+
+    const onWindowPointerUp = (event) => {
+        // Call the core up handler regardless of where the up happens
+        handleCanvasPointerUp(event, canvas);
+        // isDragging is reset inside handleCanvasPointerUp now
     };
-    boundTouchCancel = () => handlePointerUp(canvas); // Handle interruption
 
-    canvas.addEventListener('touchstart', onTouchStart /*, { passive: true } */); // Consider passive: false if preventDefault is needed
-    canvas.addEventListener('touchmove', onTouchMove, { passive: false }); // Need passive: false to use preventDefault
-    window.addEventListener('touchend', boundTouchEnd);
-    window.addEventListener('touchcancel', boundTouchCancel);
+    // Attach listeners
+    contentOverlay.addEventListener('pointerdown', onOverlayPointerDown, { passive: false }); 
+    window.addEventListener('pointermove', onWindowPointerMove, { passive: false }); // Need preventDefault
+    window.addEventListener('pointerup', onWindowPointerUp); // No preventDefault usually needed
 
-    // Set initial cursor
+    // --- NO Listeners Directly on Canvas needed for this logic ---
+    // Remove these if they exist from previous attempts:
+    // canvas.removeEventListener('pointerdown', ...);
+    // canvas.removeEventListener('pointermove', ...);
+    // canvas.removeEventListener('pointerup', ...);
+    // canvas.removeEventListener('pointerleave', ...);
+
     canvas.style.cursor = 'grab';
-    console.log("🕹️ Interaction listeners setup");
+    console.log("🕹️ Interaction listeners setup with overlay direct calls (src)");
 
     // Return a cleanup function
     return () => {
-        console.log("🧹 Cleaning up interaction listeners...");
-        canvas.removeEventListener('mousedown', onMouseDown);
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', boundPointerUp);
-        canvas.removeEventListener('mouseleave', onMouseLeave);
-        canvas.removeEventListener('touchstart', onTouchStart);
-        canvas.removeEventListener('touchmove', onTouchMove);
-        window.removeEventListener('touchend', boundTouchEnd);
-        window.removeEventListener('touchcancel', boundTouchCancel);
-        stopVelocityUpdateLoop(); // Stop the velocity loop on cleanup
-        clearTimeout(autoRotateTimeoutId); // Clear any pending auto-rotate resume
-        canvas.style.cursor = 'default'; // Reset cursor
-        console.log("🕹️ Interaction listeners cleaned up.");
+        console.log("🧹 Cleaning up interaction listeners (overlay direct calls) (src)...");
+        // Remove overlay/window listeners
+        contentOverlay.removeEventListener('pointerdown', onOverlayPointerDown);
+        window.removeEventListener('pointermove', onWindowPointerMove);
+        window.removeEventListener('pointerup', onWindowPointerUp);
+        
+        stopVelocityUpdateLoop();
+        clearTimeout(autoRotateTimeoutId);
+        if(canvas) canvas.style.cursor = 'default'; // Check if canvas still exists
+        console.log("🕹️ Interaction listeners cleaned up (overlay direct calls) (src).");
     };
 } 

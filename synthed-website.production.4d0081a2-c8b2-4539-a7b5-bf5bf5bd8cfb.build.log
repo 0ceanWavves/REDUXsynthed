@@ -1,0 +1,120 @@
+2025-04-05T00:05:53.440Z	Initializing build environment...
+2025-04-05T00:05:53.809Z	Initializing build environment...
+2025-04-05T00:06:00.860Z	Success: Finished initializing build environment
+2025-04-05T00:06:01.578Z	Cloning repository...
+2025-04-05T00:06:03.277Z	Detected the following tools from environment: npm@10.8.3, nodejs@22.9.0
+2025-04-05T00:06:03.278Z	Installing project dependencies: npm clean-install --progress=false
+2025-04-05T00:06:12.507Z	npm warn deprecated istanbul@0.4.5: This module is no longer maintained, try this instead:
+2025-04-05T00:06:12.508Z	npm warn deprecated   npm i nyc
+2025-04-05T00:06:12.508Z	npm warn deprecated Visit https://istanbul.js.org/integrations for other alternatives.
+2025-04-05T00:06:12.899Z	npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+2025-04-05T00:06:13.499Z	npm warn deprecated glob@5.0.15: Glob versions prior to v9 are no longer supported
+2025-04-05T00:06:19.873Z	
+2025-04-05T00:06:19.873Z	added 772 packages, and audited 773 packages in 16s
+2025-04-05T00:06:19.874Z	
+2025-04-05T00:06:19.874Z	255 packages are looking for funding
+2025-04-05T00:06:19.874Z	  run `npm fund` for details
+2025-04-05T00:06:19.874Z	
+2025-04-05T00:06:19.875Z	found 0 vulnerabilities
+2025-04-05T00:06:19.919Z	Executing user build command: npm run build
+2025-04-05T00:06:20.188Z	
+2025-04-05T00:06:20.188Z	> astro-landing-page@0.0.1 build
+2025-04-05T00:06:20.188Z	> astro build
+2025-04-05T00:06:20.188Z	
+2025-04-05T00:06:22.434Z	00:06:22 [content] Syncing content
+2025-04-05T00:06:22.452Z	00:06:22 [content] Synced content
+2025-04-05T00:06:22.452Z	00:06:22 [types] Generated 490ms
+2025-04-05T00:06:22.453Z	00:06:22 [build] output: "static"
+2025-04-05T00:06:22.454Z	00:06:22 [build] mode: "static"
+2025-04-05T00:06:22.454Z	00:06:22 [build] directory: /opt/buildhome/repo/dist/
+2025-04-05T00:06:22.454Z	00:06:22 [build] Collecting build info...
+2025-04-05T00:06:22.454Z	00:06:22 [build] ✓ Completed in 547ms.
+2025-04-05T00:06:22.454Z	00:06:22 [build] Building static entrypoints...
+2025-04-05T00:06:24.612Z	00:06:24 [vite] ✓ built in 2.12s
+2025-04-05T00:06:24.613Z	00:06:24 [build] ✓ Completed in 2.16s.
+2025-04-05T00:06:24.614Z	
+2025-04-05T00:06:24.614Z	 building client (vite) 
+2025-04-05T00:06:24.634Z	00:06:24 [vite] transforming...
+2025-04-05T00:06:26.954Z	00:06:26 [vite] ✓ 36 modules transformed.
+2025-04-05T00:06:27.239Z	00:06:27 [vite] rendering chunks...
+2025-04-05T00:06:27.517Z	00:06:27 [vite] computing gzip size...
+2025-04-05T00:06:27.542Z	00:06:27 [vite] dist/_astro/AmorphousPrism.30L9jpXe.css                                         2.95 kB │ gzip:   0.82 kB
+2025-04-05T00:06:27.546Z	00:06:27 [vite] dist/_astro/content-section.astro_astro_type_script_index_0_lang.DxKpYFEF.js    0.34 kB │ gzip:   0.23 kB
+2025-04-05T00:06:27.547Z	00:06:27 [vite] dist/_astro/LoadingScreen.astro_astro_type_script_index_0_lang.qgGNZeA9.js      0.55 kB │ gzip:   0.30 kB
+2025-04-05T00:06:27.547Z	00:06:27 [vite] dist/_astro/process.astro_astro_type_script_index_0_lang.DW9VhuCt.js            0.57 kB │ gzip:   0.33 kB
+2025-04-05T00:06:27.547Z	00:06:27 [vite] dist/_astro/features.astro_astro_type_script_index_0_lang.D9Z2yp7q.js           0.78 kB │ gzip:   0.46 kB
+2025-04-05T00:06:27.547Z	00:06:27 [vite] dist/_astro/projects.astro_astro_type_script_index_0_lang.B7DwTcyJ.js           1.97 kB │ gzip:   0.62 kB
+2025-04-05T00:06:27.548Z	00:06:27 [vite] dist/_astro/index.astro_astro_type_script_index_2_lang.BRQ3oj1-.js              2.45 kB │ gzip:   0.95 kB
+2025-04-05T00:06:27.548Z	00:06:27 [vite] dist/_astro/index.astro_astro_type_script_index_1_lang.G59hi4kv.js              2.62 kB │ gzip:   0.97 kB
+2025-04-05T00:06:27.548Z	00:06:27 [vite] dist/_astro/index.astro_astro_type_script_index_0_lang.DEFpwRtF.js              3.69 kB │ gzip:   1.43 kB
+2025-04-05T00:06:27.548Z	00:06:27 [vite] dist/_astro/ServiceTiles.astro_astro_type_script_index_0_lang.BbxTSh7n.js       5.13 kB │ gzip:   1.92 kB
+2025-04-05T00:06:27.549Z	00:06:27 [vite] dist/_astro/AmorphousPrism.astro_astro_type_script_index_1_lang.DKWiq_Br.js    20.00 kB │ gzip:   7.17 kB
+2025-04-05T00:06:27.549Z	00:06:27 [vite] dist/_astro/AmorphousPrism.astro_astro_type_script_index_0_lang.DjeHmCeg.js    70.21 kB │ gzip:  27.85 kB
+2025-04-05T00:06:27.552Z	00:06:27 [vite] dist/_astro/three.module.B4zbCOZU.js                                          690.27 kB │ gzip: 177.17 kB
+2025-04-05T00:06:27.552Z	00:06:27 [WARN] [vite] 
+2025-04-05T00:06:27.552Z	(!) Some chunks are larger than 500 kB after minification. Consider:
+2025-04-05T00:06:27.552Z	- Using dynamic import() to code-split the application
+2025-04-05T00:06:27.553Z	- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+2025-04-05T00:06:27.553Z	- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+2025-04-05T00:06:27.553Z	00:06:27 [vite] ✓ built in 2.92s
+2025-04-05T00:06:27.553Z	
+2025-04-05T00:06:27.553Z	 generating static routes 
+2025-04-05T00:06:27.559Z	00:06:27 ▶ src/pages/morphing-icosahedron.astro
+2025-04-05T00:06:27.567Z	00:06:27   └─ /morphing-icosahedron/index.html (+8ms) 
+2025-04-05T00:06:27.569Z	00:06:27 ▶ src/pages/index.astro
+2025-04-05T00:06:27.577Z	00:06:27   └─ /index.html (+8ms) 
+2025-04-05T00:06:27.577Z	00:06:27 ✓ Completed in 30ms.
+2025-04-05T00:06:27.578Z	
+2025-04-05T00:06:27.583Z	00:06:27 [build] 2 page(s) built in 5.68s
+2025-04-05T00:06:27.583Z	00:06:27 [build] Complete!
+2025-04-05T00:06:27.621Z	
+2025-04-05T00:06:27.621Z	> astro-landing-page@0.0.1 postbuild
+2025-04-05T00:06:27.622Z	> shx cp -r public/* dist/
+2025-04-05T00:06:27.622Z	
+2025-04-05T00:06:27.800Z	Success: Build command completed
+2025-04-05T00:06:27.802Z	Executing user deploy command: npx wrangler deploy
+2025-04-05T00:06:29.313Z	npm warn exec The following package was not found and will be installed: wrangler@4.7.2
+2025-04-05T00:06:42.895Z	
+2025-04-05T00:06:42.895Z	 ⛅️ wrangler 4.7.2
+2025-04-05T00:06:42.895Z	------------------
+2025-04-05T00:06:42.895Z	
+2025-04-05T00:06:42.962Z	▲ [WARNING] Processing wrangler.toml configuration:
+2025-04-05T00:06:42.962Z	
+2025-04-05T00:06:42.963Z	    - Unexpected fields found in site field: "pages_build_output_dir","static"
+2025-04-05T00:06:42.963Z	    - Deprecation: "site.entry-point":
+2025-04-05T00:06:42.963Z	      Delete the `site.entry-point` field, then add the top level `main` field to your configuration file:
+2025-04-05T00:06:42.963Z	      ```
+2025-04-05T00:06:42.963Z	      main = "index.js"
+2025-04-05T00:06:42.963Z	      ```
+2025-04-05T00:06:42.963Z	
+2025-04-05T00:06:42.963Z	
+2025-04-05T00:06:42.966Z	
+2025-04-05T00:06:42.968Z	✘ [ERROR] Missing entry-point to Worker script or to assets directory
+2025-04-05T00:06:42.968Z	
+2025-04-05T00:06:42.968Z	  
+2025-04-05T00:06:42.968Z	  If there is code to deploy, you can either:
+2025-04-05T00:06:42.968Z	  - Specify an entry-point to your Worker script via the command line (ex: `npx wrangler deploy src/index.ts`)
+2025-04-05T00:06:42.968Z	  - Or add the following to your "wrangler.toml" file:
+2025-04-05T00:06:42.969Z	  
+2025-04-05T00:06:42.969Z	  ```
+2025-04-05T00:06:42.969Z	  main = "src/index.ts"
+2025-04-05T00:06:42.969Z	  
+2025-04-05T00:06:42.970Z	  ```
+2025-04-05T00:06:42.970Z	  
+2025-04-05T00:06:42.970Z	  
+2025-04-05T00:06:42.970Z	  If are uploading a directory of assets, you can either:
+2025-04-05T00:06:42.970Z	  - Specify the path to the directory of assets via the command line: (ex: `npx wrangler deploy --assets=./dist`)
+2025-04-05T00:06:42.970Z	  - Or add the following to your "wrangler.toml" file:
+2025-04-05T00:06:42.971Z	  
+2025-04-05T00:06:42.971Z	  ```
+2025-04-05T00:06:42.971Z	  [assets]
+2025-04-05T00:06:42.971Z	  directory = "./dist"
+2025-04-05T00:06:42.971Z	  
+2025-04-05T00:06:42.971Z	  ```
+2025-04-05T00:06:42.972Z	  
+2025-04-05T00:06:42.972Z	
+2025-04-05T00:06:42.972Z	
+2025-04-05T00:06:42.972Z	🪵  Logs were written to "/opt/buildhome/.config/.wrangler/logs/wrangler-2025-04-05_00-06-42_440.log"
+2025-04-05T00:06:42.972Z	
+2025-04-05T00:06:42.973Z	Cloudflare collects anonymous telemetry about your usage of Wrangler. Learn more at https://github.com/cloudflare/workers-sdk/tree/main/packages/wrangler/telemetry.md
+2025-04-05T00:06:43.031Z	Failed: error occurred while running deploy command

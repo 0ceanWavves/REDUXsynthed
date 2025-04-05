@@ -1,59 +1,121 @@
-import loadThree from './utils/loadThree.js';
+/**
+ * Amorphous Prism Initialization - Sacred Geometry Edition
+ * Orchestrates the creation and animation of sacred geometry platonic solids
+ * with morphing between different shapes - Tetrahedron, Cube, Octahedron, Icosahedron, and Dodecahedron
+ */
+
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js'; // Import THREE from CDN
 import { fallbackCheck } from './utils/fallback.js';
 import { setupSceneAndCamera } from './core/sceneSetup.js';
+
+// Import geometry and visual components
 import { createMorphGeometry } from './geometry/mainGeometry.js';
 import { createMaterials } from './visuals/materials.js';
-import { createParticleSystem } from './visuals/particles.js';
-import { createAndAddWireframe } from './visuals/wireframe.js';
-import { setupInteractionListeners, interactionState } from './controls/interaction.js';
+import { createGalaxyParticles } from './visuals/enhancedParticles.js';
+import { createAndAddWireframe } from './visuals/wireframe.js'; 
+
+// Import controls and animation
+import { setupOverlayInteractionListeners, interactionState } from './controls/interaction.js';
 import { startAnimationLoop } from './animation/animationLoop.js';
+
+// Import sacred geometry element information
+import { getSacredGeometryTitle } from './utils/sacredGeometryLabels.js';
+
+// Import constants
 import * as C from './constants.js';
 
-async function initAmorphousPrism() {
-    console.log("🚀 Initializing Amorphous Prism...");
+// --- START: New Overlay Management Function ---
+// Get a reference to the overlay element ONCE
+const contentOverlay = document.getElementById('content-overlay');
+
+// Define all possible shape classes based on your morphTargetNames
+const ALL_SHAPE_CLASSES = [
+    'tetrahedron-shape',
+    'cube-shape',
+    'octahedron-shape',
+    'icosahedron-shape',
+    'dodecahedron-shape'
+    // Add any other shape names (lowercase) + "-shape"
+];
+
+// Function to apply the correct class based on the shape name
+export function applyShapeSpecificStyles(shapeName) {
+  // --- DEBUG LOG --- 
+  console.log(`applyShapeSpecificStyles called with shapeName: "${shapeName}" (Type: ${typeof shapeName})`);
+  // --- END DEBUG LOG ---
+  
+  if (!contentOverlay) {
+    console.warn("Content overlay element not found for style update.");
+    return;
+  }
+
+  // Convert shapeName (e.g., "Tetrahedron") to class name (e.g., "tetrahedron-shape")
+  const shapeClassName = shapeName ? `${shapeName.toLowerCase()}-shape` : '';
+
+  // Remove any existing shape classes efficiently
+  contentOverlay.classList.remove(...ALL_SHAPE_CLASSES);
+
+  // Add the new class if shapeClassName is valid and exists in our list
+  if (shapeClassName && ALL_SHAPE_CLASSES.includes(shapeClassName)) {
+    contentOverlay.classList.add(shapeClassName);
+    console.log(`Applied overlay style: ${shapeClassName}`);
+  } else if (shapeClassName) {
+    // --- DEBUG LOG --- 
+    console.warn(`Shape class name "${shapeClassName}" (from input "${shapeName}") is not defined in ALL_SHAPE_CLASSES: [${ALL_SHAPE_CLASSES.join(', ')}]`);
+    // --- END DEBUG LOG ---
+  } else {
+      // --- DEBUG LOG --- 
+      console.log("applyShapeSpecificStyles: No valid shapeName provided, clearing classes.");
+      // --- END DEBUG LOG ---
+  }
+}
+// --- END: New Overlay Management Function ---
+
+/**
+ * Initialize the Sacred Geometry Amorphous Prism visualization
+ */
+function initAmorphousPrism() {
+    console.log("🚀 Initializing Sacred Geometry Amorphous Prism (src)...");
 
     // 1. Check for WebGL compatibility
     if (!fallbackCheck(C.WEBGL_REQ_LEVEL)) {
-        // Fallback handled within fallbackCheck, exit initialization
         return;
     }
 
     try {
-        // 2. Load Three.js dynamically
-        const THREE = await loadThree();
-        if (!THREE) {
-            console.error("Failed to load THREE object.");
-            // Potentially show a user-friendly error message on the page
-            return;
-        }
-        window.THREE = THREE; // Make THREE global for modules that expect it (like interaction.js)
-
-        // 3. Find the CANVAS element (CHANGED)
-        const canvas = document.getElementById('morphing-poly-canvas'); // Use the canvas ID from Astro component
+        // 3. Find the CANVAS element
+        const canvas = document.getElementById(C.CANVAS_ID);
         if (!canvas) {
-            console.error("Canvas element #morphing-poly-canvas not found.");
+            console.error(`Canvas element #${C.CANVAS_ID} not found (src).`);
             return;
         }
-         // Ensure canvas has style if needed (though usually set in HTML/CSS)
-         canvas.style.display = 'block'; // Ensure it behaves like a block
-
+        canvas.style.display = 'block'; 
 
         // 4. Setup Scene, Camera, Renderer
-        // Pass the CANVAS directly (needs adjustment in sceneSetup.js)
         const { scene, camera, renderer } = setupSceneAndCamera(canvas, THREE);
 
-        // 5. Create Materials
-        const materials = createMaterials(THREE); // Assuming this returns an object like { main, particles }
+        // 5. Create Materials optimized for sacred geometry
+        const materials = createMaterials(THREE); 
 
-        // 6. Create Geometry (adjust based on how mainGeometry expects args)
-        const { solidGeometry, morphTargetNames } = await createMorphGeometry(THREE);
+        // 6. Create Geometry with sacred geometry morph targets
+        const { solidGeometry, morphTargetNames } = createMorphGeometry(THREE);
+        
+        // Store morph target names with element information for animation loop access
+        solidGeometry.userData = { 
+            morphTargetNames,
+            elementNames: morphTargetNames.map(name => getSacredGeometryTitle(name))
+        }; 
 
         // 7. Create Main Mesh (Using SOLID material)
         const mainMesh = new THREE.Mesh(solidGeometry, materials.solidMaterial);
+        // --- START: Copy userData from geometry to mesh ---
+        // This ensures morphTargetNames are accessible on the mesh in animationLoop
+        mainMesh.userData = { ...solidGeometry.userData }; 
+        // --- END: Copy userData ---
         scene.add(mainMesh);
-        console.log("✨ Main mesh created and added to scene.");
+        console.log("✨ Sacred geometry main mesh created and added to scene (src).");
         
-        // --- USE NEW MODULE for Wireframe ---
+        // 8. Create Wireframe that follows the sacred geometry shapes precisely
         const wireframeMesh = createAndAddWireframe(
             scene, 
             solidGeometry, 
@@ -61,56 +123,58 @@ async function initAmorphousPrism() {
             THREE, 
             mainMesh // Pass mainMesh to link morph targets
         );
-        // --- END NEW ---
 
-        // 8. Create Particles (Optional, based on visuals/particles.js)
-        // --- REMOVED PARTICLE CREATION ---
-        // const particles = createParticleSystem(scene, THREE, materials.particles); 
-        // console.log("✨ Particles created.");
+        // 9. Create enhanced galaxy particles
+        const { particleSystem: galaxyParticles, updateParticles: updateGalaxyParticles } = 
+            createGalaxyParticles(scene, THREE);
+        console.log("✨ Enhanced galaxy particle system created to complement sacred geometry.");
 
+        // 10. Setup Interaction Listeners using the new overlay logic
+        const cleanupInteraction = setupOverlayInteractionListeners(renderer.domElement, mainMesh.quaternion);
 
-        // 9. Setup Interaction Listeners
-        const cleanupInteraction = setupInteractionListeners(renderer.domElement, mainMesh.quaternion); // Pass canvas and initial mesh rotation
+        // --- START: Initial Overlay Style Set ---
+        // Apply style for the initial shape (assuming index 0)
+        if (morphTargetNames && morphTargetNames.length > 0) {
+          const initialShapeName = morphTargetNames[0];
+          applyShapeSpecificStyles(initialShapeName);
+        } else {
+          console.warn("Morph target names not available for initial style set.");
+        }
+        // --- END: Initial Overlay Style Set ---
 
-        // 10. Start Animation Loop
+        // 11. Start Animation Loop with sacred geometry morphing
         const stopAnimation = startAnimationLoop({
             scene,
             camera,
             renderer,
-            mainMesh, // Pass the solid mesh for morphing/rotation control
-            // particles, // --- REMOVED PARTICLES FROM LOOP --- 
-            interactionState, 
-            THREE 
+            mainMesh,
+            wireframeMesh,
+            backgroundParticles: galaxyParticles,
+            interactionState,
+            updateGalaxyParticles
         });
-        console.log("🏁 Animation loop started.");
+        console.log("🏁 Sacred geometry animation loop started (src).");
 
-
-        // Optional: Handle cleanup on page unload or component unmount
-        // window.addEventListener('beforeunload', () => {
-        //     console.log("🧹 Cleaning up prism resources...");
-        //     stopAnimation();
-        //     cleanupInteraction();
-        //     renderer.dispose();
-        //     // Dispose geometry, materials, textures if needed
-        //     console.log(" Prism resources cleaned up.");
-        // });
-
+        // Add event listener for cleanup if needed
+        window.addEventListener('beforeunload', () => {
+            if (typeof stopAnimation === 'function') stopAnimation();
+            if (typeof cleanupInteraction === 'function') cleanupInteraction();
+        });
 
     } catch (error) {
-        console.error("💥 Error during prism initialization:", error);
-        const errorContainer = document.getElementById('error-message-container'); // Use a dedicated error container if available
-        if (errorContainer) {
-            errorContainer.innerHTML = `<p style="color: red; padding: 20px;">Failed to load visualization. Please check the console for details.</p>`;
-        } else { // Fallback to logging if container doesn't exist
-             console.error("No error message container found on page.")
+        console.error("💥 Error during sacred geometry prism initialization setup (src):", error);
+        // Fallback to simple display if there's an error during setup (before geometry)
+        const loadingEl = document.getElementById(C.LOADING_ID);
+        if (loadingEl) {
+            loadingEl.innerHTML = 'Unable to initialize sacred geometry visualization setup. Please try refreshing.';
         }
     }
 }
 
-// Run initialization when the DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAmorphousPrism);
-} else {
-    // DOMContentLoaded has already fired
+// Run initialization once
+if (!window._prismInitialized) { 
+    window._prismInitialized = true;
     initAmorphousPrism();
-} 
+} else {
+    console.log("Skipping duplicate sacred geometry prism initialization (src).");
+}

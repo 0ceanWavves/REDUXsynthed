@@ -12,7 +12,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "format": "prettier --write **/*.astro .",
-    "clean": "rimraf dist .astro node_modules"
+    "clean": "rimraf dist .astro node_modules",
+    "deploy": "npm run build && npx wrangler deploy --assets=./dist"
   },
   "devDependencies": {
     "@astrojs/tailwind": "^6.0.0",

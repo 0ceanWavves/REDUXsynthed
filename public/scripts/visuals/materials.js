@@ -1,29 +1,69 @@
-// public/scripts/visuals/materials.js
-// import * as THREE from 'three'; // Assuming THREE is globally available
 import * as C from '../constants.js';
 
-export function createMaterials() {
-  if (!window.THREE) throw new Error("THREE not available for material creation.");
-  const THREE = window.THREE;
+/**
+ * Creates materials for the sacred geometry visualization.
+ * @param {THREE} THREE - The THREE.js library instance.
+ * @returns {Object} Object containing the created materials.
+ */
+export function createMaterials(THREE) {
+  if (!THREE) throw new Error("THREE instance is required for material creation.");
+  // --- DEBUG LOG: Check THREE instance and prototype ---
+  console.log(`[materials] Creating materials. THREE version: ${THREE.REVISION}`);
+  console.log(`[materials] MeshStandardMaterial prototype has morphTargets? ${Object.prototype.hasOwnProperty.call(THREE.MeshStandardMaterial.prototype, 'morphTargets')}`);
+  console.log(`[materials] MeshBasicMaterial prototype has morphTargets? ${Object.prototype.hasOwnProperty.call(THREE.MeshBasicMaterial.prototype, 'morphTargets')}`);
+  // --- END DEBUG LOG ---
 
-  // Solid Material (using Phong for sharp look)
-  const solidMaterial = new THREE.MeshPhongMaterial({
+  // Solid Material - Enhanced for sacred geometry visualization
+  const solidMaterial = new THREE.MeshStandardMaterial({
       color: C.SOLID_COLOR,
-      specular: C.SOLID_SPECULAR,
-      shininess: C.SOLID_SHININESS,
+      metalness: C.SOLID_METALNESS,
+      roughness: C.SOLID_ROUGHNESS,
       transparent: true,
       opacity: C.SOLID_OPACITY,
-      morphTargets: true // IMPORTANT: Enable morph targets on the material
+      morphTargets: true,
+      side: THREE.DoubleSide, // Show both sides for better visibility
+      flatShading: false // Use smooth shading for more elegant look
    });
+   solidMaterial.morphTargets = true; // Explicitly set after creation
+   // --- DEBUG LOG: Check instance property ---
+   console.log(`[materials] solidMaterial created. Instance has morphTargets? ${solidMaterial.morphTargets}`);
+   // --- END DEBUG LOG ---
 
-   // Wireframe Material
-   const edgesMaterial = new THREE.LineBasicMaterial({
+   // Wireframe Material - Enhanced for sacred geometry visualization
+   const edgesMaterial = new THREE.MeshBasicMaterial({
       color: C.WIREFRAME_COLOR,
-      linewidth: C.WIREFRAME_LINEWIDTH, // Note: linewidth > 1 might not render consistently
+      wireframe: true,
+      wireframeLinewidth: C.WIREFRAME_LINEWIDTH,
       transparent: true,
-      opacity: C.WIREFRAME_OPACITY
+      opacity: C.WIREFRAME_OPACITY,
+      morphTargets: true, // Enable morph targets for the wireframe
+      depthTest: true,
+      depthWrite: false, // Prevent z-fighting with main mesh
+      side: THREE.FrontSide
    });
+   edgesMaterial.morphTargets = true; // Explicitly set after creation
+   // --- DEBUG LOG: Check instance property ---
+   console.log(`[materials] edgesMaterial created. Instance has morphTargets? ${edgesMaterial.morphTargets}`);
+   // --- END DEBUG LOG ---
 
-   console.log("🎨 Materials created");
-   return { solidMaterial, edgesMaterial };
-} 
+   // Particle Material (for galaxy particles)
+   const particleColor1 = typeof C.PARTICLE_COLOR_1 === 'string' ? new THREE.Color(C.PARTICLE_COLOR_1) : C.PARTICLE_COLOR_1;
+   const particleColor2 = typeof C.PARTICLE_COLOR_2 === 'string' ? new THREE.Color(C.PARTICLE_COLOR_2) : C.PARTICLE_COLOR_2;
+
+   const particleMaterial = new THREE.ShaderMaterial({
+        uniforms: {
+            uTime: { value: 0.0 },
+            uColor1: { value: particleColor1 },
+            uColor2: { value: particleColor2 },
+            uSizeMin: { value: C.PARTICLE_SIZE_MIN_DESKTOP },
+            uSizeMax: { value: C.PARTICLE_SIZE_MAX_DESKTOP },
+        },
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+    });
+
+   console.log("🎨 Sacred geometry materials created with enhanced wireframe (src)");
+   
+   return { solidMaterial, edgesMaterial, particleMaterial }; 
+}

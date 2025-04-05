@@ -1,4 +1,4 @@
-import * as THREE from 'three'; // Import directly
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js'; // Import directly
 
 /**
  * Calculates target vertex positions by projecting base vertices onto a conceptual shape.

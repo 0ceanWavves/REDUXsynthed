@@ -4,7 +4,7 @@
  * with morphing between different shapes - Tetrahedron, Cube, Octahedron, Icosahedron, and Dodecahedron
  */
 
-import * as THREE from 'three'; // Import THREE directly
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js'; // Import THREE from CDN
 import { fallbackCheck } from './utils/fallback.js';
 import { setupSceneAndCamera } from './core/sceneSetup.js';
 

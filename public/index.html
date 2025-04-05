@@ -36,9 +36,292 @@
     <!-- Replaced div with canvas -->
     <canvas id="morphing-poly-canvas"></canvas>
     
+    <!-- Firefox WebGL fallback container -->
+    <div id="firefox-webgl-container" class="absolute top-0 left-0 w-full h-full" style="z-index: 5;"></div>
+    
+    <!-- Cursor glow effect container -->
+    <div id="cursor-glow" class="absolute pointer-events-none w-24 h-24 rounded-full opacity-0 transition-opacity duration-300 z-10" style="background: radial-gradient(circle, rgba(120,70,255,0.4) 0%, rgba(120,70,255,0) 70%); transform: translate(-50%, -50%);"></div>
+    
+    <!-- START: HTML Content Overlay -->
+    <div id="content-overlay">
+      <div class="content-wrapper">
+        <div class="title-block">
+          <span class="title-word">Create</span>
+          <span class="title-word">Design</span>
+          <span class="title-word">Build</span>
+        </div>
+        <div class="tagline">
+          <p>Transforming ideas into</p>
+        </div>
+        <div class="services">
+          <div class="service-item">Custom Business Applications</div>
+          <div class="service-item">Modern Web & Mobile Development</div>
+          <div class="service-item">Strategic Technology Consulting</div>
+          <div class="service-item">UI/UX Design Excellence</div>
+        </div>
+        <div class="digital-solutions">
+          <h2>Digital Solutions</h2>
+        </div>
+        <div class="buttons">
+          <button class="overlay-button">Our Services</button>
+          <button class="overlay-button">Our Process</button>
+        </div>
+      </div>
+    </div>
+    <!-- END: HTML Content Overlay -->
+    
     <!-- Optional: Add a container for potential error messages -->
     <!-- <div id="error-message-container" style="position: absolute; top: 10px; left: 10px; color: red; z-index: 10;"></div> -->
     
+    <!-- Add CSS for the content overlay -->
+    <style>
+      /* The overlay DIV that sits on top */
+      #content-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        text-align: center;
+        z-index: 10;
+        touch-action: none;
+      }
+
+      /* The actual content block inside the overlay */
+      .content-wrapper {
+        padding: 20px;
+        max-width: 600px;
+        pointer-events: auto;
+        transition: all 0.7s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+
+      .title-block {
+        margin-bottom: 15px;
+        transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .title-word {
+        font-size: clamp(2.5rem, 6vw, 3.5rem);
+        line-height: 1.1;
+        margin: 0;
+        font-weight: 700;
+        color: rgba(186, 104, 200, 0.95);
+        text-shadow: 0 0 15px rgba(186, 104, 200, 0.5);
+        display: block;
+        
+        /* Initial state for GSAP animation */
+        opacity: 0;
+        transform: translateY(30px) scale(0.8);
+        will-change: transform, opacity;
+      }
+
+      .tagline {
+        margin-bottom: 25px;
+        font-size: clamp(1rem, 2.5vw, 1.2rem);
+        color: rgba(255, 255, 255, 0.9);
+        transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
+      }
+
+      .services {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 30px;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: fit-content;
+        transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
+      }
+
+      .service-item {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        position: relative;
+        padding-left: 1.2rem;
+        transition: all 0.3s ease;
+      }
+
+      .service-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0.6rem;
+        height: 0.6rem;
+        background: linear-gradient(135deg, #7846ff, #00ffaa);
+        clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+      }
+
+      .digital-solutions {
+        margin-bottom: 30px;
+        transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
+      }
+
+      .digital-solutions h2 {
+        font-size: clamp(1.5rem, 4vw, 2rem);
+        margin: 0;
+        color: rgba(186, 104, 200, 0.95);
+        font-weight: 600;
+      }
+
+      .buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
+      }
+
+      .buttons .overlay-button {
+        padding: 10px 20px;
+        background-color: rgba(186, 104, 200, 0.8);
+        border: 1px solid rgba(186, 104, 200, 0.95);
+        color: white;
+        font-size: 0.9rem;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+        z-index: 11;
+      }
+
+      .buttons .overlay-button:hover {
+        background-color: rgba(186, 104, 200, 1);
+        transform: translateY(-2px);
+      }
+
+      /* --- Shape-Specific Adjustments --- */
+      /* These classes get added to #content-overlay */
+      
+      /* Target 0: Tetrahedron-like shape */
+      #content-overlay.tetrahedron-shape .tagline {
+        transform: translateY(5px);
+        opacity: 0.95;
+      }
+      #content-overlay.tetrahedron-shape .services {
+        transform: translateX(-20px) scale(0.98);
+        opacity: 0.9;
+      }
+      #content-overlay.tetrahedron-shape .digital-solutions {
+        transform: translateX(20px) scale(0.98);
+        opacity: 0.9;
+      }
+      #content-overlay.tetrahedron-shape .buttons {
+        transform: translateY(10px) scale(0.95);
+        opacity: 0.85;
+      }
+      
+      /* Target 1: Cube-like shape */
+      #content-overlay.cube-shape .tagline {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      #content-overlay.cube-shape .services {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+      }
+      #content-overlay.cube-shape .digital-solutions {
+        transform: translateX(0) scale(1);
+        opacity: 1;
+      }
+      #content-overlay.cube-shape .buttons {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+      
+      /* Target 2: Icosahedron-like shape (Rounded) */
+      #content-overlay.icosahedron-shape .tagline {
+        transform: translateY(-5px);
+        opacity: 0.95;
+      }
+      #content-overlay.icosahedron-shape .services {
+        transform: scale(0.95);
+        opacity: 0.9;
+      }
+      #content-overlay.icosahedron-shape .digital-solutions {
+        transform: translateY(5px) scale(0.95);
+        opacity: 0.9;
+      }
+      #content-overlay.icosahedron-shape .buttons {
+        transform: translateY(15px) scale(0.9);
+        opacity: 0.8;
+      }
+      
+      /* Octahedron shape */
+      #content-overlay.octahedron-shape .tagline {
+        transform: translateY(-3px);
+        opacity: 0.97;
+      }
+      #content-overlay.octahedron-shape .services {
+        transform: scale(0.97);
+        opacity: 0.95;
+      }
+      #content-overlay.octahedron-shape .digital-solutions {
+        transform: translateY(3px) scale(0.97);
+        opacity: 0.95;
+      }
+      #content-overlay.octahedron-shape .buttons {
+        transform: translateY(8px) scale(0.93);
+        opacity: 0.9;
+      }
+      
+      /* Dodecahedron shape */
+      #content-overlay.dodecahedron-shape .tagline {
+        transform: translateY(-2px);
+        opacity: 0.98;
+      }
+      #content-overlay.dodecahedron-shape .services {
+        transform: scale(0.98);
+        opacity: 0.97;
+      }
+      #content-overlay.dodecahedron-shape .digital-solutions {
+        transform: translateY(2px) scale(0.98);
+        opacity: 0.97;
+      }
+      #content-overlay.dodecahedron-shape .buttons {
+        transform: translateY(5px) scale(0.95);
+        opacity: 0.93;
+      }
+    </style>
+    <!-- Add GSAP for animations -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.7/gsap.min.js"></script>
+    
+    <!-- Animation script for title words -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Function to run the animation
+        function animateTitleWords() {
+          const titleWords = document.querySelectorAll('.title-word');
+          
+          if (titleWords.length > 0) {
+            console.log("Animating title words with GSAP...");
+            gsap.to(titleWords, {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.45,
+              ease: "back.out(1.7)",
+              stagger: 0.18,
+              delay: 0.5
+            });
+          } else {
+            console.warn("Title words not found for animation.");
+          }
+        }
+        
+        // Run the animation with a small delay
+        setTimeout(animateTitleWords, 100);
+      });
+    </script>
+    
+    <script type="module" src="/scripts/amorphous-prism-init.js"></script>
     <script type="module" src="/scripts/amorphous-prism-init.js"></script>
 </body>
 </html> 

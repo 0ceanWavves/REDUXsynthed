@@ -1,18 +1,17 @@
-// public/scripts/core/sceneSetup.js
-// import * as THREE from 'three'; // Assuming THREE is globally available after loadThreeJS
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js'; // Import directly
 import * as C from '../constants.js';
 
-export function setupSceneAndCamera(canvas) {
-  // Check if THREE is loaded
-  if (!window.THREE || window.THREE.__isPlaceholder) {
-    throw new Error("THREE is not available for scene setup.");
+export function setupSceneAndCamera(canvas, THREEInstance) {
+  // Use passed THREE instance or fall back to direct import
+  const LocalTHREE = THREEInstance || THREE;
+  if (!LocalTHREE) {
+      throw new Error("THREE is not available for scene setup (src).");
   }
-  const THREE = window.THREE; // Use the global THREE
 
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(C.FALLBACK_BG_COLOR); // Use background color from constants
+  const scene = new LocalTHREE.Scene();
+  scene.background = new LocalTHREE.Color(C.FALLBACK_BG_COLOR);
 
-  const camera = new THREE.PerspectiveCamera(
+  const camera = new LocalTHREE.PerspectiveCamera(
     C.CAMERA_FOV,
     window.innerWidth / window.innerHeight,
     C.NEAR_PLANE,
@@ -20,35 +19,53 @@ export function setupSceneAndCamera(canvas) {
   );
   camera.position.z = C.CAMERA_Z;
 
-  const renderer = new THREE.WebGLRenderer({
+  const renderer = new LocalTHREE.WebGLRenderer({
     canvas,
     antialias: true,
-    alpha: true // Keep alpha for potential background needs
+    alpha: true 
   });
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  
+  // Add Lighting (Moved from old init, using constants from src/constants)
+  const ambientLight = new LocalTHREE.AmbientLight(C.AMBIENT_COLOR, C.AMBIENT_INTENSITY);
+  scene.add(ambientLight);
+  
+  const directionalLight = new LocalTHREE.DirectionalLight(C.DIR_LIGHT_COLOR, C.DIR_LIGHT_INTENSITY);
+  directionalLight.position.set(C.DIR_LIGHT_POS.x, C.DIR_LIGHT_POS.y, C.DIR_LIGHT_POS.z);
+  scene.add(directionalLight);
+
+  const pointLight = new LocalTHREE.PointLight(C.POINT_LIGHT_COLOR, C.POINT_LIGHT_INTENSITY);
+  pointLight.position.set(C.POINT_LIGHT_POS.x, C.POINT_LIGHT_POS.y, C.POINT_LIGHT_POS.z);
+  scene.add(pointLight);
+  console.log("💡 Lighting added to scene (src).");
 
   // Handle window resize
+  let resizeListenerActive = true;
   const handleResize = () => {
+    if (!resizeListenerActive) return;
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(window.devicePixelRatio);
-    console.log("Resized renderer and camera.");
+    console.log("Resized renderer and camera (src).");
   };
   window.addEventListener('resize', handleResize);
-  console.log("Setup resize listener.");
+  console.log("Setup resize listener (src).");
 
-  // Return the created objects and a cleanup function for the listener
+  // Return the created objects and a cleanup function 
   return {
     scene,
     camera,
     renderer,
-    cleanupResizeListener: () => {
-        console.log("Removing resize listener.");
-        window.removeEventListener('resize', handleResize);
+    cleanup: () => {
+        if (resizeListenerActive) {
+             console.log("Removing resize listener (src).");
+             window.removeEventListener('resize', handleResize);
+             resizeListenerActive = false;
+        }
+        // Add renderer disposal etc. if needed
+        // renderer.dispose();
     }
   };
 } 

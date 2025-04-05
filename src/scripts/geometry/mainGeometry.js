@@ -1,4 +1,4 @@
-import * as THREE from 'three'; // Import directly
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js'; // Import directly
 import * as C from '../constants.js';
 import * as Shapes from './shapes.js';
 import { calculateMorphTarget } from './morphTargetCalculator.js';

@@ -1,0 +1,53 @@
+{
+  "mcpServers": {
+    "Netlify": {
+      "command": "node",
+      "args": [
+        "C:\\MCP\\Netlify-MCP-Server\\build\\index.js"
+      ],
+      "alwaysAllow": [
+        "deploy-site",
+        "list-sites",
+        "set-env-vars",
+        "get-deploy-status",
+        "add-dns-record",
+        "deploy-function",
+        "manage-form",
+        "manage-plugin",
+        "manage-hook"
+      ],
+      "disabled": false
+    },
+    "Github": {
+      "command": "C:\\MCP\\github-mcp-wrapper.bat",
+      "args": [],
+      "alwaysAllow": [
+        "create_or_update_file",
+        "search_repositories",
+        "create_repository",
+        "get_file_contents",
+        "push_files",
+        "create_issue",
+        "create_pull_request",
+        "fork_repository",
+        "create_branch",
+        "list_commits",
+        "list_issues",
+        "update_issue",
+        "add_issue_comment",
+        "search_code",
+        "search_issues",
+        "search_users",
+        "get_issue"
+      ]
+    },
+    "Supabase MCP": {
+      "command": "C:\\MCP\\supabase-mcp-wrapper.bat",
+      "args": []
+    },
+    "Supabase Official": {
+      "command": "C:\\MCP\\supabase-official-mcp-wrapper.bat",
+      "args": []
+    }
+  }
+}

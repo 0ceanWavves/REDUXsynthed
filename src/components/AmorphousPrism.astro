@@ -56,6 +56,8 @@ import LoadingScreen from './LoadingScreen.astro';
   // Import the CSS for the overlay
   import './AmorphousPrismOverlay.css';
 </script>
+<!-- Load Three.js fixes before any Three.js code -->
+<script is:inline src="/three-fix-loader.js"></script>
 
 <!-- Use script tag with src attribute for public directory scripts -->
 <script type="module" src="/scripts/amorphous-prism-init.js"></script>

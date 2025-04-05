@@ -1,4 +1,4 @@
-import * as THREE from 'three'; // Import THREE directly if possible in Astro env
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js'; // Import THREE directly if possible in Astro env
 import * as C from '../constants.js';
 import { smoothstep } from '../utils/smoothstep.js'; // Assuming smoothstep exists or is created
 import { interactionState } from '../controls/interaction.js'; // Assuming controls/interaction exists or is created

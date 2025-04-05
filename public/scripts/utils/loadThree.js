@@ -1,22 +1,11 @@
-// public/scripts/utils/loadThree.js
-
-// Placeholder for THREE global (if needed before load)
-if (typeof window !== 'undefined' && !window.THREE) {
-    console.log("Setting up THREE placeholder until library loads");
-    window.THREE = {
-      Vector3: function() { return {x: 0, y: 0, z: 0}; },
-      Color: function() { return {r: 0, g: 0, b: 0}; },
-      Texture: function() { return {}; },
-      __isPlaceholder: true
-    };
-}
+// src/scripts/utils/loadThree.js
 
 /**
  * Apply any necessary configurations or fixes to Three.js
  * @param {Object} THREE - The Three.js instance
  */
 function configureThreeJS(THREE) {
-  console.log("Configuring THREE.js instance");
+  console.log("Configuring THREE.js instance (src)");
   // Apply critical shader chunk fixes if needed
   if (THREE && THREE.ShaderChunk) {
     // Add colorspace_fragment chunk if missing
@@ -29,7 +18,7 @@ function configureThreeJS(THREE) {
   gl_FragColor.rgb = linearToSRGB( gl_FragColor.rgb );
 #endif
 `;
-      console.log("🛠️ Applied fix: Added missing colorspace_fragment shader chunk");
+      console.log("🛠️ Applied fix: Added missing colorspace_fragment shader chunk (src)");
     }
     // Add colorspace_pars_fragment chunk if missing
     if (!THREE.ShaderChunk.colorspace_pars_fragment) {
@@ -53,54 +42,32 @@ function configureThreeJS(THREE) {
   }
 #endif
 `;
-      console.log("🛠️ Applied fix: Added missing colorspace_pars_fragment shader chunk");
+      console.log("🛠️ Applied fix: Added missing colorspace_pars_fragment shader chunk (src)");
     }
   }
 }
 
 /**
  * Function to safely load THREE.js using CDN
- * @returns {Promise<Object|null>} Resolves with the THREE object or null on failure.
+ * @returns {Promise<Object|null>} Resolves with the THREE object if found and configured, or null.
  */
 export default async function loadThree() {
-  console.log("🔍 Attempting to load THREE.js");
+  console.log("🔍 Checking for existing THREE.js instance (src)");
   try {
-    // Check if THREE is already properly loaded
+    // Check if THREE is already properly loaded (likely via import)
     if (typeof window !== 'undefined' && window.THREE && !window.THREE.__isPlaceholder) {
-      console.log("Using existing THREE instance");
-      configureThreeJS(window.THREE); // Ensure config runs even if pre-loaded
+      console.log("👍 Found existing THREE instance. Configuring... (src)");
+      configureThreeJS(window.THREE);
       return window.THREE;
+    } else if (typeof window !== 'undefined' && window.THREE?.__isPlaceholder) {
+        console.warn("⚠️ THREE placeholder found, but full library not loaded yet. Import THREE.js directly. (src)");
+        return null;
+    } else {
+      console.error("❌ THREE instance not found. Ensure THREE.js is imported via ES Modules. (src)");
+      return null;
     }
-
-    // Load THREE.js from CDN
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js'; // Make sure version is compatible
-    script.async = true;
-
-    const loadPromise = new Promise((resolve, reject) => {
-      script.onload = () => {
-        console.log("Three.js loaded successfully from CDN");
-        if (window.THREE?.__isPlaceholder) delete window.THREE.__isPlaceholder;
-        // Make THREE global if not already (essential for modules that don't import it)
-        if (!window.THREE){
-             console.error("THREE object not found on window after script load!");
-             reject(new Error("THREE failed to attach to window"));
-             return;
-        }
-        configureThreeJS(window.THREE);
-        resolve(window.THREE);
-      };
-      script.onerror = (error) => {
-        console.error("Failed to load Three.js from CDN:", error);
-        reject(error); // Reject the promise on error
-      };
-    });
-
-    document.head.appendChild(script);
-    return loadPromise;
-
   } catch (error) {
-    console.error("❌ THREE.js loading failed:", error);
-    return null; // Return null or throw, depending on desired handling
+    console.error("❌ Error during THREE.js configuration check (src):", error);
+    return null;
   }
 } 
