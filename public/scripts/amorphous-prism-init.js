@@ -112,6 +112,7 @@ function initAmorphousPrism() {
         // This ensures morphTargetNames are accessible on the mesh in animationLoop
         mainMesh.userData = { ...solidGeometry.userData }; 
         // --- END: Copy userData ---
+        mainMesh.scale.set(1.2, 1.2, 1.2); // Increase scale by 20%
         scene.add(mainMesh);
         console.log("✨ Sacred geometry main mesh created and added to scene (src).");
         
@@ -123,6 +124,9 @@ function initAmorphousPrism() {
             THREE, 
             mainMesh // Pass mainMesh to link morph targets
         );
+        if (wireframeMesh) {
+          wireframeMesh.scale.set(1.2, 1.2, 1.2); // Increase scale by 20%
+        }
 
         // 9. Create enhanced galaxy particles
         const { particleSystem: galaxyParticles, updateParticles: updateGalaxyParticles } = 
