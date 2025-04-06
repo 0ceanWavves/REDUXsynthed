@@ -20,13 +20,11 @@ export function createMaterials(THREE) {
       roughness: C.SOLID_ROUGHNESS,
       transparent: true,
       opacity: C.SOLID_OPACITY,
-      morphTargets: true,
       side: THREE.DoubleSide, // Show both sides for better visibility
       flatShading: false // Use smooth shading for more elegant look
    });
-   solidMaterial.morphTargets = true; // Explicitly set after creation
    // --- DEBUG LOG: Check instance property ---
-   console.log(`[materials] solidMaterial created. Instance has morphTargets? ${solidMaterial.morphTargets}`);
+   // console.log(`[materials] solidMaterial created. Instance has morphTargets? ${solidMaterial.morphTargets}`);
    // --- END DEBUG LOG ---
 
    // Wireframe Material - Enhanced for sacred geometry visualization
@@ -36,14 +34,12 @@ export function createMaterials(THREE) {
       wireframeLinewidth: C.WIREFRAME_LINEWIDTH,
       transparent: true,
       opacity: C.WIREFRAME_OPACITY,
-      morphTargets: true, // Enable morph targets for the wireframe
       depthTest: true,
       depthWrite: false, // Prevent z-fighting with main mesh
       side: THREE.FrontSide
    });
-   edgesMaterial.morphTargets = true; // Explicitly set after creation
    // --- DEBUG LOG: Check instance property ---
-   console.log(`[materials] edgesMaterial created. Instance has morphTargets? ${edgesMaterial.morphTargets}`);
+   // console.log(`[materials] edgesMaterial created. Instance has morphTargets? ${edgesMaterial.morphTargets}`);
    // --- END DEBUG LOG ---
 
    // Particle Material (for galaxy particles)
