@@ -19,9 +19,10 @@ type = "text/css"
 patterns = ["**/*.css"]
 
 # Environment-specific configurations
-[env.production]
-name = 'reduxsynthed'
-routes = [
-  { pattern = "synthed.xyz", custom_domain = true },
-  { pattern = "www.synthed.xyz", custom_domain = true }
-] 
+# REMOVED conflicting routes section
+# [env.production]
+# name = 'reduxsynthed'
+# routes = [
+#  { pattern = "synthed.xyz", custom_domain = true },
+#  { pattern = "www.synthed.xyz", custom_domain = true }
+# ] 
