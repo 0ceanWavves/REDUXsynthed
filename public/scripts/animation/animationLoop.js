@@ -5,6 +5,9 @@ import { interactionState } from '../controls/interaction.js'; // Assuming contr
 import { getSacredGeometryTitle } from '../utils/sacredGeometryLabels.js';
 import { applyShapeSpecificStyles } from '../amorphous-prism-init.js';
 
+// Get reference to the content wrapper for position updates
+const contentWrapper = document.querySelector('.content-wrapper');
+
 let rafId = null; 
 let currentTargetIndex = -1; 
 let nextTargetIndex = 0;     
@@ -168,6 +171,33 @@ export function startAnimationLoop({
     // Fall back to simple rotation for backwards compatibility
     else if (backgroundParticles) {
       backgroundParticles.rotation.y += 0.0005;
+    }
+    
+    // --- Update Content Position to Follow 3D Object ---
+    if (contentWrapper && morphMesh) {
+      // Create a vector at the center of the mesh
+      const meshPosition = new THREE.Vector3(0, 0, 0);
+      // Apply the mesh's world matrix to get its position in world space
+      meshPosition.applyMatrix4(morphMesh.matrixWorld);
+      
+      // Project the 3D position to 2D screen coordinates
+      meshPosition.project(camera);
+      
+      // Convert to CSS coordinates
+      const x = (meshPosition.x * 0.5 + 0.5) * window.innerWidth;
+      const y = (-(meshPosition.y * 0.5) + 0.5) * window.innerHeight;
+      
+      // Add a slight offset based on time for a floating effect
+      const time = clock.getElapsedTime();
+      const offsetX = Math.sin(time * 0.5) * 15;
+      const offsetY = Math.cos(time * 0.3) * 10;
+      
+      // Apply position with transform for smooth animation
+      contentWrapper.style.transform = `translate(calc(-50% + ${x - window.innerWidth/2 + offsetX}px), calc(-50% + ${y - window.innerHeight/2 + offsetY}px))`;
+      
+      // Add a subtle color shift based on position
+      const hue = ((time * 10) % 360);
+      contentWrapper.style.boxShadow = `0 0 30px rgba(${Math.sin(time) * 50 + 150}, ${Math.cos(time * 0.7) * 50 + 200}, ${Math.sin(time * 0.5) * 50 + 200}, 0.15)`;
     }
 
     // --- Rendering ---

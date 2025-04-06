@@ -11,26 +11,25 @@
   left: 0;
   width: 100%;
   height: 100%;
-  display: flex;         /* Use flexbox to easily center the content */
-  justify-content: center; /* Center horizontally */
-  align-items: center;     /* Center vertically */
   color: white; /* Base text color */
   text-align: center;
   z-index: 10; /* Ensure overlay is above canvas (z-index 5) */
   touch-action: auto; /* Allow scrolling on the overlay */
+  pointer-events: none; /* Allow clicks to pass through to the canvas */
 }
 
 /* The actual content block inside the overlay */
 .content-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   padding: 20px;
   max-width: 600px; /* Or adjust as needed */
   /* Allow pointer events on the content itself */
   pointer-events: auto; /* Allows clicks on buttons etc. INSIDE the wrapper */
   /* Add a subtle transition for ALL properties that might change */
   transition: all 0.7s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother easing */
-  /* Optional: Add a subtle background for better readability? */
-  /* background-color: rgba(0, 0, 0, 0.1); */
-  /* border-radius: 10px; */
 }
 
 /* --- Base Styles for Content Elements --- */
@@ -50,8 +49,15 @@
   margin: 0;
   font-weight: 700;
   color: rgba(186, 104, 200, 0.95);
-  text-shadow: 0 0 15px rgba(186, 104, 200, 0.5);
+  text-shadow:
+    0 0 15px rgba(186, 104, 200, 0.8),
+    0 0 30px rgba(0, 255, 170, 0.6),
+    0 0 5px rgba(255, 255, 255, 0.9);
   display: block; /* Ensure spans take up space */
+  backdrop-filter: blur(3px); /* Add blur effect behind text */
+  -webkit-backdrop-filter: blur(3px);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
 
   /* Initial state for GSAP animation */
   opacity: 0;
@@ -75,6 +81,22 @@
   transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
 }
 
+/* Tagline styling enhancement */
+.tagline p {
+  font-size: 1.2rem;
+  margin-bottom: 0.5rem;
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8),
+    0 0 20px rgba(0, 255, 170, 0.5);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  display: inline-block;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
 .services {
   display: flex;
   flex-direction: column;
@@ -95,13 +117,22 @@
 .digital-solutions {
     margin-bottom: 30px; /* Space before buttons */
     transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
+    background: rgba(0, 0, 0, 0.3); /* Semi-transparent background */
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
 }
 
 .digital-solutions h2 {
     font-size: clamp(1.5rem, 4vw, 2rem);
     margin: 0;
-    color: rgba(186, 104, 200, 0.95); /* Match title color? */
+    color: rgba(0, 255, 170, 0.95); /* Bright teal color */
     font-weight: 600;
+    text-shadow:
+      0 0 10px rgba(0, 255, 170, 0.8),
+      0 0 20px rgba(0, 255, 170, 0.5);
 }
 
 .buttons {
@@ -113,19 +144,26 @@
 
 .buttons .overlay-button { /* Target buttons specifically */
   padding: 10px 20px;
-  background-color: rgba(186, 104, 200, 0.8);
-  border: 1px solid rgba(186, 104, 200, 0.95);
+  background: linear-gradient(135deg, rgba(186, 104, 200, 0.8), rgba(0, 255, 170, 0.8));
+  border: 1px solid rgba(255, 255, 255, 0.3);
   color: white;
   font-size: 0.9rem;
   border-radius: 5px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
+  transition: all 0.3s ease;
   z-index: 11; /* Ensure buttons are clickable above overlay base */
+  box-shadow:
+    0 4px 8px rgba(0, 0, 0, 0.2),
+    0 0 15px rgba(0, 255, 170, 0.4);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .buttons .overlay-button:hover {
-  background-color: rgba(186, 104, 200, 1);
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(186, 104, 200, 1), rgba(0, 255, 170, 1));
+  transform: translateY(-2px) scale(1.05);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(0, 255, 170, 0.6);
 }
 
 /* --- Shape-Specific Adjustments --- */
@@ -193,4 +231,41 @@
 
 #content-overlay.dodecahedron-shape .services {
   /* Style adjustments for dodecahedron */
-} 
+}
+
+/* Service item styling */
+.service-item {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  position: relative;
+  padding-left: 1.2rem;
+  transition: all 0.3s ease;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.5rem 1.2rem;
+  margin-bottom: 0.3rem;
+  border-radius: 4px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.service-item::before {
+  content: '';
+  position: absolute;
+  left: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0.6rem;
+  height: 0.6rem;
+  background: linear-gradient(135deg, #7846ff, #00ffaa);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.service-item:hover {
+  color: #00ffaa;
+  transform: translateX(5px);
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 3px 7px rgba(0, 0, 0, 0.3),
+    0 0 10px rgba(0, 255, 170, 0.3);
+}

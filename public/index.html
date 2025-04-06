@@ -82,17 +82,19 @@
         left: 0;
         width: 100%;
         height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         color: white;
         text-align: center;
         z-index: 10;
-        touch-action: none;
+        touch-action: auto;
+        pointer-events: none;
       }
 
       /* The actual content block inside the overlay */
       .content-wrapper {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         padding: 20px;
         max-width: 600px;
         pointer-events: auto;
@@ -113,8 +115,15 @@
         margin: 0;
         font-weight: 700;
         color: rgba(186, 104, 200, 0.95);
-        text-shadow: 0 0 15px rgba(186, 104, 200, 0.5);
+        text-shadow:
+          0 0 15px rgba(186, 104, 200, 0.8),
+          0 0 30px rgba(0, 255, 170, 0.6),
+          0 0 5px rgba(255, 255, 255, 0.9);
         display: block;
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
         
         /* Initial state for GSAP animation */
         opacity: 0;
@@ -147,6 +156,13 @@
         position: relative;
         padding-left: 1.2rem;
         transition: all 0.3s ease;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 0.5rem 1.2rem;
+        margin-bottom: 0.3rem;
+        border-radius: 4px;
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       }
 
       .service-item::before {
@@ -164,13 +180,22 @@
       .digital-solutions {
         margin-bottom: 30px;
         transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
+        box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
       }
 
       .digital-solutions h2 {
         font-size: clamp(1.5rem, 4vw, 2rem);
         margin: 0;
-        color: rgba(186, 104, 200, 0.95);
+        color: rgba(0, 255, 170, 0.95);
         font-weight: 600;
+        text-shadow:
+          0 0 10px rgba(0, 255, 170, 0.8),
+          0 0 20px rgba(0, 255, 170, 0.5);
       }
 
       .buttons {
@@ -182,22 +207,28 @@
 
       .buttons .overlay-button {
         padding: 10px 20px;
-        background-color: rgba(186, 104, 200, 0.8);
-        border: 1px solid rgba(186, 104, 200, 0.95);
+        background: linear-gradient(135deg, rgba(186, 104, 200, 0.8), rgba(0, 255, 170, 0.8));
+        border: 1px solid rgba(255, 255, 255, 0.3);
         color: white;
         font-size: 0.9rem;
         border-radius: 5px;
         cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.3s ease;
+        transition: all 0.3s ease;
         z-index: 11;
         text-decoration: none;
         display: inline-block;
+        box-shadow:
+          0 4px 8px rgba(0, 0, 0, 0.2),
+          0 0 15px rgba(0, 255, 170, 0.4);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
       }
-
-      .buttons .overlay-button:hover {
-        background-color: rgba(186, 104, 200, 1);
-        transform: translateY(-2px);
-      }
+.buttons .overlay-button:hover {
+  background: linear-gradient(135deg, rgba(186, 104, 200, 1), rgba(0, 255, 170, 1));
+  transform: translateY(-2px) scale(1.05);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(0, 255, 170, 0.6);
+}
 
       /* --- Shape-Specific Adjustments --- */
       /* These classes get added to #content-overlay */
@@ -320,6 +351,57 @@
         
         // Add a small delay to ensure styles are fully applied
         setTimeout(animateTitleWords, 100);
+      });
+    </script>
+    <!-- Add script to make content follow 3D object -->
+    <script type="module">
+      import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js';
+      
+      // Wait for the 3D scene to be initialized
+      document.addEventListener('DOMContentLoaded', function() {
+        // Get reference to the content wrapper
+        const contentWrapper = document.querySelector('.content-wrapper');
+        
+        // Function to update content position
+        function updateContentPosition() {
+          // Get the current mesh from the global variable set by amorphous-prism-init.js
+          const mesh = window.currentMesh;
+          const camera = window.currentCamera;
+          
+          if (contentWrapper && mesh && camera) {
+            // Create a vector at the center of the mesh
+            const meshPosition = new THREE.Vector3(0, 0, 0);
+            // Apply the mesh's world matrix to get its position in world space
+            meshPosition.applyMatrix4(mesh.matrixWorld);
+            
+            // Project the 3D position to 2D screen coordinates
+            meshPosition.project(camera);
+            
+            // Convert to CSS coordinates
+            const x = (meshPosition.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-(meshPosition.y * 0.5) + 0.5) * window.innerHeight;
+            
+            // Add a slight offset based on time for a floating effect
+            const time = performance.now() * 0.001; // Convert to seconds
+            const offsetX = Math.sin(time * 0.5) * 15;
+            const offsetY = Math.cos(time * 0.3) * 10;
+            
+            // Apply position with transform for smooth animation
+            contentWrapper.style.transform = `translate(calc(-50% + ${x - window.innerWidth/2 + offsetX}px), calc(-50% + ${y - window.innerHeight/2 + offsetY}px))`;
+            
+            // Add a subtle color shift based on position
+            const hue = ((time * 10) % 360);
+            contentWrapper.style.boxShadow = `0 0 30px rgba(${Math.sin(time) * 50 + 150}, ${Math.cos(time * 0.7) * 50 + 200}, ${Math.sin(time * 0.5) * 50 + 200}, 0.15)`;
+          }
+          
+          // Continue animation loop
+          requestAnimationFrame(updateContentPosition);
+        }
+        
+        // Start the animation loop after a short delay to ensure 3D scene is ready
+        setTimeout(() => {
+          updateContentPosition();
+        }, 1000);
       });
     </script>
     

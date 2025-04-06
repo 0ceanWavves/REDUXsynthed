@@ -157,6 +157,10 @@ function initAmorphousPrism() {
             interactionState,
             updateGalaxyParticles
         });
+        
+        // Expose mesh and camera as global variables for content positioning
+        window.currentMesh = mainMesh;
+        window.currentCamera = camera;
         console.log("🏁 Sacred geometry animation loop started (src).");
 
         // Add event listener for cleanup if needed
