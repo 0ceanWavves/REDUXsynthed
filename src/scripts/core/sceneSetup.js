@@ -44,12 +44,24 @@ export function setupSceneAndCamera(canvas, THREEInstance) {
   let resizeListenerActive = true;
   const handleResize = () => {
     if (!resizeListenerActive) return;
-    camera.aspect = window.innerWidth / window.innerHeight;
+    
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // Adjust camera position based on width (closer on mobile)
+    const baseZ = C.CAMERA_Z; // Get base Z from constants
+    const mobileThreshold = 768; // Example threshold for mobile
+    camera.position.z = width < mobileThreshold ? baseZ * 0.75 : baseZ; // Move 25% closer on mobile
+
+    camera.aspect = width / height;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
-    console.log("Resized renderer and camera (src).");
+    // console.log("Resized renderer and camera (src)."); // Optional: uncomment for debugging resize
   };
+  // Initial call to set size correctly
+  handleResize(); 
+  
   window.addEventListener('resize', handleResize);
   console.log("Setup resize listener (src).");
 
