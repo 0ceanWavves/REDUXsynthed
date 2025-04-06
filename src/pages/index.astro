@@ -3,11 +3,10 @@ import "@fontsource-variable/inter";
 import MainLayout from '~/layouts/MainLayout.astro';
 // import HeroSection from '~/components/HeroSection.astro'; // Commented out old hero
 import Features from '~/components/features.astro';
-// import Process from '~/components/process.astro'; // Commented out for debugging
+import Process from '~/components/process.astro'; // Uncommented for debugging
 // import Projects from '~/components/projects.astro'; // Commented out for debugging
 import SectionDivider from '~/components/SectionDivider.astro';
 // import AmorphousPrism from '~/components/AmorphousPrism.astro'; // Now imported within HeroSectionRebuild
-// import HeroSectionRebuild from '../../rebuild/HeroSectionRebuild.astro'; // Old path
 import HeroSectionRebuild from '~/components/rebuild/HeroSectionRebuild.astro'; // Corrected path
 
 // Define meta data for this specific page
@@ -36,17 +35,20 @@ const image = "/social.jpg"; // Path relative to public folder
 
   <!-- Main content wrapper -->
   <div class="relative z-30 px-4 md:px-8 py-4 md:py-8 mx-auto w-full content-wrapper"
-       style="margin-top: 0; margin-bottom: 0; max-width: none !important;">
+       style="margin-top: 0; margin-bottom: 0; max-width: none !important; position: relative; z-index: 30;">
 
-    <!-- DEBUG: Render only Features directly -->
-    <div class="section-wrapper" id="features-section">
+    <!-- Features section -->
+    <div class="section-wrapper" id="features-section" style="display:block; visibility:visible; opacity:1; z-index:30;">
       <Features />
     </div>
+    
     <SectionDivider />
-    <!-- DEBUG: Maybe render Process too -->
-    <!-- <div class="section-wrapper" id="process-section">
+    
+    <!-- Process section -->
+    <div class="section-wrapper" id="process-section" style="display:block; visibility:visible; opacity:1; z-index:30;">
       <Process />
-    </div> -->
+    </div>
+    
     <!-- REMOVED dynamic section rendering for debugging -->
     {/* {sections.map((section, index) => (
       <>
@@ -78,6 +80,32 @@ const image = "/social.jpg"; // Path relative to public folder
 <!-- Import the page-specific JavaScript -->
 <script src="../scripts/index-page.js"></script>
 
+<!-- Script to ensure sections are visible -->
+<script is:inline>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Force display of sections below hero after everything has loaded
+    setTimeout(function() {
+      const sections = document.querySelectorAll('.section-wrapper');
+      sections.forEach(section => {
+        section.style.display = 'block';
+        section.style.visibility = 'visible';
+        section.style.opacity = '1';
+        section.style.zIndex = '30';
+        section.style.position = 'relative';
+      });
+      
+      // Ensure the content wrapper is properly positioned
+      const contentWrapper = document.querySelector('.content-wrapper');
+      if (contentWrapper) {
+        contentWrapper.style.position = 'relative';
+        contentWrapper.style.zIndex = '30';
+        contentWrapper.style.display = 'block';
+        contentWrapper.style.visibility = 'visible';
+      }
+    }, 1000);
+  });
+</script>
+
 <!--
   Removed from here and moved to respective components/files:
   - <!doctype html>, <html>, <head>, <body> tags -> MainLayout.astro
@@ -92,5 +120,32 @@ const image = "/social.jpg"; // Path relative to public folder
 -->
 
 <style is:global>
-  /* Existing styles */
+  /* Ensure content below hero is visible */
+  .section-wrapper {
+    position: relative;
+    z-index: 30;
+    display: block;
+    visibility: visible;
+    opacity: 1;
+    background-color: rgba(15, 23, 42, 0.9);
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+  }
+  
+  /* Add background to ensure content is visible */
+  .content-wrapper {
+    position: relative;
+    z-index: 30;
+    background-color: rgba(15, 23, 42, 0.95);
+    min-height: 100vh;
+  }
+  
+  /* Make sure dividers are visible */
+  .section-divider {
+    position: relative;
+    z-index: 31;
+    height: 4px;
+    margin: 3rem 0;
+    background: linear-gradient(90deg, transparent, rgba(120, 70, 255, 0.6), transparent);
+  }
 </style>
