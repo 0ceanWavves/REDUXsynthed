@@ -66,7 +66,7 @@ export const GALAXY_ROTATION_SPEED = 0.0425; // Reduced by 15% from 0.05
 
 // --- Lighting ---
 export const AMBIENT_COLOR = 0x404040;
-export const AMBIENT_INTENSITY = 0.6;
+export const AMBIENT_INTENSITY = 1.0;
 export const DIR_LIGHT_COLOR = 0xffffff;
 export const DIR_LIGHT_INTENSITY = 0.9;
 export const DIR_LIGHT_POS = { x: 5, y: 10, z: 7.5 };
