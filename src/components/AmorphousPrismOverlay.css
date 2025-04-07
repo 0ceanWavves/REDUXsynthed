@@ -264,10 +264,107 @@
 }
 
 .service-item:hover {
-  color: #00ffaa;
-  transform: translateX(5px);
-  background: rgba(0, 0, 0, 0.4);
-  box-shadow:
-    0 3px 7px rgba(0, 0, 0, 0.3),
-    0 0 10px rgba(0, 255, 170, 0.3);
+  transform: translateX(5px) scale(1.02);
+  background: rgba(50, 50, 70, 0.4);
+}
+
+/* --- Mobile Adjustments --- */
+@media (max-width: 767px) {
+  .content-wrapper {
+    width: 90%;
+    max-width: 90%;
+    padding: 15px;
+    top: auto; /* Override absolute positioning */
+    bottom: 5%; /* Position near the bottom */
+    left: 5%;
+    transform: none; /* Reset transform */
+    text-align: left; /* Default align left */
+  }
+
+  .title-block {
+    align-items: flex-start; /* Align title words left */
+    margin-bottom: 10px;
+  }
+
+  .title-word {
+    font-size: clamp(2rem, 8vw, 2.5rem); /* Slightly smaller title */
+    padding: 0.1rem 0.3rem;
+    text-align: left;
+  }
+
+  .tagline {
+    margin-bottom: 15px;
+    text-align: left;
+  }
+  
+  .tagline p {
+    font-size: 1rem; /* Adjust tagline font */
+    display: block; /* Make it block level */
+    text-align: left;
+  }
+
+  .services {
+    align-items: flex-start; /* Keep alignment */
+    gap: 5px;
+    margin-bottom: 15px;
+    margin-left: 0; /* Remove auto margins */
+    margin-right: 0;
+    max-width: 100%; /* Allow full width */
+  }
+
+  .service-item {
+    font-size: 0.9rem; /* Smaller service items */
+    padding: 0.4rem 0.8rem 0.4rem 1rem; /* Adjust padding */
+  }
+  
+  .service-item::before {
+    left: 0.3rem; /* Adjust pseudo-element position */
+    transform: translateY(-50%) scale(0.8); /* Slightly smaller icon */
+  }
+
+  .digital-solutions {
+    margin-bottom: 15px;
+    padding: 0.4rem 0.8rem;
+    text-align: left;
+  }
+
+  .digital-solutions h2 {
+    font-size: clamp(1.2rem, 5vw, 1.5rem); /* Smaller solutions title */
+  }
+
+  .buttons {
+    justify-content: flex-start; /* Align buttons left */
+    gap: 10px;
+  }
+
+  .buttons .overlay-button {
+    padding: 8px 15px;
+    font-size: 0.85rem;
+  }
+
+  /* Simplify or adjust shape-specific transforms for mobile */
+  #content-overlay.tetrahedron-shape .services,
+  #content-overlay.tetrahedron-shape .digital-solutions {
+    transform: none; /* Reset transforms */
+    opacity: 1;
+  }
+  #content-overlay.tetrahedron-shape .buttons {
+      transform: none; 
+      opacity: 1;
+  }
+
+  #content-overlay.icosahedron-shape .services,
+  #content-overlay.icosahedron-shape .digital-solutions,
+  #content-overlay.icosahedron-shape .buttons {
+    transform: none; /* Reset transforms */
+    opacity: 1;
+  }
+  
+  /* Reset other shape transforms if they exist and cause issues */
+  #content-overlay.octahedron-shape .services,
+  #content-overlay.dodecahedron-shape .services {
+     transform: none;
+     opacity: 1;
+  }
+
 }
