@@ -35,11 +35,12 @@ a,
 section {
   margin-bottom: 0; /* Removed margin between sections */
   position: relative; /* Enable positioning context for section transitions */
+  z-index: 10; /* Ensure sections appear above the canvas */
 }
 
-/* Connect sections with better flow */
+/* Connect sections with better flow - removed negative margin */
 section + section {
-  margin-top: -2rem; /* Negative margin to pull sections closer */
+  margin-top: 0; /* Removed negative margin that was causing gaps */
 }
 
 /* Responsive typography for different text elements */

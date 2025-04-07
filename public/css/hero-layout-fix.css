@@ -14,7 +14,7 @@
   left: 0 !important;
   width: 100% !important;
   height: 100vh !important;
-  z-index: 5 !important; /* Lower z-index to be behind text */
+  z-index: 3 !important; /* Lower z-index to be behind text and main content */
 }
 
 /* 2. Fix title positioning - stack on top of 3D object */

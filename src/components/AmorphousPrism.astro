@@ -4,19 +4,19 @@ import LoadingScreen from './LoadingScreen.astro';
 import './AmorphousPrismOverlay.css';
 ---
 
-<!-- New container for both canvas and overlay -->
-<div class="canvas-container" style="position: relative; width: 100%; height: 100vh; overflow: visible;">
+<!-- Canvas container with higher z-index -->
+<div class="canvas-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; /* Use 100% height of parent */ overflow: visible; z-index: 1; /* Lower z-index to be below content */ pointer-events: none; /* Let canvas handle events */">
   <!-- Canvas for Three.js -->
   <canvas id="morphing-poly-canvas" class="absolute top-0 left-0 w-full h-full morphing-poly-canvas"
-    style="display: block; width: 100%; height: 100%; pointer-events: auto !important; z-index: 5; cursor: grab; opacity: 1; backface-visibility: hidden; transform: translateZ(0);"
+    style="display: block; width: 100%; height: 100%; pointer-events: auto !important; z-index: 2; /* Lower z-index to be below content */ cursor: grab; opacity: 1; backface-visibility: hidden; transform: translateZ(0);"
     data-interactive="true" data-priority="highest" tabindex="0">
   </canvas>
 
   <!-- Firefox WebGL fallback container -->
-  <div id="firefox-webgl-container" class="absolute top-0 left-0 w-full h-full" style="z-index: 5;"></div>
+  <div id="firefox-webgl-container" class="absolute top-0 left-0 w-full h-full" style="z-index: 25;"></div>
 
   <!-- Cursor glow effect container -->
-  <div id="cursor-glow" class="absolute pointer-events-none w-24 h-24 rounded-full opacity-0 transition-opacity duration-300 z-10" style="background: radial-gradient(circle, rgba(120,70,255,0.4) 0%, rgba(120,70,255,0) 70%); transform: translate(-50%, -50%);"></div>
+  <div id="cursor-glow" class="absolute pointer-events-none w-24 h-24 rounded-full opacity-0 transition-opacity duration-300 z-30" style="background: radial-gradient(circle, rgba(120,70,255,0.4) 0%, rgba(120,70,255,0) 70%); transform: translate(-50%, -50%);"></div>
 
   <!-- START: HTML Content Overlay -->
   <div id="content-overlay">
@@ -53,12 +53,9 @@ import './AmorphousPrismOverlay.css';
 <LoadingScreen />
 
 <!-- REMOVED incorrect script import -->
-<script>
-  // Import the CSS for the overlay - REMOVED FROM HERE
-  // import './AmorphousPrismOverlay.css'; 
-</script>
-<!-- Load Three.js fixes before any Three.js code -->
-<script is:inline src="/three-fix-loader.js"></script>
+<!-- Import CSS for overlay is now done at the top of the file -->
+<!-- REMOVED Load Three.js fixes before any Three.js code -->
+<!-- <script is:inline src="/three-fix-loader.js"></script> -->
 
 <!-- Mobile interaction fix to prevent scroll issues -->
 <script is:inline src="/mobile-interaction-fix.js"></script>
@@ -81,11 +78,13 @@ import './AmorphousPrismOverlay.css';
   console.log("Cursor glow exists:", !!document.getElementById('cursor-glow'));
   console.log("Content overlay exists:", !!document.getElementById('content-overlay')); // Check overlay
   
-  // Check THREE.js availability
+  // REMOVED Check THREE.js availability
+  /*
   console.log("THREE.js available:", typeof THREE !== 'undefined');
   if (typeof THREE !== 'undefined') {
     console.log("THREE.js version:", THREE.REVISION);
   }
+  */
 </script>
 
 <!-- Load local GSAP from public directory -->

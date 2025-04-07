@@ -1,6 +1,18 @@
 ---
+import Footer from '~/components/footer.astro';
+import CommonHead from '~/components/CommonHead.astro';
+
 // Get layout properties
-const { title, description } = Astro.props;
+export interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const { 
+  title = "Synthed - Custom Software & Application Development",
+  description = "Transforming ideas into digital solutions" 
+} = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -14,8 +26,8 @@ const { title, description } = Astro.props;
     <!-- Add upgrade-insecure-requests meta tag -->
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     
-    <title>Synthed</title>
-    <meta name="description" content={description || "Transforming ideas into digital solutions"} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
     
     <!-- Force-enable WebGL and add proper content type -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -47,14 +59,14 @@ const { title, description } = Astro.props;
     <!-- Load local GSAP library -->
     <script is:inline src="/gsap.min.js"></script>
     
-    <!-- Lockdown Fix -->
-    <script is:inline src="/js/lockdown-fix.js"></script>
+    <!-- REMOVED Lockdown Fix -->
+    <!-- <script is:inline src="/js/lockdown-fix.js"></script> -->
     
-    <!-- Emergency Shader Fix -->
-    <script is:inline src="/js/emergency-shader-fix.js"></script>
+    <!-- REMOVED Emergency Shader Fix -->
+    <!-- <script is:inline src="/js/emergency-shader-fix.js"></script> -->
     
-    <!-- Standalone shader fix -->
-    <script is:inline src="/js/shader-fix-standalone.js"></script>
+    <!-- REMOVED Standalone shader fix -->
+    <!-- <script is:inline src="/js/shader-fix-standalone.js"></script> -->
     
     <!-- CSS Files -->
     <link rel="stylesheet" href="/css/hero-layout-fix.css">
@@ -68,14 +80,16 @@ const { title, description } = Astro.props;
     <!-- Use system fonts instead of custom fonts -->
     <link rel="stylesheet" href="/fonts/system-fonts.css">
     
-    <!-- Favicon -->
+    <!-- 
+     -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="manifest" href="/site.webmanifest">
     
-    <!-- Early Three.js script - Make it available before everything else -->
+    <!-- REMOVED Early Three.js script placeholder logic -->
+    <!-- 
     <script is:inline>
       // Create a temporary THREE placeholder to prevent errors
       if (!window.THREE) {
@@ -110,6 +124,7 @@ const { title, description } = Astro.props;
         return null;
       };
     </script>
+    -->
     
     <!-- CSS Variables -->
     <style is:inline>
@@ -123,7 +138,7 @@ const { title, description } = Astro.props;
       
       /* Add global styles for consistency */
       html, body {
-        height: 100%;
+        /* height: 100%; */ /* REMOVED */
         overflow-y: auto;
         overflow-x: hidden;
         scroll-behavior: smooth;
@@ -134,9 +149,20 @@ const { title, description } = Astro.props;
         color: var(--color-text);
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         overflow: auto; /* Allow scrolling */
+        overflow-x: hidden; /* Keep from previous edit */
         height: auto; /* Allow content to determine height */
-        min-height: 100%;
+        /* min-height: 100%; REMOVED */
+        min-height: 100vh; /* CHANGED to vh */
         position: relative;
+        display: flex; /* ADDED */
+        flex-direction: column; /* ADDED */
+      }
+      
+      /* ADDED rule for main */
+      main {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
       }
       
       .text-primary {
@@ -160,13 +186,13 @@ const { title, description } = Astro.props;
       
       .content-wrapper {
         position: relative;
-        z-index: 10;
+        z-index: 20;
       }
       
       /* Fix for sections below hero not showing */
       .section-wrapper {
         position: relative;
-        z-index: 30;
+        z-index: 40;
         width: 100%;
         background-color: rgba(15, 23, 42, 0.9);  /* Add semi-transparent background */
         padding: 2rem 0;
@@ -185,9 +211,11 @@ const { title, description } = Astro.props;
     
     
     <!-- Main content wrapper for proper z-index layering -->
-    <main class="w-full flex flex-col relative" style="min-height: 100%; height: auto; overflow: visible;">
+    <main class="w-full relative">
       <slot />
     </main>
+
+    <Footer />
     
     <!-- Remove debug UI -->
     <script is:inline src="/js/remove-gooey-menu.js"></script>
@@ -208,7 +236,7 @@ const { title, description } = Astro.props;
         // Ensure canvas is visible and at correct z-index
         const morphCanvas = document.getElementById('morphing-poly-canvas');
         if (morphCanvas) {
-          morphCanvas.style.zIndex = '5';
+          morphCanvas.style.zIndex = '3';
           morphCanvas.style.opacity = '1';
           morphCanvas.style.visibility = 'visible';
         }
@@ -237,18 +265,12 @@ const { title, description } = Astro.props;
         hideDebugElements();
         setTimeout(hideDebugElements, 500);
         setTimeout(hideDebugElements, 1500);
-        
-        // Make sure the sections below the hero are visible
-        document.querySelectorAll('.section-wrapper').forEach(section => {
-          section.style.display = 'block';
-          section.style.visibility = 'visible';
-          section.style.opacity = '1';
-          section.style.zIndex = '30';
-        });
       });
     </script>
     
     <!-- Load Three.js visualization after DOM is ready -->
+    <!-- Re-added Shader Fix - Load late -->
+    <script is:inline src="/js/three-shader-fix-improved.js"></script>
     
   </body>
 </html>

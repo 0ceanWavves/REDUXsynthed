@@ -42,17 +42,18 @@ const { title, id } = Astro.props;
   /* Section container styling */
   .section-container {
     position: relative;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-    padding-top: 2.5rem;
-    padding-bottom: 2.5rem;
+    /* margin-top: 80vh; */ /* REMOVED: Caused large gaps and overlap */
+    margin-bottom: 0;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
     min-height: auto;
     width: 100%;
     border: none;
     box-shadow: none;
-    background: transparent;
-    overflow: hidden;
-    backdrop-filter: blur(5px);
+    background: transparent; /* Make background transparent */
+    /* overflow: hidden; */ /* Allow potential overflow if needed, or manage carefully */
+    /* backdrop-filter: blur(5px); */ /* Remove backdrop filter */
+    z-index: 10; /* Keep above hero container */
   }
   
   /* Enhanced section header styling */
@@ -136,8 +137,8 @@ const { title, id } = Astro.props;
   .section-end-indicator {
     position: relative;
     width: 100%;
-    height: 40px;
-    margin-top: 2rem;
+    height: 20px;
+    margin-top: 1rem;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -152,6 +153,8 @@ const { title, id } = Astro.props;
   }
   
   /* Background gradient overlay for sections */
+  /* REMOVED ::before pseudo-element as its background is no longer needed */
+  /*
   .section-container::before {
     content: '';
     position: absolute;
@@ -160,8 +163,8 @@ const { title, id } = Astro.props;
     width: 100%;
     height: 100%;
     background: linear-gradient(
-      to bottom, 
-      rgba(10, 10, 26, 0.4) 0%, 
+      to bottom,
+      rgba(10, 10, 26, 0.4) 0%,
       rgba(6, 12, 22, 0.6) 50%,
       rgba(10, 10, 26, 0.4) 100%
     );
@@ -169,14 +172,15 @@ const { title, id } = Astro.props;
     z-index: -1;
     transition: opacity 0.5s ease;
   }
+  */
   
   /* Mobile optimizations */
   @media (max-width: 768px) {
     .section-container {
       padding-top: 1.5rem;
       padding-bottom: 1.5rem;
-      margin-top: 1rem;
-      margin-bottom: 1rem;
+      margin-top: 0;
+      margin-bottom: 0;
     }
     
     .section-header {
@@ -193,8 +197,8 @@ const { title, id } = Astro.props;
     }
     
     .section-end-indicator {
-      height: 20px;
-      margin-top: 1rem;
+      height: 10px;
+      margin-top: 0.5rem;
     }
   }
 </style>

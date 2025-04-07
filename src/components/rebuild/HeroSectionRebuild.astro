@@ -4,16 +4,11 @@
 // import AmorphousPrism from '../src/components/AmorphousPrism.astro'; // OLD PATH
 import AmorphousPrism from '~/components/AmorphousPrism.astro'; // USE ALIAS
 ---
-<style is:global>
-  @import './styles.css';
-</style>
 
-<section id="hero-rebuild" class="hero-rebuild-section">
-  <div class="hero-rebuild-canvas-container">
-    <!-- <AmorphousPrism client:load /> -->
-    <AmorphousPrism />
-  </div>
-  <!-- <div class="hero-rebuild-content-container"> -->
-    <!-- <HeroContent /> --> <!-- REMOVED: Content handled by overlay in AmorphousPrism -->
-  <!-- </div> -->
-</section> 
+<section
+  id="hero-rebuild"
+  class="hero-rebuild-section"
+  style="position: relative; width: 100%; height: 100dvh; overflow: hidden; z-index: 1; background-color: #05030a;"
+>
+  <AmorphousPrism />
+</section>

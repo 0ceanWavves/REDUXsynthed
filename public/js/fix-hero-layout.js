@@ -21,14 +21,14 @@
         canvas.style.position = 'absolute';
         canvas.style.top = '0';
         canvas.style.left = '0';
-        canvas.style.zIndex = '0';
+        canvas.style.zIndex = '3';
       }
       
       // Ensure text elements are on top of canvas
       const contentWrapper = document.querySelector('.content-wrapper');
       if (contentWrapper) {
         contentWrapper.style.position = 'relative';
-        contentWrapper.style.zIndex = '10';
+        contentWrapper.style.zIndex = '20';
       }
     }
     

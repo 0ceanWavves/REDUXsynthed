@@ -13,7 +13,7 @@
   height: 100%;
   color: white; /* Base text color */
   text-align: center;
-  z-index: 10; /* Ensure overlay is above canvas (z-index 5) */
+  z-index: 3; /* Above canvas (z-index 2) but below main content (z-index 10) */
   touch-action: auto; /* Allow scrolling on the overlay */
   pointer-events: none; /* Allow clicks to pass through to the canvas */
 }
@@ -151,11 +151,13 @@
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 11; /* Ensure buttons are clickable above overlay base */
+  z-index: 55; /* Higher z-index to ensure clickability */
+  pointer-events: auto !important; /* Force pointer events */
   box-shadow:
     0 4px 8px rgba(0, 0, 0, 0.2),
     0 0 15px rgba(0, 255, 170, 0.4);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  position: relative; /* Ensure z-index works */
 }
 
 .buttons .overlay-button:hover {

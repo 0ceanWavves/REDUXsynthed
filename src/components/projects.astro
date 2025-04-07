@@ -45,13 +45,11 @@ const projects = [
   },
 ];
 ---
-
 <ContentSection title="Our Projects" id="projects">
-  <Fragment slot="lead">
+  <div slot="lead">
     Delivering <span class="impactful">impactful solutions</span> that drive{" "}
     <span class="measurable">measurable</span> <span class="business">business</span> <span class="outcomes">outcomes</span>.
-  </Fragment>
-  
+  </div>
   <div class="grid grid-cols-1 gap-12 md:gap-16">
     {
       projects.map(({ title, description, challenge, solution, results, icon, link, tags }, index) => (

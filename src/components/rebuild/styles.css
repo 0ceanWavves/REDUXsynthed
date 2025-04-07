@@ -2,24 +2,28 @@
 
 /* Basic section layout */
 .hero-rebuild-section {
+  display: block; /* ADDED: Ensure block behavior */
   position: relative; /* Establishes a base stacking context */
   width: 100%;
-  height: 100vh; /* Full viewport height */
-  min-height: 600px; /* Minimum height */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden; /* Prevent content spill */
+  /* Fallback for older browsers */
+  height: 100vh;
+  /* Use dynamic viewport height for better consistency */
+  height: 100dvh; /* UPDATED */
+  /* min-height: 600px; */ /* REMOVED */
+  /* display: flex; */ /* REMOVED */
+  /* justify-content: center; */ /* REMOVED */
+  /* align-items: center; */ /* REMOVED */
+  /* overflow: hidden; */ /* REMOVED */
   background-color: #05030a; /* Dark background fallback */
 }
 
 /* Canvas container - stays in the background */
 .hero-rebuild-canvas-container {
-  position: absolute;
+  /* position: absolute; */ /* REMOVED */
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  /* height: 100%; */ /* REMOVED */
   z-index: 1; /* Behind content */
   pointer-events: none; /* Allow clicks to pass through to canvas only */
 }

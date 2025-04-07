@@ -6,10 +6,21 @@
   <div class="loading-content">
     <div class="spinner"></div>
     <div class="loading-logo">SYNTHED</div>
+    <div class="loading-message">Loading Experience...</div>
   </div>
 </div>
 
 <style>
+  /* Add a class to the body when loading is active to prevent scrolling */
+  :global(body.loading-active),
+  :global(html.loading-active) {
+    overflow: hidden !important;
+    height: 100% !important;
+    position: fixed !important;
+    width: 100% !important;
+    touch-action: none !important;
+  }
+
   .loading-overlay {
     position: fixed;
     top: 0;
@@ -22,6 +33,9 @@
     align-items: center;
     z-index: 10000;
     transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+    /* Ensure the loading overlay prevents all interactions */
+    pointer-events: all !important;
+    touch-action: none !important;
   }
 
   .loading-content {
@@ -43,14 +57,23 @@
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
   }
 
+  .loading-message {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 10px;
+    letter-spacing: 1px;
+  }
+
   .spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(255, 255, 255, 0.1);
+    width: 70px;
+    height: 70px;
+    border: 5px solid rgba(255, 255, 255, 0.1);
     border-radius: 50%;
     border-top-color: #8162ff;
     border-bottom-color: #00e599;
-    animation: spin 1s ease-in-out infinite;
+    border-left-color: #ff6b6b;
+    border-right-color: #4deeea;
+    animation: spin 1.5s ease-in-out infinite;
   }
 
   @keyframes spin {
@@ -65,9 +88,13 @@
 </style>
 
 <script>
-  // This script handles ONLY the loading screen fade-out
+  // This script handles the loading screen fade-out and scroll prevention
   document.addEventListener('DOMContentLoaded', () => {
     console.log('Loading screen initialized');
+    
+    // Add loading-active class to body and html to prevent scrolling
+    document.body.classList.add('loading-active');
+    document.documentElement.classList.add('loading-active');
   });
 
   // Hide loading screen when everything is fully loaded
@@ -85,6 +112,10 @@
           if (loadingOverlay.parentNode) {
             loadingOverlay.parentNode.removeChild(loadingOverlay);
             console.log('Loading overlay forcefully removed from DOM');
+            
+            // Remove loading-active class to re-enable scrolling
+            document.body.classList.remove('loading-active');
+            document.documentElement.classList.remove('loading-active');
           }
 
           // Dispatch event for components that listen for it
@@ -92,6 +123,6 @@
           console.log('Loading screen removed, event dispatched');
         }, 500); // Match transition duration
       }
-    }, 500); // Delay before starting fade out
+    }, 2500); // Increased delay before starting fade out to 2.5 seconds
   });
 </script>

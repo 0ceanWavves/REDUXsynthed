@@ -2,10 +2,10 @@
 import "@fontsource-variable/inter";
 import MainLayout from '~/layouts/MainLayout.astro';
 // import HeroSection from '~/components/HeroSection.astro'; // Commented out old hero
-import Features from '~/components/features.astro';
-import Process from '~/components/process.astro'; // Uncommented for debugging
-// import Projects from '~/components/projects.astro'; // Commented out for debugging
-import SectionDivider from '~/components/SectionDivider.astro';
+// import Features from '~/components/features.astro'; // Removed - not needed for simplified design
+import Process from '~/components/process.astro'; // Import the Process component
+// import Projects from '~/components/projects.astro'; // Removed - not needed for simplified design
+// import SectionDivider from '~/components/SectionDivider.astro'; // Removed - not needed for simplified design
 // import AmorphousPrism from '~/components/AmorphousPrism.astro'; // Now imported within HeroSectionRebuild
 import HeroSectionRebuild from '~/components/rebuild/HeroSectionRebuild.astro'; // Corrected path
 
@@ -14,14 +14,7 @@ const title = "Synthed - Custom Software & Application Development";
 const description = "Transform your ideas into reality with Synthed. We specialize in custom application development, modern web solutions, and strategic technology consulting tailored to your business needs.";
 const image = "/social.jpg"; // Path relative to public folder
 
-// REMOVED section mapping for debugging
-// const sections = [
-//   { id: 'features-section', component: Features },
-//   { id: 'process-section', component: Process },
-//   { id: 'projects-section', component: Projects },
-//   // Add contact section if it becomes a component
-//   // { id: 'contact-section', component: Contact }
-// ];
+// Removed sections array since we're using a simplified design without content sections
 ---
 
 <MainLayout title={title} description={description} image={image}>
@@ -33,34 +26,25 @@ const image = "/social.jpg"; // Path relative to public folder
   <!-- <HeroSection /> --> <!-- Commented out old hero -->
   <HeroSectionRebuild /> <!-- Use the rebuilt hero -->
 
-  <!-- Main content wrapper -->
-  <div class="relative z-30 px-4 md:px-8 py-4 md:py-8 mx-auto w-full content-wrapper"
-       style="margin-top: 0; margin-bottom: 0; max-width: none !important; position: relative; z-index: 30;">
+  <!-- Add the actual Process component -->
+  <Process />
 
-    <!-- Features section -->
-    <div class="section-wrapper" id="features-section" style="display:block; visibility:visible; opacity:1; z-index:30;">
-      <Features />
-    </div>
-    
-    <SectionDivider />
-    
-    <!-- Process section -->
-    <div class="section-wrapper" id="process-section" style="display:block; visibility:visible; opacity:1; z-index:30;">
-      <Process />
-    </div>
-    
-    <!-- REMOVED dynamic section rendering for debugging -->
-    {/* {sections.map((section, index) => (
-      <>
-        <div class="section-wrapper" id={section.id}>
-          <section.component />
-        </div>
-        {/* Add a divider after each section except the last one */}
-        {/* {index < sections.length - 1 && <SectionDivider />} */}
-      </>
-    ))} */}
+  <!-- Placeholder for services section (to be replaced later) -->
+  <section id="services-section" class="content-section fade-in-section">
+    <h2>Our Services</h2>
+    <p>Explore the range of solutions we offer, from web development to strategic consulting.</p>
+    <!-- Placeholder for service details -->
+  </section>
 
+  <!-- All content sections removed for a cleaner, simpler design with just the 3D visualization -->
+
+  <!-- REMOVED Manual Projects section and its divider -->
+  <!-- 
+  <SectionDivider />
+  <div class="section-wrapper" id="projects-section">
+    <Projects />
   </div>
+  -->
 
 </MainLayout>
 
@@ -70,8 +54,8 @@ const image = "/social.jpg"; // Path relative to public folder
 <!-- Remove Debug UI - Load after GooeyMenu removal -->
 <script is:inline src="/js/remove-debug-ui.js"></script>
 
-<!-- Standalone shader fix -->
-<script is:inline src="/js/shader-fix-standalone.js"></script>
+<!-- REMOVED Standalone shader fix -->
+<!-- <script is:inline src="/js/shader-fix-standalone.js"></script> -->
 
 <!-- Import our custom animation scripts -->
 <script src="../scripts/letter-animation.js"></script>
@@ -79,32 +63,6 @@ const image = "/social.jpg"; // Path relative to public folder
 
 <!-- Import the page-specific JavaScript -->
 <script src="../scripts/index-page.js"></script>
-
-<!-- Script to ensure sections are visible -->
-<script is:inline>
-  document.addEventListener('DOMContentLoaded', function() {
-    // Force display of sections below hero after everything has loaded
-    setTimeout(function() {
-      const sections = document.querySelectorAll('.section-wrapper');
-      sections.forEach(section => {
-        section.style.display = 'block';
-        section.style.visibility = 'visible';
-        section.style.opacity = '1';
-        section.style.zIndex = '30';
-        section.style.position = 'relative';
-      });
-      
-      // Ensure the content wrapper is properly positioned
-      const contentWrapper = document.querySelector('.content-wrapper');
-      if (contentWrapper) {
-        contentWrapper.style.position = 'relative';
-        contentWrapper.style.zIndex = '30';
-        contentWrapper.style.display = 'block';
-        contentWrapper.style.visibility = 'visible';
-      }
-    }, 1000);
-  });
-</script>
 
 <!--
   Removed from here and moved to respective components/files:
@@ -118,34 +76,3 @@ const image = "/social.jpg"; // Path relative to public folder
   - Footer -> MainLayout.astro
   - Cursor glow div -> MainLayout.astro
 -->
-
-<style is:global>
-  /* Ensure content below hero is visible */
-  .section-wrapper {
-    position: relative;
-    z-index: 30;
-    display: block;
-    visibility: visible;
-    opacity: 1;
-    background-color: rgba(15, 23, 42, 0.9);
-    padding: 2rem 0;
-    margin-bottom: 2rem;
-  }
-  
-  /* Add background to ensure content is visible */
-  .content-wrapper {
-    position: relative;
-    z-index: 30;
-    background-color: rgba(15, 23, 42, 0.95);
-    min-height: 100vh;
-  }
-  
-  /* Make sure dividers are visible */
-  .section-divider {
-    position: relative;
-    z-index: 31;
-    height: 4px;
-    margin: 3rem 0;
-    background: linear-gradient(90deg, transparent, rgba(120, 70, 255, 0.6), transparent);
-  }
-</style>
