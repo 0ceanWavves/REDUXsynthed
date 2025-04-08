@@ -21,7 +21,19 @@ export default defineConfig({
       // Improve compatibility
       target: 'es2020',
       // Add correct MIME types for JavaScript modules
-      assetsInlineLimit: 0
+      assetsInlineLimit: 0,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            // Check if the module ID includes the path for the 'three' package
+            if (id.includes('node_modules/three')) {
+              // If it does, put it into a chunk named 'three'
+              return 'three';
+            }
+            // Otherwise, let Rollup handle it as usual (implicitly returns undefined)
+          }
+        }
+      }
     },
     optimizeDeps: {
       exclude: ['astro-icon']
