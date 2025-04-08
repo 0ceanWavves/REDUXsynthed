@@ -113,6 +113,7 @@ function initAmorphousPrism() {
         mainMesh.userData = { ...solidGeometry.userData }; 
         // --- END: Copy userData ---
         mainMesh.scale.set(1.2, 1.2, 1.2); // Increase scale by 20%
+        mainMesh.position.set(0, 0, 0); // Explicitly center the mesh
         scene.add(mainMesh);
         console.log("✨ Sacred geometry main mesh created and added to scene (src).");
         

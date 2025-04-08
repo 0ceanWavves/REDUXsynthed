@@ -13,13 +13,15 @@
 
 .content-wrapper {
   position: absolute;
-  top: 20%;
+  top: 25%;
   left: 50%;
   transform: translate(-50%, 0) !important;
   padding: 20px;
-  max-width: 600px;
+  max-width: 800px;
+  width: 90%;
   pointer-events: auto;
   transition: none !important;
+  z-index: 100;
 }
 
 .title-block {
@@ -29,8 +31,7 @@
   z-index: 1001;
   width: 100%;
   text-align: center;
-  margin-top: -30px;
-  left: 50%;
+  margin-top: -30px;  left: 50%;
   transform: translateX(-50%);
 }
 
@@ -101,7 +102,7 @@
 }
 
 .digital-solutions h2 {
-    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-size: clamp(2rem, 5vw, 3rem);
     margin: 0;
     color: rgba(0, 255, 170, 0.95);
     font-weight: 600;
@@ -198,15 +199,15 @@
 
 .service-item {
   position: absolute;
-  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
   color: rgba(255, 255, 255, 0.9);
   background: rgba(0, 0, 0, 0.2);
-  padding: 0.4rem 0.8rem;
+  padding: 0.5rem 1rem;
   border-radius: 4px;
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  max-width: 200px;
+  max-width: 240px;
   pointer-events: auto;
   z-index: 5;
 }
@@ -220,15 +221,39 @@
 /* --- Mobile Adjustments --- */
 @media (max-width: 768px) {
   :root {
-    --horizontal-distance: 10%; /* Reduce distance from edges on smaller screens */
-    --vertical-pos-top: 40%;    /* Adjust vertical positions slightly if needed */
-    --vertical-pos-bottom: 60%;
+    --horizontal-distance: 8%; /* Further reduce distance from edges on smaller screens */
+    --vertical-pos-top: 38%;   /* Adjust vertical positions for better visibility */
+    --vertical-pos-bottom: 62%;
+  }
+  
+  .content-wrapper {
+    top: 15%; /* Position content higher for better vertical spacing */
+    width: 95%;
+  }
+  
+  .digital-solutions h2 {
+    font-size: clamp(1.5rem, 6vw, 2rem); /* Adjust heading size for mobile */
   }
   
   .service-item {
-      font-size: clamp(0.7rem, 2vw, 0.8rem); /* Slightly smaller font on mobile */
-      padding: 0.3rem 0.6rem;
-      max-width: 140px; /* Reduce max width */
+    font-size: clamp(0.75rem, 3vw, 0.9rem); /* Adjust text size */
+    padding: 0.3rem 0.6rem;
+    max-width: 160px; /* Limit width further */
+    background: rgba(0, 0, 0, 0.4); /* Darker background for better contrast */
+  }
+  
+  /* Make service items more visible with additional shadow */
+  .service-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0, 255, 170, 0.2);
+    z-index: -1;
+    border-radius: 4px;
   }
 }
 

@@ -18,6 +18,9 @@ export function setupSceneAndCamera(canvas, THREEInstance) {
     C.FAR_PLANE
   );
   camera.position.z = C.CAMERA_Z;
+  camera.position.x = 0; // Ensure camera is centered horizontally
+  camera.position.y = 0; // Ensure camera is centered vertically
+  camera.lookAt(0, 0, 0); // Make camera look at the center
 
   const renderer = new LocalTHREE.WebGLRenderer({
     canvas,
@@ -52,6 +55,8 @@ export function setupSceneAndCamera(canvas, THREEInstance) {
     const baseZ = C.CAMERA_Z; // Get base Z from constants
     const mobileThreshold = 768; // Example threshold for mobile
     camera.position.z = width < mobileThreshold ? baseZ * 0.75 : baseZ; // Move 25% closer on mobile
+    camera.position.x = 0; // Always keep camera centered horizontally
+    camera.position.y = 0; // Always keep camera centered vertically
 
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
