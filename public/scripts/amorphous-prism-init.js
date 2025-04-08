@@ -143,16 +143,21 @@ async function initAmorphousPrism() {
     }
 
     try {
-        // 2. Initialize Three.js from the centralized module
-        await ThreeModule.init();
-        const THREE_INSTANCE = ThreeModule.THREE;
+        // 2. Try to get Three.js from version guard first, then centralized module
+        let THREE_INSTANCE = typeof window !== 'undefined' && window.getThreeJS ? window.getThreeJS() : null;
         
         if (!THREE_INSTANCE) {
-            console.error("Failed to load Three.js from centralized module - cannot initialize prism");
-            return;
+            // Fallback to centralized module
+            await ThreeModule.init();
+            THREE_INSTANCE = ThreeModule.THREE;
+            
+            if (!THREE_INSTANCE) {
+                console.error("Failed to load Three.js - cannot initialize prism");
+                return;
+            }
         }
         
-        console.log("Three.js successfully loaded for prism initialization");
+        console.log(`Three.js successfully loaded for prism initialization (v${THREE_INSTANCE.REVISION})`);
 
         // 3. Find the CANVAS element
         const canvas = document.getElementById(C.CANVAS_ID);

@@ -124,12 +124,55 @@ function stopVelocityUpdateLoop() {
     }
 }
 
+// --- Keyboard Navigation for Accessibility ---
+function handleKeyDown(event, canvas) {
+    // Prevent default behavior for arrow keys to avoid page scrolling
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        event.preventDefault();
+    }
+    
+    // Only handle if auto-rotation is disabled (user is controlling)
+    interactionState.autoRotate = false;
+    clearTimeout(autoRotateTimeoutId);
+    
+    // Start velocity update loop if not already running
+    startVelocityUpdateLoop();
+    
+    // Apply appropriate rotation based on arrow key
+    const sensitivity = (C.ROTATION_DRAG_SENSITIVITY || 0.005) * 10; // Higher sensitivity for keyboard
+    
+    switch (event.key) {
+        case 'ArrowUp':
+            interactionState.rotationVelocity.x -= sensitivity;
+            break;
+        case 'ArrowDown':
+            interactionState.rotationVelocity.x += sensitivity;
+            break;
+        case 'ArrowLeft':
+            interactionState.rotationVelocity.y -= sensitivity;
+            break;
+        case 'ArrowRight':
+            interactionState.rotationVelocity.y += sensitivity;
+            break;
+    }
+}
+
+function handleKeyUp(event) {
+    // Resume auto-rotation after a delay
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        resumeAutoRotate();
+    }
+}
+
 // --- Setup Function (Modified for Overlay Direct Calls) ---
 export function setupOverlayInteractionListeners(canvas, initialQuaternion) { // Renamed for clarity
     if (!THREE) throw new Error("THREE not available for interaction setup (src).");
 
     const contentOverlay = document.getElementById('content-overlay');
     const contentWrapper = contentOverlay?.querySelector('.content-wrapper');
+    
+    // Find the keyboard accessibility element
+    const keyboardControlElement = document.querySelector('[role="button"][aria-label*="Control 3D"]');
 
     if (!canvas || !contentOverlay || !contentWrapper) {
         console.error("Cannot setup interaction: Missing canvas, content-overlay, or content-wrapper.");
@@ -178,10 +221,29 @@ export function setupOverlayInteractionListeners(canvas, initialQuaternion) { //
         // isDragging is reset inside handleCanvasPointerUp now
     };
 
-    // Attach listeners
+    // Attach pointer event listeners
     contentOverlay.addEventListener('pointerdown', onOverlayPointerDown, { passive: false }); 
     window.addEventListener('pointermove', onWindowPointerMove, { passive: false }); // Need preventDefault
     window.addEventListener('pointerup', onWindowPointerUp); // No preventDefault usually needed
+
+    // Add keyboard navigation for accessibility
+    const onKeyDown = (event) => handleKeyDown(event, canvas);
+    const onKeyUp = (event) => handleKeyUp(event);
+    
+    // Attach keyboard listeners to the window (global for now)
+    window.addEventListener('keydown', onKeyDown);
+    window.addEventListener('keyup', onKeyUp);
+    
+    // If we have a keyboard control element, focus it and add a more specific listener
+    if (keyboardControlElement) {
+        keyboardControlElement.addEventListener('keydown', onKeyDown);
+        keyboardControlElement.addEventListener('keyup', onKeyUp);
+        
+        // Set focus to this element when tabbing to it
+        keyboardControlElement.addEventListener('focus', () => {
+            console.log("Keyboard control element focused - use arrow keys to rotate");
+        });
+    }
 
     // --- NO Listeners Directly on Canvas needed for this logic ---
     // Remove these if they exist from previous attempts:
@@ -191,7 +253,7 @@ export function setupOverlayInteractionListeners(canvas, initialQuaternion) { //
     // canvas.removeEventListener('pointerleave', ...);
 
     canvas.style.cursor = 'grab';
-    console.log("🕹️ Interaction listeners setup with overlay direct calls (src)");
+    console.log("🕹️ Interaction listeners setup with overlay direct calls and keyboard navigation (src)");
 
     // Return a cleanup function
     return () => {
@@ -201,9 +263,19 @@ export function setupOverlayInteractionListeners(canvas, initialQuaternion) { //
         window.removeEventListener('pointermove', onWindowPointerMove);
         window.removeEventListener('pointerup', onWindowPointerUp);
         
+        // Remove keyboard listeners
+        window.removeEventListener('keydown', onKeyDown);
+        window.removeEventListener('keyup', onKeyUp);
+        
+        // Remove keyboard listeners from the control element if it exists
+        if (keyboardControlElement) {
+            keyboardControlElement.removeEventListener('keydown', onKeyDown);
+            keyboardControlElement.removeEventListener('keyup', onKeyUp);
+        }
+        
         stopVelocityUpdateLoop();
         clearTimeout(autoRotateTimeoutId);
         if(canvas) canvas.style.cursor = 'default'; // Check if canvas still exists
-        console.log("🕹️ Interaction listeners cleaned up (overlay direct calls) (src).");
+        console.log("🕹️ Interaction listeners cleaned up (overlay direct calls and keyboard) (src).");
     };
 } 
