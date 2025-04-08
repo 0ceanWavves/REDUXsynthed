@@ -149,11 +149,12 @@ export function createGalaxyParticles(scene, THREEInstance) {
     // Create particle texture
     const particleTexture = createGalaxyParticleTexture(LocalTHREE, 128);
     
-    // Create shader material for more advanced rendering
+    // Create shader material for more advanced rendering with ambient color shift
     const particleMaterial = new LocalTHREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
-        pointTexture: { value: particleTexture }
+        pointTexture: { value: particleTexture },
+        colorShift: { value: new LocalTHREE.Color(1, 1, 1) }
       },
       vertexShader: `
         attribute float size;
@@ -161,9 +162,11 @@ export function createGalaxyParticles(scene, THREEInstance) {
         varying vec3 vColor;
         
         uniform float time;
+        uniform vec3 colorShift;
         
         void main() {
-          vColor = customColor;
+          // Apply subtle color shift to base color for ambient effect
+          vColor = customColor * colorShift;
           
           // Calculate point size based on distance from camera
           vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
@@ -209,12 +212,17 @@ export function createGalaxyParticles(scene, THREEInstance) {
     
     console.log(`✨ Enhanced galaxy particle system created with ${particleCount} particles.`);
     
-    // Animation function to update particle positions
+    // Animation function to update particle positions and colors
     const updateParticles = (deltaTime) => {
       if (!particleSystem) return;
       
       // Update time uniform for shader
       particleMaterial.uniforms.time.value += deltaTime;
+      
+      // Apply ambient color shift if available from animation loop
+      if (window.ambientColorShift) {
+        particleMaterial.uniforms.colorShift.value = window.ambientColorShift;
+      }
       
       // Get position attribute for updating
       const positions = particleGeometry.getAttribute('position');

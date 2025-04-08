@@ -1,0 +1,45 @@
+/* Add a class to the body when loading is active to prevent scrolling */
+:global(body.loading-active),
+:global(html.loading-active) {
+  overflow: hidden !important;
+  height: 100% !important;
+  position: fixed !important; /* Prevents scrolling on main content */
+  width: 100% !important;
+  touch-action: none !important;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(10, 5, 23, 0.95); /* Slightly darker, more opaque */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all; /* Ensure it captures clicks */
+  touch-action: none; /* Prevent touch interactions */
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none; /* Allow interaction with content below */
+}
+
+.loading-spinner {
+  width: 200px; /* Container for the canvas */
+  height: 200px;
+  display: flex; /* Center canvas if needed */
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-spinner canvas {
+  display: block; /* Remove extra space below canvas */
+} 

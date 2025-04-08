@@ -1,6 +1,7 @@
 ---
 import Footer from '~/components/footer.astro';
 import CommonHead from '~/components/CommonHead.astro';
+import ThreeJsSceneWrapper from '~/components/ThreeJsSceneWrapper.astro';
 
 // Get layout properties
 export interface Props {
@@ -10,7 +11,7 @@ export interface Props {
 }
 
 const { 
-  title = "Synthed - Custom Software & Application Development",
+  title = "Synthed - Synthesize Reality",
   description = "Transforming ideas into digital solutions" 
 } = Astro.props;
 ---
@@ -73,6 +74,7 @@ const {
     <link rel="stylesheet" href="/css/debug-fix.css">
     <link rel="stylesheet" href="/css/process-fix.css">
     <link rel="stylesheet" href="/css/loading-indicator.css">
+    <link rel="stylesheet" href="/styles/loading-overlay.css">
     
     <!-- Load our hero layout fix -->
     <script is:inline src="/js/fix-hero-layout.js"></script>
@@ -203,6 +205,8 @@ const {
     <slot name="head" />
   </head>
   <body>
+    <ThreeJsSceneWrapper client:load />
+
     <!-- Canvas for 3D visualization -->
     
     <!-- Firefox WebGL fallback container -->
@@ -210,8 +214,8 @@ const {
     <!-- Loading indicator -->
     
     
-    <!-- Main content wrapper for proper z-index layering -->
-    <main class="w-full relative" style="min-height: 85vh;">
+    <!-- Main content wrapper with minimal spacing -->
+    <main class="w-full relative" style="min-height: auto; margin-bottom: 0; padding-bottom: 0;">
       <slot />
     </main>
 

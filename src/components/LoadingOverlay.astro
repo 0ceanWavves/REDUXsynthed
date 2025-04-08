@@ -1,0 +1,15 @@
+---
+// src/components/LoadingOverlay.astro
+// Provides the full-screen overlay and includes the spinner.
+// Its visibility is controlled by adding/removing the 'hidden' class externally.
+import LoadingSpinner from './LoadingSpinner.astro';
+---
+
+<div id="loading-overlay" class="loading-overlay">
+  <LoadingSpinner />
+</div>
+
+<!-- 
+  No <style> tag needed here as the styles are global 
+  in public/styles/loading-overlay.css 
+--> 

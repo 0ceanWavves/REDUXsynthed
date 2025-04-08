@@ -149,23 +149,33 @@ export function createGalaxyParticles(scene, THREEInstance) {
     // Create particle texture
     const particleTexture = createGalaxyParticleTexture(LocalTHREE, 128);
     
-    // Create shader material for more advanced rendering
+    // Create shader material for more advanced rendering with ambient occlusion style lighting
     const particleMaterial = new LocalTHREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
-        pointTexture: { value: particleTexture }
+        pointTexture: { value: particleTexture },
+        colorShift: { value: new LocalTHREE.Color(1, 1, 1) },
+        morphBrightness: { value: 1.0 } // Control brightness during morphing
       },
       vertexShader: `
         attribute float size;
         attribute vec3 customColor;
         varying vec3 vColor;
+        varying float vDistance;
         
         uniform float time;
+        uniform vec3 colorShift;
+        uniform float morphBrightness;
         
         void main() {
-          vColor = customColor;
+          // Calculate distance from center for ambient occlusion effect
+          float distanceFromCenter = length(position);
+          vDistance = 1.0 - smoothstep(0.0, 3.0, distanceFromCenter); // Normalized distance for AO
           
-          // Calculate point size based on distance from camera
+          // Apply ambient color with morphing brightness and distance-based effects
+          vColor = customColor * colorShift * morphBrightness;
+          
+          // Position calculation
           vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
           gl_PointSize = size * (300.0 / -mvPosition.z);
           gl_Position = projectionMatrix * mvPosition;
@@ -173,12 +183,25 @@ export function createGalaxyParticles(scene, THREEInstance) {
       `,
       fragmentShader: `
         uniform sampler2D pointTexture;
+        uniform float morphBrightness;
         varying vec3 vColor;
+        varying float vDistance;
         
         void main() {
           float alpha = texture2D(pointTexture, gl_PointCoord).a;
           if (alpha < 0.01) discard;
-          gl_FragColor = vec4(vColor, alpha);
+          
+          // Apply ambient occlusion effect - stronger occlusion near the center shape
+          vec3 aoColor = vColor * mix(0.5, 1.0, 1.0 - vDistance);
+          
+          // Enhanced ambient lighting effect - particles closer to shape are affected more
+          float aoStrength = mix(0.8, 0.2, vDistance); // Stronger AO closer to shape
+          vec3 ambientColor = mix(vColor, aoColor, aoStrength);
+          
+          // Add subtle glow for particles further from center
+          vec3 finalColor = mix(ambientColor, vColor * 1.3, smoothstep(0.1, 0.95, 1.0 - vDistance));
+          
+          gl_FragColor = vec4(finalColor, alpha);
         }
       `,
       blending: LocalTHREE.AdditiveBlending,
@@ -209,12 +232,27 @@ export function createGalaxyParticles(scene, THREEInstance) {
     
     console.log(`✨ Enhanced galaxy particle system created with ${particleCount} particles.`);
     
-    // Animation function to update particle positions
+    // Animation function to update particle positions and colors
     const updateParticles = (deltaTime) => {
       if (!particleSystem) return;
       
       // Update time uniform for shader
       particleMaterial.uniforms.time.value += deltaTime;
+      
+      // Apply ambient color shift and morph brightness if available
+      if (window.ambientColorShift) {
+        particleMaterial.uniforms.colorShift.value = window.ambientColorShift;
+      }
+      
+      // Add morph brightness uniform if not exists
+      if (!particleMaterial.uniforms.morphBrightness) {
+        particleMaterial.uniforms.morphBrightness = { value: 1.0 };
+      }
+      
+      // Update morph brightness value
+      if (typeof window.morphBrightness === 'number') {
+        particleMaterial.uniforms.morphBrightness.value = window.morphBrightness;
+      }
       
       // Get position attribute for updating
       const positions = particleGeometry.getAttribute('position');

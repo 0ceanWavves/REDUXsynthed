@@ -1,4 +1,4 @@
-// Letter-by-letter animation for Digital Solutions text
+// Letter-by-letter animation for s text
 document.addEventListener('DOMContentLoaded', () => {
   // Target the Digital Solutions text
   const digitalSolutionsElement = document.querySelector('.digital-solutions-text');

@@ -14,11 +14,11 @@ export const CAMERA_Z = 6;
 export const BASE_RADIUS = 1.0;
 export const BASE_DETAIL = 0; // Base detail for Icosahedron
 export const EDGES_THRESHOLD = 1; 
-export const TETRA_SCALE = 1.0;
-export const CUBE_SCALE = 0.8;
-export const OCTA_SCALE = 1.0;
-export const ICOSA_SCALE = 1.0;
-export const DODECA_SCALE = 1.0;
+export const TETRA_SCALE = 1.5;  // Increased from 1.0
+export const CUBE_SCALE = 1.2;   // Increased from 0.8
+export const OCTA_SCALE = 1.4;   // Increased from 1.0
+export const ICOSA_SCALE = 1.3;  // Increased from 1.0
+export const DODECA_SCALE = 1.3; // Increased from 1.0
 
 // --- Materials ---
 export const SOLID_COLOR = 0x00cccc; // Teal/Cyan color
@@ -54,15 +54,21 @@ export const PARTICLE_RADIUS_FACTOR_DODECA = 1.0;
 export const PARTICLE_RADIUS_FACTOR_TETRA = 0.9; 
 
 // --- Enhanced Galaxy Particles ---
-export const GALAXY_PARTICLE_COUNT_DESKTOP = 7000; // Much more particles for desktop
-export const GALAXY_PARTICLE_COUNT_MOBILE = 3000; // More particles for mobile too
-export const GALAXY_PARTICLE_COLORS = ["#cc00ff", "#00ccff", "#ff66ff", "#6633ff"]; // Purple, Cyan, Pink, Indigo
-export const GALAXY_RADIUS_DESKTOP = 15; // Larger galaxy radius for desktop
-export const GALAXY_RADIUS_MOBILE = 10; // Larger galaxy radius for mobile
-export const GALAXY_DISK_THICKNESS = 1.5; // Thickness of the galaxy disk
-export const GALAXY_ARM_COUNT = 5; // Changed to 5 arms to match the 5 platonic solids
-export const GALAXY_REVOLUTIONS = 2.5; // Number of revolutions for each arm
-export const GALAXY_ROTATION_SPEED = 0.0425; // Reduced by 15% from 0.05
+export const GALAXY_PARTICLE_COUNT_DESKTOP = 8000; // Increased for more dense ambient effect
+export const GALAXY_PARTICLE_COUNT_MOBILE = 4000; // More particles for mobile too
+export const GALAXY_PARTICLE_COLORS = [
+  "#cc00ff", // Purple
+  "#00ccff", // Cyan
+  "#ff66ff", // Pink
+  "#6633ff", // Indigo
+  "#40e0d0"  // Turquoise
+]; 
+export const GALAXY_RADIUS_DESKTOP = 12; // Adjusted to be closer to the shape
+export const GALAXY_RADIUS_MOBILE = 8;  // Adjusted for mobile
+export const GALAXY_DISK_THICKNESS = 2.0; // Increased thickness 
+export const GALAXY_ARM_COUNT = 5; // 5 arms to match the 5 platonic solids
+export const GALAXY_REVOLUTIONS = 2.0; // Reduced for less spiraling
+export const GALAXY_ROTATION_SPEED = 0.035; // Slowed down for ambient feel
 
 // --- Lighting ---
 export const AMBIENT_COLOR = 0x404040;
@@ -78,7 +84,8 @@ export const POINT_LIGHT_POS = { x: -5, y: -3, z: 5 };
 export const AUTO_ROTATE_SPEED_X = 0.0008;
 export const AUTO_ROTATE_SPEED_Y = 0.0005;
 export const MORPH_DURATION = 3.0; // seconds - increased for smoother transition
-export const HOLD_DURATION = 4.0;  // seconds - increased to give more time between morphs
+export const HOLD_DURATION = 10.0;  // seconds - increased to 10 seconds between morphs
+export const INITIAL_HOLD_DURATION = 12.0; // seconds - even longer initial delay
 export const DAMPING_FACTOR = 0.95; 
 export const ROTATION_LERP_FACTOR = 0.1; // Interpolation speed (0-1), ORIGINAL: 0.05
 export const ROTATION_DRAG_SENSITIVITY = 0.005; 

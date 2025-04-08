@@ -89,6 +89,32 @@
   -webkit-backdrop-filter: blur(2px);
 }
 
+.process-statement {
+    margin-bottom: 10px;
+    transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
+    padding: 0.3rem 0.8rem;
+    border-radius: 6px;
+}
+
+.process-statement h3 {
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    margin: 0;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-shadow:
+      0 0 10px rgba(255, 255, 255, 0.7),
+      0 0 20px rgba(120, 70, 255, 0.6),
+      0 0 30px rgba(0, 255, 170, 0.4);
+    text-transform: uppercase;
+    background: rgba(0, 0, 0, 0.15);
+    padding: 0.3rem 0.8rem;
+    border-radius: 4px;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    display: inline-block;
+}
+
 .digital-solutions {
     margin-bottom: 30px;
     transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
@@ -236,6 +262,11 @@
   .content-wrapper {
     top: 10%; /* Position content higher for better vertical spacing */
     width: 92%;
+  }
+  
+  .process-statement h3 {
+    font-size: clamp(1rem, 2.5vw, 1.2rem); /* Smaller size for mobile */
+    letter-spacing: 1px; /* Slightly tighter spacing on mobile */
   }
   
   .digital-solutions h2 {

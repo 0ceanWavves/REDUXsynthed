@@ -68,40 +68,27 @@ export function startAnimationLoop({
           morphMesh.morphTargetInfluences[nextTargetIndex] = influence;
         }
 
-        // --- START: Color transition ---
-        // Only proceed if we have shape colors defined in the window
-        if (window.shapeColors) {
-          // Determine the current and target colors
-          let fromColor, toColor;
+        // --- START: Subtle ambient color shifting (particles only) ---
+        // Create a subtle color cycling effect for particles without affecting the shape
+        if (backgroundParticles && typeof updateGalaxyParticles === 'function') {
+          // Keep the color transitions only for the particles
+          // The main shape color stays consistent
+          const time = clock.getElapsedTime() * 0.1; // Slow shifting
           
-          // Get the color for the current shape
-          if (currentTargetIndex === -1) {
-            // Starting shape (use default color)
-            fromColor = new THREE.Color(C.SOLID_COLOR);
-          } else {
-            const currentShapeName = morphTargetNames[currentTargetIndex].toLowerCase();
-            fromColor = window.shapeColors[currentShapeName] || new THREE.Color(C.SOLID_COLOR);
+          // Create subtle color pulse using sine waves with different frequencies
+          const r = 0.5 + 0.5 * Math.sin(time * 0.3);
+          const g = 0.5 + 0.5 * Math.sin(time * 0.5);
+          const b = 0.5 + 0.5 * Math.sin(time * 0.7);
+          
+          // Store this in a global for the particle system to use
+          if (!window.ambientColorShift) {
+            window.ambientColorShift = new THREE.Color();
           }
           
-          // Get the color for the target shape
-          const targetShapeName = morphTargetNames[nextTargetIndex].toLowerCase();
-          toColor = window.shapeColors[targetShapeName] || new THREE.Color(C.SOLID_COLOR);
-          
-          // Interpolate between colors
-          const currentColor = new THREE.Color();
-          currentColor.r = fromColor.r + (toColor.r - fromColor.r) * influence;
-          currentColor.g = fromColor.g + (toColor.g - fromColor.g) * influence;
-          currentColor.b = fromColor.b + (toColor.b - fromColor.b) * influence;
-          
-          // Apply the color
-          morphMesh.material.color = currentColor;
-          
-          // Also transition wireframe color if present
-          if (wireMorphMesh && wireMorphMesh.material) {
-            wireMorphMesh.material.color = currentColor.clone().multiplyScalar(1.2); // Slightly brighter
-          }
+          // Update the ambient color shift
+          window.ambientColorShift.setRGB(r, g, b);
         }
-        // --- END: Color transition ---
+        // --- END: Subtle ambient color shifting ---
 
         // --- START: Sync wireframe morph --- 
         if (wireMorphMesh && wireMorphMesh.morphTargetInfluences) {
