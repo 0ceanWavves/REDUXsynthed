@@ -4,9 +4,9 @@
 import { h } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
-// Import Three.js directly but also use the centralized loader as a fallback
-import * as THREE from 'three';
-// Also import the centralized loader
+// Remove direct Three.js import
+// import * as THREE from 'three';
+// Only import the centralized loader as a fallback
 import { loadThreeJS } from './three/utils/ThreeJSLoader.js';
 
 // Initialize the prism when loaded
@@ -173,10 +173,12 @@ export default function ThreeJsSceneWrapper() {
       try {
         console.log("Initializing Three.js scene in Preact component");
         
+        // Use window.THREE instead of direct import
+        let THREE_INSTANCE = window.THREE;
+        
         // Try to get Three.js from the centralized loader if needed
-        let THREE_INSTANCE = THREE;
         if (!THREE_INSTANCE || Object.keys(THREE_INSTANCE).length === 0) {
-          console.log("Regular THREE import not available, using centralized loader");
+          console.log("window.THREE not available, using centralized loader");
           THREE_INSTANCE = await loadThreeJS();
         }
         
@@ -253,107 +255,84 @@ export default function ThreeJsSceneWrapper() {
     
     // Animation loop
     const animate = () => {
-      if (!sceneRef.current || !cameraRef.current || !rendererRef.current) return;
+      if (!rendererRef.current || !sceneRef.current || !cameraRef.current) return;
+      
+      // Use the global animation loop if prism is initialized
+      if (window._prismInitialized && window._prismAnimationRunning) {
+        // The amorphous-prism-init.js script is already handling animation
+        // We just need to keep our reference alive
+        animationFrameIdRef.current = requestAnimationFrame(animate);
+        return;
+      }
+      
+      // Render scene
+      rendererRef.current.render(sceneRef.current, cameraRef.current);
       
       // Request next frame
       animationFrameIdRef.current = requestAnimationFrame(animate);
-      
-      // Example animation logic - can be replaced with actual animation
-      // if (cubeRef.current) {
-      //   cubeRef.current.rotation.x += 0.01;
-      //   cubeRef.current.rotation.y += 0.01;
-      // }
-      
-      // Render
-      rendererRef.current.render(sceneRef.current, cameraRef.current);
     };
     
-    // Start animation
+    // Start animation loop
     const startAnimation = () => {
-      if (animationFrameIdRef.current === null) {
-        animate();
+      if (animationFrameIdRef.current !== null) {
+        cancelAnimationFrame(animationFrameIdRef.current);
       }
+      animate();
     };
-    
-    // Initialize
-    initThree();
     
     // Add event listeners
     window.addEventListener('resize', handleResize);
     
-    // Cleanup function
+    // Initialize Three.js
+    initThree();
+    
+    // Cleanup on unmount
     return () => {
-      console.log("Cleaning up Three.js resources");
+      window.removeEventListener('resize', handleResize);
       
-      // Stop animation
       if (animationFrameIdRef.current !== null) {
         cancelAnimationFrame(animationFrameIdRef.current);
         animationFrameIdRef.current = null;
       }
       
-      // Remove event listeners
-      window.removeEventListener('resize', handleResize);
-      
-      // Dispose Three.js resources
       if (rendererRef.current) {
         const container = containerRef.current;
-        
-        if (container && rendererRef.current.domElement) {
+        if (container) {
           container.removeChild(rendererRef.current.domElement);
         }
-        
         rendererRef.current.dispose();
         rendererRef.current = null;
       }
-      
-      // Clear references
-      sceneRef.current = null;
-      cameraRef.current = null;
     };
-  }, []); // Empty dependency array means this effect runs once on mount
+  }, []);
   
   return (
-    <>
+    <div>
       {/* Loading overlay */}
       {isLoading && (
-        <div id="loading-overlay" className="loading-overlay">
-          <div className="solid-background"></div>
-          <div className="loading-content">
-            <div className="loading-branding">SYNTHED</div>
-            <div className="loading-spinner">
-              <canvas id="loading-canvas" width="200" height="200"></canvas>
+        <div className="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(20, 20, 30, 0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000;">
+          <div className="loading-content" style="text-align: center;">
+            <canvas id="loading-canvas" width="150" height="150" style="margin-bottom: 20px;"></canvas>
+            <div className="loading-text" style="font-family: 'Orbitron', sans-serif; color: #00e2d7; font-size: 1.5rem; text-shadow: 0 0 10px rgba(0, 226, 215, 0.7);">
+              LOADING
             </div>
-            <div className="loading-message">Loading Experience...</div>
           </div>
         </div>
       )}
       
-      {/* Error message */}
+      {/* Error display */}
       {loadingError && (
-        <div className="loading-error">
-          <p>Error loading 3D visualization: {loadingError}</p>
-          <button onClick={() => window.location.reload()}>Refresh Page</button>
+        <div className="error-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(30, 10, 10, 0.9); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+          <div className="error-box" style="background-color: #301515; border: 1px solid #ff4444; padding: 20px; border-radius: 8px; max-width: 80%;">
+            <h3 style="color: #ff4444; margin-top: 0;">Error Loading 3D Environment</h3>
+            <p style="color: #ffcccc;">{loadingError}</p>
+            <p style="color: #ffcccc;">Please try refreshing the page or using a different browser.</p>
+          </div>
         </div>
       )}
       
       {/* Three.js container */}
-      <div 
-        id="three-container" 
-        ref={containerRef} 
-        className={isLoading ? '' : 'visible'}
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          zIndex: 1,
-          visibility: isLoading ? 'hidden' : 'visible',
-          opacity: isLoading ? 0 : 1,
-          transition: 'opacity 0.5s ease-in-out, visibility 0.5s ease-in-out',
-          backgroundColor: 'transparent',
-        }}
-      />
-    </>
+      <div ref={containerRef} style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+    </div>
   );
 }

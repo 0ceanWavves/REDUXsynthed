@@ -17,24 +17,6 @@ export default defineConfig({
         allow: ['..']
       }
     },
-    build: {
-      // Improve compatibility
-      target: 'es2020',
-      // Add correct MIME types for JavaScript modules
-      assetsInlineLimit: 0,
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            // Check if the module ID includes the path for the 'three' package
-            if (id.includes('node_modules/three')) {
-              // If it does, put it into a chunk named 'three'
-              return 'three';
-            }
-            // Otherwise, let Rollup handle it as usual (implicitly returns undefined)
-          }
-        }
-      }
-    },
     optimizeDeps: {
       exclude: ['astro-icon']
     },
@@ -42,12 +24,37 @@ export default defineConfig({
     resolve: {
       alias: {
         'virtual:astro-icon': path.resolve(__dirname, 'src/virtual-astro-icon.js'),
+        // Keeping this alias might still be useful if other modules import three,
+        // but the primary user (ThreeJsSceneWrapper) shouldn't import it anymore.
         'three': path.resolve(__dirname, 'node_modules/three')
       }
     },
     // Ensure ES modules are properly handled
     ssr: {
+      // This might become unnecessary if nothing imports 'three' for SSR anymore,
+      // but keeping it is usually safe.
       noExternal: ['three']
+    },
+    // Merged build configuration
+    build: {
+      // Improve compatibility
+      target: 'es2020',
+      // Add correct MIME types for JavaScript modules
+      assetsInlineLimit: 0, // Consider if you really need this at 0
+      // Set chunk size warning limit
+      chunkSizeWarningLimit: 1000, // Set to a higher value in kB
+      // Configure Rollup options
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            // Create a separate chunk for the 'three' package if it's imported elsewhere
+            if (id.includes('node_modules/three/')) {
+              return 'vendor-three';
+            }
+            // You could add more rules here for other large libraries if needed
+          }
+        }
+      }
     }
   },
   integrations: [

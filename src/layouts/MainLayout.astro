@@ -78,12 +78,16 @@ const {
     <link rel="stylesheet" href="/css/process-fix.css">
     <link rel="stylesheet" href="/css/loading-indicator.css">
     <link rel="stylesheet" href="/styles/loading-overlay.css">
+    <link rel="stylesheet" href="/styles/mobile-fixes.css">
     
     <!-- Make sure loading overlay styles are loaded before the ThreeJsSceneWrapper component -->
     <script is:inline>
-      // Add loading class to body to prevent scrolling while loading
-      document.documentElement.classList.add('loading-active');
-      document.body.classList.add('loading-active');
+      // Wait for document to be fully parsed before accessing body
+      document.addEventListener('DOMContentLoaded', function() {
+        // Add loading class to body to prevent scrolling while loading
+        document.documentElement.classList.add('loading-active');
+        document.body.classList.add('loading-active');
+      });
     </script>
     
     <!-- Load our hero layout fix -->

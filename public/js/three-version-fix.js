@@ -9,15 +9,15 @@
   
   // Track script tags that are loading or have loaded Three.js
   const threeScripts = [];
-  let primaryScriptUrl = null;
-  let primaryScriptElement = null;
+  const threePreloads = [];
+  let isThreeLoaded = typeof THREE !== 'undefined';
+  let primaryScriptUrl = '';
+  let targetVersion = '';
+  let originalThree = undefined; // Changed from 'const' to 'let' to allow initialization
   
   // Store our preferred CDN URLs
   const PREFERRED_CDN = `https://cdn.jsdelivr.net/npm/three@${TARGET_VERSION}/build/three.module.js`;
   const FALLBACK_CDN = `https://unpkg.com/three@${TARGET_VERSION}/build/three.module.js`;
-  
-  // Track if we've already loaded Three.js
-  let isThreeLoaded = typeof THREE !== 'undefined';
   
   // Function to scan for and manage Three.js script tags
   function scanForThreeScripts() {
@@ -184,7 +184,9 @@
   // Block attempts to manually redefine THREE
   function blockThreeRedefinition() {
     // Store original value if it exists
-    const originalThree = window.THREE;
+    if (typeof THREE !== 'undefined') {
+      originalThree = window.THREE;
+    }
     
     Object.defineProperty(window, 'THREE', {
       get: function() {
