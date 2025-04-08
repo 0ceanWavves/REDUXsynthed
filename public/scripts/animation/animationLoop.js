@@ -68,6 +68,41 @@ export function startAnimationLoop({
           morphMesh.morphTargetInfluences[nextTargetIndex] = influence;
         }
 
+        // --- START: Color transition ---
+        // Only proceed if we have shape colors defined in the window
+        if (window.shapeColors) {
+          // Determine the current and target colors
+          let fromColor, toColor;
+          
+          // Get the color for the current shape
+          if (currentTargetIndex === -1) {
+            // Starting shape (use default color)
+            fromColor = new THREE.Color(C.SOLID_COLOR);
+          } else {
+            const currentShapeName = morphTargetNames[currentTargetIndex].toLowerCase();
+            fromColor = window.shapeColors[currentShapeName] || new THREE.Color(C.SOLID_COLOR);
+          }
+          
+          // Get the color for the target shape
+          const targetShapeName = morphTargetNames[nextTargetIndex].toLowerCase();
+          toColor = window.shapeColors[targetShapeName] || new THREE.Color(C.SOLID_COLOR);
+          
+          // Interpolate between colors
+          const currentColor = new THREE.Color();
+          currentColor.r = fromColor.r + (toColor.r - fromColor.r) * influence;
+          currentColor.g = fromColor.g + (toColor.g - fromColor.g) * influence;
+          currentColor.b = fromColor.b + (toColor.b - fromColor.b) * influence;
+          
+          // Apply the color
+          morphMesh.material.color = currentColor;
+          
+          // Also transition wireframe color if present
+          if (wireMorphMesh && wireMorphMesh.material) {
+            wireMorphMesh.material.color = currentColor.clone().multiplyScalar(1.2); // Slightly brighter
+          }
+        }
+        // --- END: Color transition ---
+
         // --- START: Sync wireframe morph --- 
         if (wireMorphMesh && wireMorphMesh.morphTargetInfluences) {
           if (wireMorphMesh.morphTargetInfluences.length !== numTargets) {

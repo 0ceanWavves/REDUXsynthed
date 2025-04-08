@@ -77,12 +77,13 @@ export const POINT_LIGHT_POS = { x: -5, y: -3, z: 5 };
 // --- Animation & Interaction ---
 export const AUTO_ROTATE_SPEED_X = 0.0008;
 export const AUTO_ROTATE_SPEED_Y = 0.0005;
-export const MORPH_DURATION = 1.5; // seconds
-export const HOLD_DURATION = 2.0;  // seconds
+export const MORPH_DURATION = 3.0; // seconds - increased for smoother transition
+export const HOLD_DURATION = 4.0;  // seconds - increased to give more time between morphs
 export const DAMPING_FACTOR = 0.95; 
 export const ROTATION_LERP_FACTOR = 0.1; // Interpolation speed (0-1), ORIGINAL: 0.05
 export const ROTATION_DRAG_SENSITIVITY = 0.005; 
 export const ROTATION_RESUME_DELAY = 2000; // ms
+export const COLOR_TRANSITION_DURATION = 2.5; // seconds - for smooth color transitions
 
 // --- Performance ---
 export const MAX_DELTA_TIME = 0.05; // Prevent large jumps on lag

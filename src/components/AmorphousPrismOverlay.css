@@ -222,36 +222,56 @@
 @media (max-width: 768px) {
   :root {
     --horizontal-distance: 5%; /* Further reduce distance from edges on smaller screens */
-    --vertical-pos-top: 35%;   /* Adjust vertical positions for better visibility */
-    --vertical-pos-bottom: 65%;
+    --vertical-pos-top: 30%;   /* Adjust vertical positions for better visibility */
+    --vertical-pos-bottom: 60%;
+  }
+  
+  /* Content overlay should only take the top portion of the screen */
+  #content-overlay {
+    position: absolute;
+    height: 80vh; /* Limit height to match container */
+    overflow: visible;
   }
   
   .content-wrapper {
-    top: 12%; /* Position content higher for better vertical spacing */
+    top: 10%; /* Position content higher for better vertical spacing */
     width: 92%;
   }
   
   .digital-solutions h2 {
     font-size: clamp(1.5rem, 6vw, 2rem); /* Adjust heading size for mobile */
     min-height: 3rem; /* Ensure consistent height between text changes */
+    letter-spacing: 0.5px; /* Improve readability */
   }
   
   .service-item {
     font-size: clamp(0.85rem, 3vw, 1rem); /* Increase minimum text size */
     padding: 0.4rem 0.7rem;
-    max-width: 140px; /* Limit width further */
+    max-width: 130px; /* Limit width further */
     background: rgba(0, 0, 0, 0.7); /* Darker background for better contrast */
     box-shadow: 0 0 15px rgba(0, 255, 170, 0.3); /* Stronger glow for visibility */
     border: 1px solid rgba(0, 255, 170, 0.2); /* Add subtle border */
   }
   
-  /* Improve visibility on small screens */
-  #service-item-1, #service-item-2 {
-    left: 3%; /* Move closer to the left edge */
+  /* Adjust service item positions for better visibility */
+  #service-item-1 {
+    left: 3%;
+    top: 30%;
   }
   
-  #service-item-3, #service-item-4 {
-    right: 3%; /* Move closer to the right edge */
+  #service-item-2 {
+    left: 3%;
+    top: 50%;
+  }
+  
+  #service-item-3 {
+    right: 3%;
+    top: 30%;
+  }
+  
+  #service-item-4 {
+    right: 3%;
+    top: 50%;
   }
   
   /* Make service items more visible with additional shadow */
@@ -270,14 +290,30 @@
   
   /* Improve button container positioning */
   .buttons-container {
-    bottom: 15%; /* Move buttons higher up from bottom */
+    bottom: 12%; /* Move buttons higher up from bottom */
+    position: absolute;
+    width: 100%;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
-  /* Make buttons more visible */
+  /* Stack buttons on mobile */
+  .buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  /* Make buttons more visible and tap-friendly */
   .buttons .overlay-button {
     font-weight: 600;
     background: linear-gradient(135deg, rgba(186, 104, 200, 0.9), rgba(0, 255, 170, 0.9));
     box-shadow: 0 0 20px rgba(0, 255, 170, 0.5);
+    min-width: 180px;
+    padding: 12px 20px;
+    text-align: center;
+    border-radius: 6px;
   }
 }
 

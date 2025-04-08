@@ -13,6 +13,18 @@ export function createMaterials(THREE) {
   console.log(`[materials] MeshBasicMaterial prototype has morphTargets? ${Object.prototype.hasOwnProperty.call(THREE.MeshBasicMaterial.prototype, 'morphTargets')}`);
   // --- END DEBUG LOG ---
 
+  // Colors for different shapes - used for smooth transitions
+  const shapeColors = {
+    tetrahedron: new THREE.Color(0xff3366), // Vibrant red/pink
+    cube: new THREE.Color(0x33ccff),       // Bright blue
+    octahedron: new THREE.Color(0xffcc00),  // Golden yellow
+    icosahedron: new THREE.Color(0x66ff99), // Mint green
+    dodecahedron: new THREE.Color(0xcc66ff) // Purple
+  };
+  
+  // Make colors available globally for animation
+  window.shapeColors = shapeColors;
+  
   // Solid Material - Enhanced for sacred geometry visualization
   const solidMaterial = new THREE.MeshStandardMaterial({
       color: C.SOLID_COLOR,

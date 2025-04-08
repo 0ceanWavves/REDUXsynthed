@@ -15,24 +15,68 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
   
-  // Add a specific touch handler to the document body to prevent unwanted interactions
-  document.body.addEventListener('touchstart', (event) => {
-    // Check if the touch is outside the canvas
-    const canvasBounds = canvas.getBoundingClientRect();
-    const touch = event.touches[0];
+  // Check if this is a mobile device
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || window.innerWidth < 768;
+  
+  if (isMobile) {
+    console.log('Applying enhanced mobile interaction fixes');
     
-    const isOutsideCanvas =
-      touch.clientX < canvasBounds.left ||
-      touch.clientX > canvasBounds.right ||
-      touch.clientY < canvasBounds.top ||
-      touch.clientY > canvasBounds.bottom;
+    // Variables to track touch interaction
+    let startY = 0;
+    let startX = 0;
+    let isScrolling = false;
+    const scrollThreshold = 15; // pixels to detect scroll vs. rotation intent
     
-    // If the touch is outside the canvas, ensure normal scrolling behavior
-    if (isOutsideCanvas) {
-      // Don't need to do anything special, just let the default behavior happen
-      // This is just a safeguard in case other handlers try to interfere
-    }
-  }, { passive: true }); // Use passive listener for better scroll performance
+    // Set up canvas touch behavior
+    canvas.style.touchAction = 'none'; // We'll handle touch behavior manually
+    
+    // Detect touch start on canvas
+    canvas.addEventListener('touchstart', (event) => {
+      if (event.touches.length !== 1) return;
+      
+      // Record initial touch position
+      startY = event.touches[0].clientY;
+      startX = event.touches[0].clientX;
+      isScrolling = false;
+      
+      // Check if in bottom 20% of screen - prioritize scrolling
+      const viewportHeight = window.innerHeight;
+      const touchY = event.touches[0].clientY;
+      if (touchY > viewportHeight * 0.8) {
+        canvas.style.pointerEvents = 'none';
+        setTimeout(() => {
+          canvas.style.pointerEvents = 'auto';
+        }, 500); // Re-enable after scrolling starts
+      }
+    }, { passive: true });
+    
+    // Detect scroll vs. rotation
+    canvas.addEventListener('touchmove', (event) => {
+      if (event.touches.length !== 1 || isScrolling) return;
+      
+      const currentY = event.touches[0].clientY;
+      const currentX = event.touches[0].clientX;
+      const deltaY = Math.abs(currentY - startY);
+      const deltaX = Math.abs(currentX - startX);
+      
+      // If primarily vertical movement, assume scrolling
+      if (deltaY > deltaX && deltaY > scrollThreshold) {
+        isScrolling = true;
+        canvas.style.pointerEvents = 'none';
+        
+        // Re-enable rotation after touch ends
+        const enableCanvas = () => {
+          setTimeout(() => {
+            canvas.style.pointerEvents = 'auto';
+            document.removeEventListener('touchend', enableCanvas);
+          }, 300);
+        };
+        
+        document.addEventListener('touchend', enableCanvas, { once: true });
+      }
+    }, { passive: true });
+  }
   
   // Add a class to the canvas container to indicate the fix is active
   const canvasContainer = canvas.closest('.canvas-container');
@@ -66,5 +110,35 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   
-  console.log('Mobile interaction fix applied with enhanced button handling');
+  // Add mobile instruction if on mobile
+  if (isMobile) {
+    const instructionDiv = document.createElement('div');
+    instructionDiv.textContent = 'Rotate shape with horizontal swipes • Scroll page with vertical swipes';
+    instructionDiv.style.cssText = `
+      position: absolute;
+      bottom: 5vh;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.6);
+      z-index: 1000;
+      pointer-events: none;
+      padding: 5px;
+      text-shadow: 0 0 3px rgba(0,0,0,0.8);
+    `;
+    
+    // Add the instruction after a delay
+    setTimeout(() => {
+      document.body.appendChild(instructionDiv);
+      // Fade out after 5 seconds
+      setTimeout(() => {
+        instructionDiv.style.transition = 'opacity 1s ease';
+        instructionDiv.style.opacity = '0';
+        setTimeout(() => instructionDiv.remove(), 1000);
+      }, 5000);
+    }, 1500);
+  }
+  
+  console.log('Mobile interaction fix applied with enhanced scrolling behavior');
 });
