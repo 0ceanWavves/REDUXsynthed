@@ -101,13 +101,15 @@ function performTextUpdate(currentShapeIndex) {
     const newText = texts[currentShapeIndex % texts.length];
     console.log(`📝 Changing text to: "${newText}" for shape index ${currentShapeIndex}`);
     
-    // Apply fade transition effect - using GSAP if available for smoother animation
+    // Check for GSAP
     if (window.gsap) {
+      console.log("✅ GSAP detected, using smooth animation.");
       gsap.to(headlineElement, {duration: 0.3, opacity: 0, onComplete: () => {
         headlineElement.textContent = newText;
         gsap.to(headlineElement, {duration: 0.3, opacity: 1});
       }});
     } else {
+      console.log("⚠️ GSAP not available, using basic CSS transition");
       // Fallback to basic fade
       headlineElement.style.opacity = 0;
       setTimeout(() => {

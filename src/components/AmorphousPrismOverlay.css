@@ -221,25 +221,37 @@
 /* --- Mobile Adjustments --- */
 @media (max-width: 768px) {
   :root {
-    --horizontal-distance: 8%; /* Further reduce distance from edges on smaller screens */
-    --vertical-pos-top: 38%;   /* Adjust vertical positions for better visibility */
-    --vertical-pos-bottom: 62%;
+    --horizontal-distance: 5%; /* Further reduce distance from edges on smaller screens */
+    --vertical-pos-top: 35%;   /* Adjust vertical positions for better visibility */
+    --vertical-pos-bottom: 65%;
   }
   
   .content-wrapper {
-    top: 15%; /* Position content higher for better vertical spacing */
-    width: 95%;
+    top: 12%; /* Position content higher for better vertical spacing */
+    width: 92%;
   }
   
   .digital-solutions h2 {
     font-size: clamp(1.5rem, 6vw, 2rem); /* Adjust heading size for mobile */
+    min-height: 3rem; /* Ensure consistent height between text changes */
   }
   
   .service-item {
-    font-size: clamp(0.75rem, 3vw, 0.9rem); /* Adjust text size */
-    padding: 0.3rem 0.6rem;
-    max-width: 160px; /* Limit width further */
-    background: rgba(0, 0, 0, 0.4); /* Darker background for better contrast */
+    font-size: clamp(0.85rem, 3vw, 1rem); /* Increase minimum text size */
+    padding: 0.4rem 0.7rem;
+    max-width: 140px; /* Limit width further */
+    background: rgba(0, 0, 0, 0.7); /* Darker background for better contrast */
+    box-shadow: 0 0 15px rgba(0, 255, 170, 0.3); /* Stronger glow for visibility */
+    border: 1px solid rgba(0, 255, 170, 0.2); /* Add subtle border */
+  }
+  
+  /* Improve visibility on small screens */
+  #service-item-1, #service-item-2 {
+    left: 3%; /* Move closer to the left edge */
+  }
+  
+  #service-item-3, #service-item-4 {
+    right: 3%; /* Move closer to the right edge */
   }
   
   /* Make service items more visible with additional shadow */
@@ -250,10 +262,22 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.1);
-    box-shadow: 0 0 10px rgba(0, 255, 170, 0.2);
+    background: rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 15px rgba(0, 255, 170, 0.3);
     z-index: -1;
     border-radius: 4px;
+  }
+  
+  /* Improve button container positioning */
+  .buttons-container {
+    bottom: 15%; /* Move buttons higher up from bottom */
+  }
+  
+  /* Make buttons more visible */
+  .buttons .overlay-button {
+    font-weight: 600;
+    background: linear-gradient(135deg, rgba(186, 104, 200, 0.9), rgba(0, 255, 170, 0.9));
+    box-shadow: 0 0 20px rgba(0, 255, 170, 0.5);
   }
 }
 

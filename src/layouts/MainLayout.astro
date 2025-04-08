@@ -32,6 +32,9 @@ const {
     <!-- Force-enable WebGL and add proper content type -->
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     
+    <!-- Load local GSAP library - Moved earlier in head to ensure it's available for all scripts -->
+    <script is:inline src="/gsap.min.js"></script>
+    
     <!-- Content Security Policy (CSP) for Three.js and GSAP - Updated for Netlify -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self' https:;
@@ -55,9 +58,6 @@ const {
     
     <!-- Preload Three.js to improve loading time -->
     <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js" as="script" fetchpriority="high" crossorigin="anonymous" />
-    
-    <!-- Load local GSAP library -->
-    <script is:inline src="/gsap.min.js"></script>
     
     <!-- REMOVED Lockdown Fix -->
     <!-- <script is:inline src="/js/lockdown-fix.js"></script> -->

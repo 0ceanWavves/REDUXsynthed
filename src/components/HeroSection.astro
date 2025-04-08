@@ -82,15 +82,43 @@ import NavButtons from "./NavButtons.astro";
     /* Mobile-specific adjustments */
     #hero-prism-container {
       transform: scale(0.9) translateZ(0);
-      height: 90vh; /* Increase height to make object more prominent */
-      top: 5vh; /* Adjust vertical positioning */
+      height: 80vh; /* Reduced height to allow scrolling area below */
+      top: 0; /* Align to top */
       left: 0; /* Center horizontally */
       width: 100%; /* Use full width */
+      position: relative; /* Allow content to flow below */
+      overflow: visible; /* Show overflow content */
     }
     
     /* Move buttons up slightly on mobile */
     .bottom-16 {
       bottom: 5rem;
+    }
+    
+    /* Hero section height is shorter on mobile to allow scrolling */
+    .hero-section {
+      height: auto !important; /* Allow auto height */
+      min-height: 80vh; /* Minimum height matches 3D container */
+      margin-bottom: 5vh; /* Add space below */
+    }
+    
+    /* Create scrollable area indicator */
+    .hero-section::after {
+      content: 'Scroll Down';
+      display: block;
+      position: absolute;
+      bottom: 1rem;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 0.8rem;
+      opacity: 0.7;
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 0.7; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(-5px); }
     }
   }
 </style>

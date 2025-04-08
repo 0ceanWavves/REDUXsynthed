@@ -17,7 +17,11 @@ export function setupSceneAndCamera(canvas, THREEInstance) {
     C.NEAR_PLANE,
     C.FAR_PLANE
   );
+  // Set initial camera position
   camera.position.z = C.CAMERA_Z;
+  camera.position.x = 0;
+  camera.position.y = 0;
+  camera.lookAt(0, 0, 0);
 
   const renderer = new LocalTHREE.WebGLRenderer({
     canvas,
@@ -45,19 +49,47 @@ export function setupSceneAndCamera(canvas, THREEInstance) {
   const handleResize = () => {
     if (!resizeListenerActive) return;
     
-    const width = window.innerWidth;
-    const height = window.innerHeight;
+    // Get container dimensions for better fit (falls back to window if container not found)
+    const container = canvas.parentElement;
+    const width = container ? container.clientWidth : window.innerWidth;
+    const height = container ? container.clientHeight : window.innerHeight;
+    
+    console.log(`Resize: Container size ${width}x${height}`);
 
-    // Adjust camera position based on width (closer on mobile)
+    // Adjust camera position and field of view based on device
     const baseZ = C.CAMERA_Z; // Get base Z from constants
-    const mobileThreshold = 768; // Example threshold for mobile
-    camera.position.z = width < mobileThreshold ? baseZ * 0.75 : baseZ; // Move 25% closer on mobile
+    const mobileThreshold = 768; // Threshold for mobile
+    const isMobile = width < mobileThreshold;
+    
+    if (isMobile) {
+      // Mobile optimization - adjust FOV for better object visibility
+      camera.fov = 75; // Wider FOV on mobile
+      camera.position.z = baseZ * 1.5; // Move further back to show more of the object
+      
+      // Slight top-down angle for better perspective on mobile
+      camera.position.y = -1.0;
+      
+      // Apply scale to renderer for mobile
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Lower pixel ratio for mobile performance
+      console.log("Mobile view optimizations applied");
+    } else {
+      // Desktop settings
+      camera.fov = C.CAMERA_FOV; // Reset to default FOV
+      camera.position.z = baseZ;
+      camera.position.y = 0;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Higher quality for desktop
+    }
+    
+    // Always center horizontally
+    camera.position.x = 0;
+    camera.lookAt(0, 0, 0);
 
+    // Update camera and renderer
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    // console.log("Resized renderer and camera (src)."); // Optional: uncomment for debugging resize
+    
+    console.log(`Resized renderer: ${width}x${height}, PR: ${renderer.getPixelRatio()}, FOV: ${camera.fov}`);
   };
   // Initial call to set size correctly
   handleResize(); 
