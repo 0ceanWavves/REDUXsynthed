@@ -289,6 +289,25 @@
     }
   };
   
+  // Track module imports to detect duplicate Three.js imports
+  window.__threeImportTracker = {
+    imports: [],
+    log: function(source, url) {
+      this.imports.push({
+        source: source,
+        url: url,
+        time: new Date().toISOString(),
+        stack: new Error().stack
+      });
+      
+      // Log to console if this is a duplicate
+      if (this.imports.length > 1 && url.includes('three')) {
+        console.warn(`WARNING: Multiple Three.js imports detected. Latest from: ${source}`);
+        console.log('Import history:', this.imports);
+      }
+    }
+  };
+  
   // Initialize
   function initialize() {
     console.log(`🔄 THREE.js Version Fix: Starting initialization`);

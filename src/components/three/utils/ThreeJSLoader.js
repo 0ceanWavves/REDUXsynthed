@@ -7,15 +7,15 @@
 
 // Flag to prevent multiple initialization
 let threeInstance = null;
-let noise4DInstance = null;
 
 /**
- * Loads Three.js and noise generator and returns a configured instance
- * @returns {Promise<Object>} Promise that resolves to the THREE object and noise generator
+ * Loads Three.js and returns a configured instance
+ * @returns {Promise<Object>} Promise that resolves to the THREE object
  */
 export async function loadThreeJS() {
   // Return cached instance if already loaded
   if (threeInstance) {
+    console.log("Using cached THREE instance");
     return threeInstance;
   }
   
@@ -30,13 +30,15 @@ export async function loadThreeJS() {
       // Dispatch event for compatibility with existing code
       window.dispatchEvent(new CustomEvent('threeReady', { detail: { THREE: threeInstance } }));
       
+      // Configure the instance
+      configureThreeJS(threeInstance);
       return threeInstance;
     }
     
-    // Otherwise try to load from CDNs with fallbacks
+    // Otherwise try to load from importmap first (preferred method)
     try {
       const THREE = await import('three');
-      console.log("Three.js loaded successfully from node_modules");
+      console.log("Three.js loaded successfully from importmap");
       
       // Make THREE globally available
       if (typeof window !== 'undefined') {
@@ -56,14 +58,14 @@ export async function loadThreeJS() {
       threeInstance = THREE;
       return THREE;
       
-    } catch (localError) {
-      console.warn("Failed to load Three.js from node_modules, trying CDN fallback:", localError);
+    } catch (importMapError) {
+      console.warn("Failed to load Three.js from importmap, trying CDN:", importMapError);
       
       // Try CDN
       try {
         const threeModule = await import('https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js');
         const THREE = threeModule.default || threeModule;
-        console.log("Three.js loaded successfully from CDN");
+        console.log("Three.js loaded successfully from cdn.jsdelivr.net");
         
         // Make THREE globally available
         if (typeof window !== 'undefined') {
@@ -228,4 +230,4 @@ function configureThreeJS(THREE) {
 }
 
 // Default export for convenience
-export default loadThreeJS; 
+export default loadThreeJS;

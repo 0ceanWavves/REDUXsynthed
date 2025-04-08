@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
-import icon from "astro-icon"; // Import the integration
+import icon from "astro-icon"; // Import the icon integration
+import preact from '@astrojs/preact'; // Import the Preact integration
 import { fileURLToPath } from 'url';
 import path from 'path';
 
@@ -39,7 +40,8 @@ export default defineConfig({
   },
   integrations: [
     tailwind(),
-    icon() // Add the integration here
+    icon(), // Add the icon integration
+    preact() // Add the Preact integration
     // ... other integrations
   ]
 });

@@ -13,7 +13,7 @@ import LoadingOverlay from './LoadingOverlay.astro';
 <div id="three-container"></div>
 
 <style>
-  /* Ensure the container takes up space */
+  /* Ensure the container takes up space but stays hidden until loaded */
   #three-container {
     position: absolute;
     top: 0;
@@ -22,16 +22,49 @@ import LoadingOverlay from './LoadingOverlay.astro';
     height: 100%;
     z-index: 1; /* Behind the overlay initially */
     visibility: hidden; /* Hide until loaded */
-    background-color: #050510; /* Optional background for the scene itself */
+    opacity: 0; /* Start fully transparent */
+    transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out; /* Smooth transition */
+    background-color: transparent; /* Changed to transparent so it doesn't flash */
+  }
+  
+  /* Visible state that will be applied when loading completes */
+  #three-container.visible {
+    visibility: visible;
+    opacity: 1;
   }
 </style>
 
 <script>
-  // Import Three.js dynamically - ensures it runs client-side
+  // Import Three.js using regular import
   import * as THREE from 'three';
+  
+  // Also import from centralized loader as fallback
+  import { loadThreeJS } from './three/utils/ThreeJSLoader.js';
 
   // Wait for the full page to load, including styles and potentially the spinner script
-  window.addEventListener('load', () => {
+  window.addEventListener('load', async () => {
+    let THREE_INSTANCE = THREE;
+    
+    try {
+      // Try to get Three.js from centralized loader if regular import failed
+      if (!THREE_INSTANCE || Object.keys(THREE_INSTANCE).length === 0) {
+        console.log("Regular THREE import failed, using centralized loader");
+        THREE_INSTANCE = await loadThreeJS();
+      }
+      
+      if (!THREE_INSTANCE) {
+        throw new Error("Failed to load Three.js");
+      }
+    } catch (error) {
+      console.error("Failed to load Three.js:", error);
+      // If loading overlay exists, add error message
+      const loadingEl = document.getElementById('loading-overlay');
+      if (loadingEl) {
+        loadingEl.innerHTML += '<p style="color:red">Error loading 3D engine. Please try refreshing.</p>';
+      }
+      return;
+    }
+    
     const container = document.getElementById('three-container');
     const loadingOverlay = document.getElementById('loading-overlay');
 
@@ -44,31 +77,30 @@ import LoadingOverlay from './LoadingOverlay.astro';
     document.body.classList.add('loading-active');
     document.documentElement.classList.add('loading-active');
 
-    let renderer: THREE.WebGLRenderer | null = null; // Keep track for cleanup
-    let animationFrameId: number | null = null;
-    let scene: THREE.Scene | null = null;
-    let camera: THREE.PerspectiveCamera | null = null;
-    let cube: THREE.Mesh | null = null; // Example object
+    let renderer = null; // Keep track for cleanup
+    let animationFrameId = null;
+    let scene = null;
+    let camera = null;
+    let cube = null; // Example object
     let hasManagedItems = false; // Flag to track if manager loads anything
 
     function initThree() {
       if (!container) return;
 
       // --- Scene Setup ---
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-      renderer = new THREE.WebGLRenderer({ 
+      scene = new THREE_INSTANCE.Scene();
+      camera = new THREE_INSTANCE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      renderer = new THREE_INSTANCE.WebGLRenderer({ 
         antialias: true,
-        alpha: true // Make background transparent if needed
+        alpha: true // Make renderer background transparent if needed
       });
       
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setPixelRatio(window.devicePixelRatio);
       container.appendChild(renderer.domElement);
-      container.style.visibility = 'visible'; // Make container visible once renderer is added
 
       // --- Loading Manager ---
-      const loadingManager = new THREE.LoadingManager(
+      const loadingManager = new THREE_INSTANCE.LoadingManager(
         // onLoad: Called only when items loaded via the manager are complete
         () => {
           console.log('Three.js resources loaded via LoadingManager');
@@ -95,19 +127,6 @@ import LoadingOverlay from './LoadingOverlay.astro';
           hasManagedItems = true; // Set flag indicating manager is active
       };
 
-      // --- Example Scene Content ---
-      const textureLoader = new THREE.TextureLoader(loadingManager);
-      // const geometry = new THREE.BoxGeometry(1, 1, 1);
-      // const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-      // cube = new THREE.Mesh(geometry, material);
-      // if (scene && cube) {
-      //    scene.add(cube);
-      // }
-      
-      // *** IMPORTANT: Add your actual loaders here using 'loadingManager' ***
-      // Example: textureLoader.load('/path/to/texture.jpg');
-      // Example: new THREE.GLTFLoader(loadingManager).load(...);
-      
       // --- Setup complete, check if the manager was used ---
       // We need to wait a microtask tick to ensure any synchronous load calls
       // within loaders might have triggered onStart.
@@ -131,15 +150,24 @@ import LoadingOverlay from './LoadingOverlay.astro';
 
     function hideLoadingOverlay() {
       if (loadingOverlay) {
+        // Add hidden class to loading overlay
         loadingOverlay.classList.add('hidden');
+        
+        // Immediately make the Three.js container visible but with transition
+        if (container) {
+          container.classList.add('visible');
+        }
+        
         // Remove from DOM after transition for cleanliness (optional)
         setTimeout(() => {
           // Check if it still has a parent before removing
           if (loadingOverlay.parentNode) {
-              loadingOverlay.remove();
+            loadingOverlay.remove();
+            console.log('Loading overlay removed from DOM');
           }
         }, 500); // Match CSS transition duration
       }
+      
       // Re-enable scrolling
       document.body.classList.remove('loading-active');
       document.documentElement.classList.remove('loading-active');
@@ -188,8 +216,6 @@ import LoadingOverlay from './LoadingOverlay.astro';
         }
         renderer?.dispose();
         // Dispose geometry, materials, textures here if needed
-        // cube?.geometry.dispose();
-        // cube?.material.dispose();
         scene = null;
         camera = null;
         renderer = null;
@@ -206,7 +232,5 @@ import LoadingOverlay from './LoadingOverlay.astro';
 
     // --- Start Initialization ---
     initThree();
-
   }); // End window.onload
-
-</script> 
+</script>

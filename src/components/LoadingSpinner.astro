@@ -15,6 +15,7 @@
       console.error('Loading canvas element not found!');
       return;
     }
+    
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       console.error('Could not get 2D context from canvas');
@@ -22,8 +23,9 @@
     }
     
     // Set canvas size - match the container size defined in CSS
-    canvas.width = 200;
-    canvas.height = 200;
+    // Using non-null assertion (!.) since we've already checked above
+    canvas!.width = 200;
+    canvas!.height = 200;
     
     // Variables for the spiral
     const centerX = canvas.width / 2;
@@ -153,9 +155,11 @@
     display: flex; 
     justify-content: center;
     align-items: center;
+    margin: 0 auto; /* Center in parent */
   }
 
   .loading-spinner canvas {
     display: block; /* Prevent extra space */
+    margin: 0 auto; /* Ensure canvas is centered */
   }
 </style> 

@@ -21,9 +21,15 @@ import './AmorphousPrismOverlay.css';
   <!-- START: HTML Content Overlay -->
   <div id="content-overlay">
     <div class="content-wrapper">
-      <!-- Added CREATE DESIGN BUILD text above the dynamic headline -->
+      <!-- Added CREATE DESIGN BUILD text above the dynamic headline with word-by-word animation -->
       <div class="process-statement">
-        <h3>CREATE · DESIGN · BUILD</h3>
+        <h3>
+          <span class="slam-word" id="slam-word-1">CREATE</span>
+          <span class="slam-separator">·</span>
+          <span class="slam-word" id="slam-word-2">DESIGN</span>
+          <span class="slam-separator">·</span>
+          <span class="slam-word" id="slam-word-3">BUILD</span>
+        </h3>
       </div>
       <div class="digital-solutions">
         <h2 id="dynamic-headline">Digital Solutions</h2>
@@ -100,6 +106,134 @@ import './AmorphousPrismOverlay.css';
         lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
       }, {passive: true});
     }
+    
+    // Animate the slam words sequentially with a delay
+    setTimeout(function animateWords() {
+      // Get elements
+      const word1 = document.getElementById('slam-word-1');
+      const word2 = document.getElementById('slam-word-2');
+      const word3 = document.getElementById('slam-word-3');
+      const separators = document.querySelectorAll('.slam-separator');
+      
+      if (!word1 || !word2 || !word3) {
+        console.warn("Slam word elements not found");
+        return;
+      }
+      
+      console.log("Starting slam word animation sequence");
+      
+      // Initialize all words as invisible with transforms
+      const initWords = () => {
+        [word1, word2, word3].forEach(word => {
+          if (!word) return;
+          word.style.opacity = "0";
+          word.style.transform = "scale(0.5) translateY(-30px)";
+          word.style.filter = "blur(10px)";
+        });
+        
+        separators.forEach(sep => {
+          if (!sep) return;
+          sep.style.opacity = "0";
+        });
+      };
+      
+      // Initialize before animation
+      initWords();
+      
+      // Use GSAP for enhanced animations if available
+      if (window.gsap) {
+        console.log("Using GSAP for word slam animations");
+        
+        // Setup timeline
+        const tl = gsap.timeline();
+        
+        // Word 1 animation
+        tl.to(word1, {
+          opacity: 1, 
+          scale: 1, 
+          y: 0, 
+          filter: "blur(0px)",
+          duration: 0.5,
+          ease: "back.out(1.5)",
+          onStart: () => console.log("GSAP animating word 1")
+        }, 0.8);
+        
+        // First separator
+        tl.to(separators[0], {
+          opacity: 0.8,
+          duration: 0.3
+        }, 1.3);
+        
+        // Word 2 animation
+        tl.to(word2, {
+          opacity: 1, 
+          scale: 1, 
+          y: 0, 
+          filter: "blur(0px)",
+          duration: 0.5,
+          ease: "back.out(1.5)",
+          onStart: () => console.log("GSAP animating word 2")
+        }, 1.4);
+        
+        // Second separator
+        tl.to(separators[1], {
+          opacity: 0.8,
+          duration: 0.3
+        }, 1.9);
+        
+        // Word 3 animation
+        tl.to(word3, {
+          opacity: 1, 
+          scale: 1, 
+          y: 0, 
+          filter: "blur(0px)",
+          duration: 0.5,
+          ease: "back.out(1.5)",
+          onStart: () => console.log("GSAP animating word 3")
+        }, 2.0);
+        
+        // Add impact effects
+        tl.call(() => {
+          // Add impact class to each word after animation
+          setTimeout(() => word1.classList.add('active'), 800);
+          setTimeout(() => word2.classList.add('active'), 1400);
+          setTimeout(() => word3.classList.add('active'), 2000);
+        }, null, 0);
+      } 
+      else {
+        // Fallback to basic CSS transitions
+        console.log("Fallback to CSS transitions for word animations");
+        
+        // Animate first word
+        setTimeout(() => {
+          word1.classList.add('active');
+          console.log("CSS animated word 1");
+        }, 800);
+        
+        // Animate first separator
+        setTimeout(() => {
+          if (separators[0]) separators[0].classList.add('active');
+        }, 1300);
+        
+        // Animate second word
+        setTimeout(() => {
+          word2.classList.add('active');
+          console.log("CSS animated word 2");
+        }, 1400);
+        
+        // Animate second separator
+        setTimeout(() => {
+          if (separators[1]) separators[1].classList.add('active');
+        }, 1900);
+        
+        // Animate third word
+        setTimeout(() => {
+          word3.classList.add('active');
+          console.log("CSS animated word 3");
+        }, 2000);
+      }
+      
+    }, 500); // Small initial delay after page load
   });
 </script>
 

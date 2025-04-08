@@ -1,7 +1,7 @@
 ---
 import Footer from '~/components/footer.astro';
 import CommonHead from '~/components/CommonHead.astro';
-import ThreeJsSceneWrapper from '~/components/ThreeJsSceneWrapper.astro';
+import ThreeJsSceneWrapper from '~/components/ThreeJsSceneWrapper.jsx';
 
 // Get layout properties
 export interface Props {
@@ -48,6 +48,9 @@ const {
       frame-src 'self';
     ">
     
+    <!-- Three.js version manager - load before any other scripts -->
+    <script is:inline src="/js/three-version-fix.js"></script>
+    
     <!-- Import map for bare module specifiers -->
     <script type="importmap">
       {
@@ -75,6 +78,13 @@ const {
     <link rel="stylesheet" href="/css/process-fix.css">
     <link rel="stylesheet" href="/css/loading-indicator.css">
     <link rel="stylesheet" href="/styles/loading-overlay.css">
+    
+    <!-- Make sure loading overlay styles are loaded before the ThreeJsSceneWrapper component -->
+    <script is:inline>
+      // Add loading class to body to prevent scrolling while loading
+      document.documentElement.classList.add('loading-active');
+      document.body.classList.add('loading-active');
+    </script>
     
     <!-- Load our hero layout fix -->
     <script is:inline src="/js/fix-hero-layout.js"></script>
@@ -205,7 +215,7 @@ const {
     <slot name="head" />
   </head>
   <body>
-    <ThreeJsSceneWrapper client:load />
+    <ThreeJsSceneWrapper client:load transition:persist />
 
     <!-- Canvas for 3D visualization -->
     

@@ -14,11 +14,11 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(10, 5, 23, 0.95); /* Slightly darker, more opaque */
+  background-color: transparent; /* Changed to transparent since we now have a solid-background div */
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 9999; /* Very high z-index to be above everything */
   transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
   opacity: 1;
   visibility: visible;
@@ -32,14 +32,48 @@
   pointer-events: none; /* Allow interaction with content below */
 }
 
+/* The loading spinner container */
 .loading-spinner {
   width: 200px; /* Container for the canvas */
   height: 200px;
   display: flex; /* Center canvas if needed */
   justify-content: center;
   align-items: center;
+  position: relative; /* For z-index stacking */
+  z-index: 2; /* Above the solid background */
 }
 
 .loading-spinner canvas {
   display: block; /* Remove extra space below canvas */
+  position: relative;
+  z-index: 3; /* Highest z-index to ensure it's on top */
+}
+
+/* Brand text styling above spinner */
+.loading-branding {
+  position: absolute;
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Center perfectly */
+  top: calc(50% - 140px); /* Position above spinner */
+  font-size: 28px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  background: linear-gradient(45deg, #8162ff, #00e599);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  z-index: 4;
+}
+
+/* Message text below spinner */
+.loading-message {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(50% + 110px); /* Position below spinner */
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 1px;
+  z-index: 4;
 } 

@@ -4,7 +4,10 @@
  * with morphing between different shapes - Tetrahedron, Cube, Octahedron, Icosahedron, and Dodecahedron
  */
 
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js'; // Import THREE from CDN
+// Import Three.js directly first
+import * as THREE from 'three';
+// Also use centralized Three.js loader as fallback
+import loadThreeJS from '../components/three/utils/ThreeJSLoader.js';
 import { fallbackCheck } from './utils/fallback.js';
 import { setupSceneAndCamera } from './core/sceneSetup.js';
 
@@ -133,7 +136,7 @@ function performTextUpdate(currentShapeIndex) {
 /**
  * Initialize the Sacred Geometry Amorphous Prism visualization
  */
-function initAmorphousPrism() {
+async function initAmorphousPrism() {
     console.log("🚀 Initializing Sacred Geometry Amorphous Prism (src)...");
 
     // 1. Check for WebGL compatibility
@@ -142,6 +145,20 @@ function initAmorphousPrism() {
     }
 
     try {
+        // 2. Use THREE from direct import, fall back to loader if needed
+        let THREE_INSTANCE = THREE;
+        
+        if (!THREE_INSTANCE || Object.keys(THREE_INSTANCE).length === 0) {
+            console.log("Direct THREE import not available, using loader");
+            THREE_INSTANCE = await loadThreeJS();
+            if (!THREE_INSTANCE) {
+                console.error("Failed to load Three.js - cannot initialize prism");
+                return;
+            }
+        }
+        
+        console.log("Three.js successfully loaded for prism initialization");
+
         // 3. Find the CANVAS element
         const canvas = document.getElementById(C.CANVAS_ID);
         if (!canvas) {
@@ -151,13 +168,13 @@ function initAmorphousPrism() {
         canvas.style.display = 'block'; 
 
         // 4. Setup Scene, Camera, Renderer
-        const { scene, camera, renderer } = setupSceneAndCamera(canvas, THREE);
+        const { scene, camera, renderer } = setupSceneAndCamera(canvas, THREE_INSTANCE);
 
         // 5. Create Materials optimized for sacred geometry
-        const materials = createMaterials(THREE); 
+        const materials = createMaterials(THREE_INSTANCE); 
 
         // 6. Create Geometry with sacred geometry morph targets
-        const { solidGeometry, morphTargetNames } = createMorphGeometry(THREE);
+        const { solidGeometry, morphTargetNames } = createMorphGeometry(THREE_INSTANCE);
         
         // Store morph target names with element information for animation loop access
         solidGeometry.userData = { 
@@ -166,13 +183,12 @@ function initAmorphousPrism() {
         }; 
 
         // 7. Create Main Mesh (Using SOLID material)
-        const mainMesh = new THREE.Mesh(solidGeometry, materials.solidMaterial);
+        const mainMesh = new THREE_INSTANCE.Mesh(solidGeometry, materials.solidMaterial);
         // --- START: Copy userData from geometry to mesh ---
         // This ensures morphTargetNames are accessible on the mesh in animationLoop
         mainMesh.userData = { ...solidGeometry.userData }; 
         // --- END: Copy userData ---
         mainMesh.scale.set(1.2, 1.2, 1.2); // Increase scale by 20%
-        mainMesh.position.set(0, 0, 0); // Explicitly center the mesh
         scene.add(mainMesh);
         console.log("✨ Sacred geometry main mesh created and added to scene (src).");
         
@@ -181,7 +197,7 @@ function initAmorphousPrism() {
             scene, 
             solidGeometry, 
             materials.edgesMaterial, 
-            THREE, 
+            THREE_INSTANCE, 
             mainMesh // Pass mainMesh to link morph targets
         );
         if (wireframeMesh) {
@@ -190,7 +206,7 @@ function initAmorphousPrism() {
 
         // 9. Create enhanced galaxy particles
         const { particleSystem: galaxyParticles, updateParticles: updateGalaxyParticles } = 
-            createGalaxyParticles(scene, THREE);
+            createGalaxyParticles(scene, THREE_INSTANCE);
         console.log("✨ Enhanced galaxy particle system created to complement sacred geometry.");
 
         // 10. Setup Interaction Listeners using the new overlay logic
@@ -238,7 +254,15 @@ function initAmorphousPrism() {
 // Run initialization once
 if (!window._prismInitialized) { 
     window._prismInitialized = true;
-    initAmorphousPrism();
+    // Handle async initialization
+    initAmorphousPrism().catch(error => {
+        console.error("Failed to initialize prism:", error);
+        // Show error message to user
+        const loadingEl = document.getElementById(C.LOADING_ID);
+        if (loadingEl) {
+            loadingEl.innerHTML = 'Error loading 3D visualization. Please try refreshing the page.';
+        }
+    });
 } else {
     console.log("Skipping duplicate sacred geometry prism initialization (src).");
 }

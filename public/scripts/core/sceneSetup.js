@@ -17,11 +17,10 @@ export function setupSceneAndCamera(canvas, THREEInstance) {
     C.NEAR_PLANE,
     C.FAR_PLANE
   );
-  // Set initial camera position
   camera.position.z = C.CAMERA_Z;
-  camera.position.x = 0;
-  camera.position.y = 0;
-  camera.lookAt(0, 0, 0);
+  camera.position.x = 0; // Ensure camera is centered horizontally
+  camera.position.y = 0; // Ensure camera is centered vertically
+  camera.lookAt(0, 0, 0); // Make camera look at the center
 
   const renderer = new LocalTHREE.WebGLRenderer({
     canvas,

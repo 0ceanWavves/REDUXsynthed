@@ -68,27 +68,31 @@ export function startAnimationLoop({
           morphMesh.morphTargetInfluences[nextTargetIndex] = influence;
         }
 
-        // --- START: Subtle ambient color shifting (particles only) ---
-        // Create a subtle color cycling effect for particles without affecting the shape
+        // --- START: Ambient occlusion style lighting for particles ---
         if (backgroundParticles && typeof updateGalaxyParticles === 'function') {
-          // Keep the color transitions only for the particles
-          // The main shape color stays consistent
-          const time = clock.getElapsedTime() * 0.1; // Slow shifting
+          // Get the current shape influence value for lighting effect
+          const currentMorphInfluence = influence; // Use the current morph influence
           
-          // Create subtle color pulse using sine waves with different frequencies
-          const r = 0.5 + 0.5 * Math.sin(time * 0.3);
-          const g = 0.5 + 0.5 * Math.sin(time * 0.5);
-          const b = 0.5 + 0.5 * Math.sin(time * 0.7);
+          // Slower, more subtle color shifting
+          const time = clock.getElapsedTime() * 0.05; // Very slow shifting
           
-          // Store this in a global for the particle system to use
+          // Create very subtle color variations with bias toward shape color
+          const r = 0.85 + 0.15 * Math.sin(time * 0.2);
+          const g = 0.85 + 0.15 * Math.sin(time * 0.3);
+          const b = 0.9 + 0.1 * Math.sin(time * 0.4);
+          
+          // Create global color shift object if it doesn't exist
           if (!window.ambientColorShift) {
             window.ambientColorShift = new THREE.Color();
           }
           
+          // Store brightness based on morph stage - particles darken during transitions
+          window.morphBrightness = 0.7 + 0.3 * Math.sin(Math.PI * currentMorphInfluence);
+          
           // Update the ambient color shift
           window.ambientColorShift.setRGB(r, g, b);
         }
-        // --- END: Subtle ambient color shifting ---
+        // --- END: Ambient occlusion style lighting ---
 
         // --- START: Sync wireframe morph --- 
         if (wireMorphMesh && wireMorphMesh.morphTargetInfluences) {
@@ -138,7 +142,8 @@ export function startAnimationLoop({
             applyShapeSpecificStyles(currentShapeName);
           }
         }
-      } else if (timeSinceLastMorph >= C.HOLD_DURATION) {
+      } else if (timeSinceLastMorph >= (currentTargetIndex === 0 ? C.INITIAL_HOLD_DURATION : C.HOLD_DURATION)) {
+        // Use longer initial delay for the first shape
         isMorphing = true;
         morphProgress = 0;
         
@@ -197,18 +202,34 @@ export function startAnimationLoop({
   } 
 
   // --- Initial State ---
-  currentTargetIndex = -1; 
-  nextTargetIndex = 0; 
+  // Start with Tetrahedron (index 0) instead of base shape (-1)
+  currentTargetIndex = 0; // Start with the first shape (Tetrahedron) 
+  nextTargetIndex = 1;    // Next will be Cube (index 1)
   isMorphing = false;      
   timeSinceLastMorph = 0;  
   
   if (morphMesh.morphTargetInfluences) {
+    // Initialize all influences to 0
     morphMesh.morphTargetInfluences.fill(0);
+    
+    // Then set Tetrahedron (index 0) to 1
+    if (morphMesh.morphTargetInfluences.length > 0) {
+      morphMesh.morphTargetInfluences[0] = 1;
+    }
+    
     // --- START: Sync wireframe initial state ---
     if (wireMorphMesh && wireMorphMesh.morphTargetInfluences) {
       wireMorphMesh.morphTargetInfluences.fill(0);
+      if (wireMorphMesh.morphTargetInfluences.length > 0) {
+        wireMorphMesh.morphTargetInfluences[0] = 1;
+      }
     }
     // --- END: Sync wireframe initial state ---
+  }
+  
+  // Apply the initial shape style
+  if (morphTargetNames && morphTargetNames.length > 0) {
+    applyShapeSpecificStyles(morphTargetNames[0]);
   }
 
   console.log("▶️ Starting Animation Loop with Sacred Geometry Morphing...");

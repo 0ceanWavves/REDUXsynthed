@@ -6,8 +6,51 @@ import LoadingSpinner from './LoadingSpinner.astro';
 ---
 
 <div id="loading-overlay" class="loading-overlay">
-  <LoadingSpinner />
+  <!-- Solid background layer that renders beneath everything -->
+  <div class="solid-background"></div>
+  
+  <!-- Loading content container to organize all loading elements -->
+  <div class="loading-content">
+    <!-- Brand logo/text above the spinner -->
+    <div class="loading-branding">SYNTHED</div>
+    
+    <!-- LoadingSpinner component with the animated canvas -->
+    <LoadingSpinner />
+    
+    <!-- Loading message below spinner -->
+    <div class="loading-message">Loading Experience...</div>
+  </div>
 </div>
+
+<style>
+  /* Additional styles specific to this component */
+  .solid-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #050510; /* Dark background matching the site theme */
+    z-index: 0; /* Behind the spinner but in front of page content */
+  }
+  
+  /* Container for all loading elements to maintain proper spacing */
+  .loading-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    z-index: 1;
+  }
+  
+  /* LoadingSpinner is positioned above the solid background */
+  :global(.loading-spinner) {
+    position: relative;
+    z-index: 2;
+  }
+</style>
 
 <!-- 
   No <style> tag needed here as the styles are global 
