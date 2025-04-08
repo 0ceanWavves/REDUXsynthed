@@ -59,6 +59,11 @@ export function applyShapeSpecificStyles(shapeName) {
   if (shapeClassName && ALL_SHAPE_CLASSES.includes(shapeClassName)) {
     contentOverlay.classList.add(shapeClassName);
     console.log(`Applied overlay style: ${shapeClassName}`);
+    
+    // Get the shape index to alternate headline text
+    const shapeIndex = ALL_SHAPE_CLASSES.indexOf(shapeClassName);
+    updateHeadlineText(shapeIndex);
+    
   } else if (shapeClassName) {
     // --- DEBUG LOG --- 
     console.warn(`Shape class name "${shapeClassName}" (from input "${shapeName}") is not defined in ALL_SHAPE_CLASSES: [${ALL_SHAPE_CLASSES.join(', ')}]`);
@@ -67,6 +72,58 @@ export function applyShapeSpecificStyles(shapeName) {
       // --- DEBUG LOG --- 
       console.log("applyShapeSpecificStyles: No valid shapeName provided, clearing classes.");
       // --- END DEBUG LOG ---
+  }
+}
+
+// Function to alternate headline text based on shape index
+function updateHeadlineText(currentShapeIndex) {
+  console.log(`📝 updateHeadlineText called with index: ${currentShapeIndex}`);
+  
+  // Make sure we wait for DOM to be fully loaded
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      performTextUpdate(currentShapeIndex);
+    });
+  } else {
+    performTextUpdate(currentShapeIndex);
+  }
+}
+
+function performTextUpdate(currentShapeIndex) {
+  const headlineElement = document.getElementById('dynamic-headline');
+  console.log(`📝 Finding headline element: `, headlineElement);
+  
+  // Alternating text options
+  const texts = ["Digital Solutions", "Transforming ideas into"];
+  
+  if (headlineElement) {
+    // Alternate text based on shape index
+    const newText = texts[currentShapeIndex % texts.length];
+    console.log(`📝 Changing text to: "${newText}" for shape index ${currentShapeIndex}`);
+    
+    // Apply fade transition effect - using GSAP if available for smoother animation
+    if (window.gsap) {
+      gsap.to(headlineElement, {duration: 0.3, opacity: 0, onComplete: () => {
+        headlineElement.textContent = newText;
+        gsap.to(headlineElement, {duration: 0.3, opacity: 1});
+      }});
+    } else {
+      // Fallback to basic fade
+      headlineElement.style.opacity = 0;
+      setTimeout(() => {
+        headlineElement.textContent = newText;
+        headlineElement.style.opacity = 1;
+      }, 300);
+    }
+  } else {
+    console.warn("⚠️ Dynamic headline element not found");
+    // Let's try to find by query selector as a fallback
+    const altHeadline = document.querySelector('.digital-solutions h2');
+    if (altHeadline) {
+      console.log("📝 Found headline via alternate selector");
+      altHeadline.id = 'dynamic-headline'; // Add the ID
+      performTextUpdate(currentShapeIndex); // Try again
+    }
   }
 }
 // --- END: New Overlay Management Function ---

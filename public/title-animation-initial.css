@@ -2,10 +2,10 @@
  * Title Animation Initial Styles
  * 
  * These styles set up the initial state for the title word animations
- * that will be animated using vanilla JavaScript instead of GSAP.
+ * with improved positioning and color gradients, optimized for GSAP animations.
  */
 
-/* Initial state for title words - hidden and slightly offset */
+/* Initial state for title words - hidden with enhanced styling */
 .title-word {
   opacity: 0;
   transform: translateY(20px) scale(0.95);
@@ -13,19 +13,29 @@
   margin-right: 0.5rem;
   font-size: 2.5rem;
   font-weight: 700;
-  color: #ffffff;
+  color: transparent; /* Start transparent for gradient text */
+  background: linear-gradient(135deg, rgba(120, 70, 255, 1), rgba(0, 255, 170, 1));
+  background-clip: text;
+  -webkit-background-clip: text;
   position: relative;
   z-index: 1001;
   transition: opacity 0.45s ease, transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  padding: 0.3rem 0.6rem;
+  border-radius: 8px;
+  text-shadow: 0 0 0 transparent; /* Start with no shadow */
+  will-change: transform, opacity, text-shadow, background; /* Performance optimization */
 }
 
-/* Title block container */
+/* Title block container with improved positioning for 3D object */
 .title-block {
-  margin-bottom: 1rem;
+  margin-bottom: 2rem; /* More space below */
+  margin-top: -1rem; /* Pull up slightly */
   position: relative;
   z-index: 1001;
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
 }
 
 /* Mobile responsive adjustments */
@@ -33,10 +43,18 @@
   .title-word {
     font-size: 2rem;
     margin-right: 0.3rem;
+    padding: 0.2rem 0.4rem;
   }
   
   .title-block {
     justify-content: center;
     text-align: center;
+    margin-bottom: 1.5rem;
   }
+}
+
+/* Add a transition class for when the words are fully loaded */
+.title-loaded .title-word {
+  opacity: 1;
+  transform: translateY(0) scale(1);
 }

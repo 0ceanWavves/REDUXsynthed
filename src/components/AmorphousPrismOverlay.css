@@ -1,72 +1,64 @@
-/* Container for both canvas and overlay - added in .astro file */
-/* .canvas-container { ... } */
-
-/* Ensure canvas takes up the container */
-/* Styles for #morphing-poly-canvas already exist in AmorphousPrism.astro */
-
-/* The overlay DIV that sits on top */
 #content-overlay {
-  position: absolute; /* Position relative to canvas-container */
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  color: white; /* Base text color */
+  color: white;
   text-align: center;
-  z-index: 3; /* Above canvas (z-index 2) but below main content (z-index 10) */
-  touch-action: auto; /* Allow scrolling on the overlay */
-  pointer-events: none; /* Allow clicks to pass through to the canvas */
+  z-index: 3;
+  touch-action: auto;
+  pointer-events: none;
 }
 
-/* The actual content block inside the overlay */
 .content-wrapper {
   position: absolute;
-  top: 50%;
+  top: 20%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, 0) !important;
   padding: 20px;
-  max-width: 600px; /* Or adjust as needed */
-  /* Allow pointer events on the content itself */
-  pointer-events: auto; /* Allows clicks on buttons etc. INSIDE the wrapper */
-  /* Add a subtle transition for ALL properties that might change */
-  transition: all 0.7s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smoother easing */
+  max-width: 600px;
+  pointer-events: auto;
+  transition: none !important;
 }
-
-/* --- Base Styles for Content Elements --- */
 
 .title-block {
   margin-bottom: 15px;
   transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
-  display: flex; /* Adjust layout if needed now they are spans */
-  flex-direction: column;
-  align-items: center;
+  position: relative;
+  z-index: 1001;
+  width: 100%;
+  text-align: center;
+  margin-top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .title-word {
-  /* Keep existing base styles from .title-block h1 */
   font-size: clamp(2.5rem, 6vw, 3.5rem);
   line-height: 1.1;
   margin: 0;
   font-weight: 700;
-  color: rgba(186, 104, 200, 0.95);
+  color: rgba(120, 70, 255, 0.95);
   text-shadow:
-    0 0 15px rgba(186, 104, 200, 0.8),
+    0 0 15px rgba(120, 70, 255, 0.8),
     0 0 30px rgba(0, 255, 170, 0.6),
     0 0 5px rgba(255, 255, 255, 0.9);
-  display: block; /* Ensure spans take up space */
-  backdrop-filter: blur(3px); /* Add blur effect behind text */
+  display: inline-block;
+  backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
-
-  /* Initial state for GSAP animation */
+  margin: 0 0.4rem;
   opacity: 0;
   transform: translateY(30px) scale(0.8);
-  will-change: transform, opacity;
+  will-change: transform, opacity, background, text-shadow;
+  background-clip: text;
+  -webkit-background-clip: text;
 }
 
 .title-block h1 {
-  font-size: clamp(2.5rem, 6vw, 3.5rem); /* Responsive font size */
+  font-size: clamp(2.5rem, 6vw, 3.5rem);
   line-height: 1.1;
   margin: 0;
   font-weight: 700;
@@ -81,7 +73,6 @@
   transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
 }
 
-/* Tagline styling enhancement */
 .tagline p {
   font-size: 1.2rem;
   margin-bottom: 0.5rem;
@@ -97,42 +88,43 @@
   -webkit-backdrop-filter: blur(2px);
 }
 
-.services {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start; /* Align checkmarks nicely */
-  gap: 10px;
-  margin-bottom: 30px;
-  margin-left: auto;  /* Push to center/right */
-  margin-right: auto; /* Push to center/left */
-  max-width: fit-content; /* Keep block tight */
-  transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
-}
-
-.services span {
-  font-size: clamp(0.9rem, 2vw, 1rem);
-  text-align: left;
-}
-
 .digital-solutions {
-    margin-bottom: 30px; /* Space before buttons */
+    margin-bottom: 30px;
     transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
-    background: rgba(0, 0, 0, 0.3); /* Semi-transparent background */
+    background: rgba(0, 0, 0, 0.2);
     padding: 0.5rem 1rem;
     border-radius: 8px;
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    box-shadow: 0 0 20px rgba(0, 255, 170, 0.3);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    box-shadow: 0 0 15px rgba(0, 255, 170, 0.25);
+    border: 1px solid rgba(0, 255, 170, 0.15);
 }
 
 .digital-solutions h2 {
     font-size: clamp(1.5rem, 4vw, 2rem);
     margin: 0;
-    color: rgba(0, 255, 170, 0.95); /* Bright teal color */
+    color: rgba(0, 255, 170, 0.95);
     font-weight: 600;
     text-shadow:
       0 0 10px rgba(0, 255, 170, 0.8),
       0 0 20px rgba(0, 255, 170, 0.5);
+    transition: opacity 0.3s ease;
+    min-height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.buttons-container {
+  position: absolute;
+  bottom: 10%;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+  transition: none !important;
+  transform: none !important;
 }
 
 .buttons {
@@ -142,7 +134,7 @@
   transition: transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.7s ease;
 }
 
-.buttons .overlay-button { /* Target buttons specifically */
+.buttons .overlay-button {
   padding: 10px 20px;
   background: linear-gradient(135deg, rgba(186, 104, 200, 0.8), rgba(0, 255, 170, 0.8));
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -151,13 +143,13 @@
   border-radius: 5px;
   cursor: pointer;
   transition: all 0.3s ease;
-  z-index: 55; /* Higher z-index to ensure clickability */
-  pointer-events: auto !important; /* Force pointer events */
+  z-index: 55;
+  pointer-events: auto !important;
   box-shadow:
     0 4px 8px rgba(0, 0, 0, 0.2),
     0 0 15px rgba(0, 255, 170, 0.4);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  position: relative; /* Ensure z-index works */
+  position: relative;
 }
 
 .buttons .overlay-button:hover {
@@ -168,106 +160,153 @@
     0 0 20px rgba(0, 255, 170, 0.6);
 }
 
-/* --- Shape-Specific Adjustments --- */
-/* These classes get added to #content-overlay */
-
-/* Target 0: Tetrahedron-like shape */
 #content-overlay.tetrahedron-shape .tagline {
-  transform: translateY(5px);
   opacity: 0.95;
 }
-#content-overlay.tetrahedron-shape .services {
-  transform: translateX(-20px) scale(0.98);
-  opacity: 0.9;
-}
 #content-overlay.tetrahedron-shape .digital-solutions {
-   transform: translateX(20px) scale(0.98);
    opacity: 0.9;
 }
 #content-overlay.tetrahedron-shape .buttons {
-    transform: translateY(10px) scale(0.95);
     opacity: 0.85;
 }
 
-/* Target 1: Cube-like shape */
 #content-overlay.cube-shape .tagline {
-  transform: translateY(0);
-  opacity: 1;
-}
-#content-overlay.cube-shape .services {
-  transform: translateX(0) scale(1);
   opacity: 1;
 }
 #content-overlay.cube-shape .digital-solutions {
-   transform: translateX(0) scale(1);
    opacity: 1;
 }
 #content-overlay.cube-shape .buttons {
-    transform: translateY(0) scale(1);
     opacity: 1;
 }
 
-/* Target 2: Icosahedron-like shape (Rounded) */
 #content-overlay.icosahedron-shape .tagline {
-   transform: translateY(-5px);
    opacity: 0.95;
 }
-#content-overlay.icosahedron-shape .services {
-  transform: scale(0.95);
-  opacity: 0.9;
-}
 #content-overlay.icosahedron-shape .digital-solutions {
-   transform: translateY(5px) scale(0.95);
    opacity: 0.9;
 }
 #content-overlay.icosahedron-shape .buttons {
-    transform: translateY(15px) scale(0.9);
     opacity: 0.8;
 }
 
-/* Add classes for octahedron, dodecahedron if needed */
-/* Example: */
 #content-overlay.octahedron-shape .services {
-  /* Style adjustments for octahedron */
 }
 
 #content-overlay.dodecahedron-shape .services {
-  /* Style adjustments for dodecahedron */
 }
 
-/* Service item styling */
 .service-item {
-  font-size: 1rem;
+  position: absolute;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
   color: rgba(255, 255, 255, 0.9);
-  position: relative;
-  padding-left: 1.2rem;
-  transition: all 0.3s ease;
   background: rgba(0, 0, 0, 0.2);
-  padding: 0.5rem 1.2rem;
-  margin-bottom: 0.3rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 4px;
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  max-width: 200px;
+  pointer-events: auto;
+  z-index: 5;
 }
 
-.service-item::before {
-  content: '';
+:root {
+  --horizontal-distance: 27%;
+  --vertical-pos-top: 42%;
+  --vertical-pos-bottom: 58%;
+}
+
+/* --- Mobile Adjustments --- */
+@media (max-width: 768px) {
+  :root {
+    --horizontal-distance: 10%; /* Reduce distance from edges on smaller screens */
+    --vertical-pos-top: 40%;    /* Adjust vertical positions slightly if needed */
+    --vertical-pos-bottom: 60%;
+  }
+  
+  .service-item {
+      font-size: clamp(0.7rem, 2vw, 0.8rem); /* Slightly smaller font on mobile */
+      padding: 0.3rem 0.6rem;
+      max-width: 140px; /* Reduce max width */
+  }
+}
+
+#service-item-1 {
   position: absolute;
-  left: 0.4rem;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0.6rem;
-  height: 0.6rem;
-  background: linear-gradient(135deg, #7846ff, #00ffaa);
-  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  top: var(--vertical-pos-top);
+  left: var(--horizontal-distance);
+  text-align: left;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  max-width: 200px;
+  pointer-events: auto;
+  z-index: 5;
 }
 
-.service-item:hover {
-  color: #00ffaa;
-  transform: translateX(5px);
-  background: rgba(0, 0, 0, 0.4);
-  box-shadow:
-    0 3px 7px rgba(0, 0, 0, 0.3),
-    0 0 10px rgba(0, 255, 170, 0.3);
+#service-item-2 {
+  position: absolute;
+  top: var(--vertical-pos-bottom);
+  left: var(--horizontal-distance);
+  text-align: left;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  max-width: 200px;
+  pointer-events: auto;
+  z-index: 5;
+}
+
+#service-item-3 {
+  position: absolute;
+  top: var(--vertical-pos-top);
+  right: var(--horizontal-distance);
+  text-align: right;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  max-width: 200px;
+  pointer-events: auto;
+  z-index: 5;
+}
+
+#service-item-4 {
+  position: absolute;
+  top: var(--vertical-pos-bottom);
+  right: var(--horizontal-distance);
+  text-align: right;
+  font-size: clamp(0.8rem, 1.5vw, 0.9rem);
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  max-width: 200px;
+  pointer-events: auto;
+  z-index: 5;
+}
+
+#content-overlay {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
 }

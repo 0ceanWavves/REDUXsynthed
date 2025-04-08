@@ -105,6 +105,39 @@ const serviceItems = [
     80% { transform: scale(0.8); opacity: 0.8; }
     100% { transform: scale(0); opacity: 0; }
   }
+
+  /* --- Mobile Adjustments --- */
+  @media (max-width: 768px) {
+    .crystal-container {
+      background: transparent; /* Remove background */
+      backdrop-filter: none; /* Remove blur */
+      border: none; /* Remove border */
+      box-shadow: none; /* Remove shadow */
+      padding: 0; /* Remove padding */
+      margin: 1rem 0; /* Adjust margin */
+      /* Keep animation: fadeIn */
+    }
+    
+    .crystal-background {
+        display: none; /* Hide the dedicated background element */
+    }
+    
+    /* Adjustments within CrystalBulletItem should ideally be done in that component, 
+       but if needed, you can target its elements globally here like:
+    :global(.crystal-bullet-item) {
+      padding: 0.5rem 0; 
+      margin-bottom: 0.5rem;
+    }
+    :global(.crystal-bullet-item p) {
+        font-size: 0.9rem; 
+    }
+    :global(.crystal-bullet-item .icon-glow) {
+        width: 1.2em; 
+        height: 1.2em;
+        margin-right: 0.5rem;
+    } 
+    */
+  }
 </style>
 
 <script>
