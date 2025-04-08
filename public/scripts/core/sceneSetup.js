@@ -1,11 +1,19 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js'; // Import directly
+// Import from centralized module
+import ThreeModule from '../../utils/three.js';
 import * as C from '../constants.js';
 
-export function setupSceneAndCamera(canvas, THREEInstance) {
-  // Use passed THREE instance or fall back to direct import
-  const LocalTHREE = THREEInstance || THREE;
+export async function setupSceneAndCamera(canvas, THREEInstance) {
+  // Use passed THREE instance or get from centralized module
+  let LocalTHREE = THREEInstance;
+  
   if (!LocalTHREE) {
-      throw new Error("THREE is not available for scene setup (src).");
+    // Initialize if not already initialized
+    await ThreeModule.init();
+    LocalTHREE = ThreeModule.THREE;
+  }
+  
+  if (!LocalTHREE) {
+    throw new Error("THREE is not available for scene setup (src).");
   }
 
   const scene = new LocalTHREE.Scene();

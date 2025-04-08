@@ -4,10 +4,8 @@
  * with morphing between different shapes - Tetrahedron, Cube, Octahedron, Icosahedron, and Dodecahedron
  */
 
-// Import Three.js directly first
-import * as THREE from 'three';
-// Also use centralized Three.js loader as fallback
-import loadThreeJS from '../components/three/utils/ThreeJSLoader.js';
+// Import from centralized Three.js module
+import ThreeModule from '../utils/three.js';
 import { fallbackCheck } from './utils/fallback.js';
 import { setupSceneAndCamera } from './core/sceneSetup.js';
 
@@ -145,19 +143,21 @@ async function initAmorphousPrism() {
     }
 
     try {
-        // 2. Use THREE from direct import, fall back to loader if needed
-        let THREE_INSTANCE = THREE;
+        // 2. Try to get Three.js from version guard first, then centralized module
+        let THREE_INSTANCE = typeof window !== 'undefined' && window.getThreeJS ? window.getThreeJS() : null;
         
-        if (!THREE_INSTANCE || Object.keys(THREE_INSTANCE).length === 0) {
-            console.log("Direct THREE import not available, using loader");
-            THREE_INSTANCE = await loadThreeJS();
+        if (!THREE_INSTANCE) {
+            // Fallback to centralized module
+            await ThreeModule.init();
+            THREE_INSTANCE = ThreeModule.THREE;
+            
             if (!THREE_INSTANCE) {
                 console.error("Failed to load Three.js - cannot initialize prism");
                 return;
             }
         }
         
-        console.log("Three.js successfully loaded for prism initialization");
+        console.log(`Three.js successfully loaded for prism initialization (v${THREE_INSTANCE.REVISION})`);
 
         // 3. Find the CANVAS element
         const canvas = document.getElementById(C.CANVAS_ID);
@@ -167,8 +167,8 @@ async function initAmorphousPrism() {
         }
         canvas.style.display = 'block'; 
 
-        // 4. Setup Scene, Camera, Renderer
-        const { scene, camera, renderer } = setupSceneAndCamera(canvas, THREE_INSTANCE);
+        // 4. Setup Scene, Camera, Renderer (now async)
+        const { scene, camera, renderer } = await setupSceneAndCamera(canvas, THREE_INSTANCE);
 
         // 5. Create Materials optimized for sacred geometry
         const materials = createMaterials(THREE_INSTANCE); 

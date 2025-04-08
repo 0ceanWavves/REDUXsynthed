@@ -1,0 +1,441 @@
+---
+// ThreeImportAnalyzer.astro
+// A debugging tool to analyze Three.js imports and instances
+---
+
+<div id="three-import-analyzer">
+  <button id="toggle-analyzer">Show Three.js Import Analyzer</button>
+  <div id="analyzer-panel" style="display: none;">
+    <h3>Three.js Import Analyzer</h3>
+    <div class="analyzer-tabs">
+      <button class="tab-btn active" data-tab="imports">Imports</button>
+      <button class="tab-btn" data-tab="instances">Instances</button>
+      <button class="tab-btn" data-tab="modules">Modules</button>
+    </div>
+    <div class="analyzer-content">
+      <div class="tab-content active" id="imports-content">
+        <div class="count">Detected imports: <span id="import-count">0</span></div>
+        <div id="imports-list" class="content-list"></div>
+      </div>
+      <div class="tab-content" id="instances-content">
+        <div class="count">Unique instances: <span id="instance-count">0</span></div>
+        <div id="instances-list" class="content-list"></div>
+      </div>
+      <div class="tab-content" id="modules-content">
+        <div class="count">Loaded modules: <span id="module-count">0</span></div>
+        <div id="modules-list" class="content-list"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="refresh-analyzer">Refresh</button>
+      <button id="close-analyzer">Close</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  #three-import-analyzer {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    z-index: 10000;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #eee;
+  }
+  
+  #toggle-analyzer {
+    background: #2a3f5a;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  #analyzer-panel {
+    position: fixed;
+    bottom: 50px;
+    right: 10px;
+    width: 500px;
+    max-height: 80vh;
+    background: rgba(20, 30, 40, 0.95);
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #analyzer-panel h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: #4e8cde;
+  }
+  
+  .analyzer-tabs {
+    display: flex;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #2a3f5a;
+  }
+  
+  .tab-btn {
+    background: transparent;
+    color: #aaa;
+    border: none;
+    padding: 5px 15px;
+    margin-right: 5px;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+  }
+  
+  .tab-btn.active {
+    background: #2a3f5a;
+    color: white;
+  }
+  
+  .analyzer-content {
+    flex-grow: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .tab-content {
+    display: none;
+    height: 100%;
+    overflow: hidden;
+    flex-direction: column;
+  }
+  
+  .tab-content.active {
+    display: flex;
+  }
+  
+  .count {
+    padding: 5px 0;
+    font-weight: bold;
+    color: #4e8cde;
+  }
+  
+  .content-list {
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    padding: 10px;
+    font-family: monospace;
+    font-size: 12px;
+    flex-grow: 1;
+    height: 200px;
+  }
+  
+  .content-item {
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #2a3f5a;
+  }
+  
+  .content-item:last-child {
+    border-bottom: none;
+  }
+  
+  .item-header {
+    font-weight: bold;
+    margin-bottom: 3px;
+  }
+  
+  .item-source {
+    color: #aaa;
+    font-size: 11px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .item-details {
+    margin-top: 5px;
+    padding-left: 10px;
+    border-left: 2px solid #2a3f5a;
+    font-size: 11px;
+    color: #bbb;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  
+  .duplicate {
+    color: #ff9800;
+  }
+  
+  .controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+  
+  .controls button {
+    background: #2a3f5a;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-left: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .controls button:hover {
+    background: #3b5e8c;
+  }
+</style>
+
+<script>
+  // Initialize tracking on window if not already present
+  if (!window._threeImportTracker) {
+    window._threeImportTracker = {
+      imports: [],
+      instances: [],
+      modules: []
+    };
+  }
+  
+  // DOM references
+  const toggleBtn = document.getElementById('toggle-analyzer');
+  const panel = document.getElementById('analyzer-panel');
+  const closeBtn = document.getElementById('close-analyzer');
+  const refreshBtn = document.getElementById('refresh-analyzer');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+  
+  // Import count elements
+  const importCountEl = document.getElementById('import-count');
+  const instanceCountEl = document.getElementById('instance-count');
+  const moduleCountEl = document.getElementById('module-count');
+  
+  // Content lists
+  const importsListEl = document.getElementById('imports-list');
+  const instancesListEl = document.getElementById('instances-list');
+  const modulesListEl = document.getElementById('modules-list');
+  
+  // Track THREE imports via dynamic import
+  const originalDynamicImport = window.import || Function.prototype;
+  window.import = function(...args) {
+    const importPath = args[0];
+    
+    // Check if this is a Three.js import
+    if (importPath && (
+      importPath === 'three' || 
+      importPath.includes('three@') || 
+      importPath.includes('three.module')
+    )) {
+      // Get caller information
+      let caller = 'unknown';
+      try {
+        const stackLines = new Error().stack.split('\n');
+        caller = stackLines.length > 2 ? stackLines[2].trim() : 'unknown';
+      } catch (e) {}
+      
+      // Record import
+      if (window._threeImportTracker) {
+        window._threeImportTracker.imports.push({
+          path: importPath,
+          caller: caller,
+          time: new Date().toISOString(),
+          stack: new Error().stack || 'No stack trace'
+        });
+      }
+    }
+    
+    // Call the original import function
+    return originalDynamicImport.apply(this, args);
+  };
+  
+  // Track THREE being set on window
+  let previousTHREE = window.THREE;
+  Object.defineProperty(window, 'THREE', {
+    get: function() {
+      return previousTHREE;
+    },
+    set: function(newValue) {
+      // Skip if same instance
+      if (newValue === previousTHREE) {
+        return true;
+      }
+      
+      // Get caller information
+      let caller = 'unknown';
+      try {
+        const stackLines = new Error().stack.split('\n');
+        caller = stackLines.length > 2 ? stackLines[2].trim() : 'unknown';
+      } catch (e) {}
+      
+      // Record instance
+      if (window._threeImportTracker && newValue) {
+        // Check if this is a new instance or the same one
+        const isDuplicate = window._threeImportTracker.instances.some(i => i.instance === newValue);
+        
+        if (!isDuplicate) {
+          window._threeImportTracker.instances.push({
+            instance: newValue,
+            revision: newValue.REVISION || 'unknown',
+            source: caller,
+            time: new Date().toISOString()
+          });
+        }
+      }
+      
+      // Update the reference
+      previousTHREE = newValue;
+      return true;
+    },
+    configurable: true
+  });
+  
+  // Track ES modules that load Three.js
+  if (!window._threeImportTracker.moduleTrackingEnabled) {
+    // Try to detect loaded modules
+    const originalDefineProperty = Object.defineProperty;
+    Object.defineProperty = function(obj, prop, descriptor) {
+      // Check if this might be a module with Three.js
+      if (
+        obj && 
+        typeof obj === 'object' && 
+        prop === '__esModule' && 
+        descriptor.value === true &&
+        obj.Scene || obj.Vector3 || obj.WebGLRenderer
+      ) {
+        // Get caller information
+        let caller = 'unknown';
+        try {
+          const stackLines = new Error().stack.split('\n');
+          caller = stackLines.length > 2 ? stackLines[2].trim() : 'unknown';
+        } catch (e) {}
+        
+        // Record module
+        if (window._threeImportTracker) {
+          window._threeImportTracker.modules.push({
+            module: obj,
+            hasScene: !!obj.Scene,
+            hasVector3: !!obj.Vector3,
+            hasWebGLRenderer: !!obj.WebGLRenderer,
+            source: caller,
+            time: new Date().toISOString()
+          });
+        }
+      }
+      
+      return originalDefineProperty.call(this, obj, prop, descriptor);
+    };
+    
+    window._threeImportTracker.moduleTrackingEnabled = true;
+  }
+  
+  // Toggle panel visibility
+  toggleBtn.addEventListener('click', () => {
+    panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+    if (panel.style.display === 'flex') {
+      refreshAnalyzer();
+    }
+  });
+  
+  // Close panel
+  closeBtn.addEventListener('click', () => {
+    panel.style.display = 'none';
+  });
+  
+  // Refresh data
+  refreshBtn.addEventListener('click', refreshAnalyzer);
+  
+  // Tab switching
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Deactivate all tabs
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.classList.remove('active'));
+      
+      // Activate clicked tab
+      btn.classList.add('active');
+      const tabName = btn.dataset.tab;
+      document.getElementById(`${tabName}-content`).classList.add('active');
+    });
+  });
+  
+  // Refresh analyzer data
+  function refreshAnalyzer() {
+    if (!window._threeImportTracker) return;
+    
+    // Update counts
+    importCountEl.textContent = window._threeImportTracker.imports.length;
+    instanceCountEl.textContent = window._threeImportTracker.instances.length;
+    moduleCountEl.textContent = window._threeImportTracker.modules.length;
+    
+    // Clear lists
+    importsListEl.innerHTML = '';
+    instancesListEl.innerHTML = '';
+    modulesListEl.innerHTML = '';
+    
+    // Populate imports list
+    window._threeImportTracker.imports.forEach((imp, index) => {
+      const item = document.createElement('div');
+      item.classList.add('content-item');
+      if (index > 0) item.classList.add('duplicate');
+      
+      item.innerHTML = `
+        <div class="item-header">Import #${index + 1}: ${imp.path}</div>
+        <div class="item-source">Source: ${imp.caller}</div>
+        <div class="item-source">Time: ${imp.time}</div>
+        <div class="item-details">${truncateStack(imp.stack)}</div>
+      `;
+      
+      importsListEl.appendChild(item);
+    });
+    
+    // Populate instances list
+    window._threeImportTracker.instances.forEach((inst, index) => {
+      const item = document.createElement('div');
+      item.classList.add('content-item');
+      if (index > 0) item.classList.add('duplicate');
+      
+      item.innerHTML = `
+        <div class="item-header">Instance #${index + 1}: THREE v${inst.revision}</div>
+        <div class="item-source">Source: ${inst.source}</div>
+        <div class="item-source">Time: ${inst.time}</div>
+      `;
+      
+      instancesListEl.appendChild(item);
+    });
+    
+    // Populate modules list
+    window._threeImportTracker.modules.forEach((mod, index) => {
+      const item = document.createElement('div');
+      item.classList.add('content-item');
+      
+      item.innerHTML = `
+        <div class="item-header">Module #${index + 1}: Three.js Module</div>
+        <div class="item-source">Source: ${mod.source}</div>
+        <div class="item-source">Time: ${mod.time}</div>
+        <div class="item-details">
+- Has Scene: ${mod.hasScene}
+- Has Vector3: ${mod.hasVector3}
+- Has WebGLRenderer: ${mod.hasWebGLRenderer}
+        </div>
+      `;
+      
+      modulesListEl.appendChild(item);
+    });
+  }
+  
+  // Helper function to truncate stack trace to first few lines
+  function truncateStack(stack) {
+    if (!stack) return 'No stack trace';
+    const lines = stack.split('\n');
+    const firstFew = lines.slice(0, 5);
+    let result = firstFew.join('\n');
+    if (lines.length > 5) {
+      result += '\n... (truncated)';
+    }
+    return result;
+  }
+  
+  // Initialize on load
+  document.addEventListener('DOMContentLoaded', () => {
+    // Nothing to do here
+  });
+</script>

@@ -1,11 +1,19 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.module.js'; // Import directly
+// Import from centralized module
+import ThreeModule from '../../utils/three.js';
 import * as C from '../constants.js';
 
-export function setupSceneAndCamera(canvas, THREEInstance) {
-  // Use passed THREE instance or fall back to direct import
-  const LocalTHREE = THREEInstance || THREE;
+export async function setupSceneAndCamera(canvas, THREEInstance) {
+  // Use passed THREE instance or get from centralized module
+  let LocalTHREE = THREEInstance;
+  
   if (!LocalTHREE) {
-      throw new Error("THREE is not available for scene setup (src).");
+    // Initialize if not already initialized
+    await ThreeModule.init();
+    LocalTHREE = ThreeModule.THREE;
+  }
+  
+  if (!LocalTHREE) {
+    throw new Error("THREE is not available for scene setup (src).");
   }
 
   const scene = new LocalTHREE.Scene();
@@ -17,10 +25,13 @@ export function setupSceneAndCamera(canvas, THREEInstance) {
     C.NEAR_PLANE,
     C.FAR_PLANE
   );
-  camera.position.z = C.CAMERA_Z;
-  camera.position.x = 0; // Ensure camera is centered horizontally
-  camera.position.y = 0; // Ensure camera is centered vertically
-  camera.lookAt(0, 0, 0); // Make camera look at the center
+  // Center camera on the scene origin
+  camera.position.set(0, 0, C.CAMERA_Z);
+  camera.lookAt(0, 0, 0);
+  
+  // Force camera update to ensure correct position
+  camera.updateProjectionMatrix();
+  camera.updateMatrixWorld(true);
 
   const renderer = new LocalTHREE.WebGLRenderer({
     canvas,
@@ -55,6 +66,13 @@ export function setupSceneAndCamera(canvas, THREEInstance) {
     
     console.log(`Resize: Container size ${width}x${height}`);
 
+    // Force renderer to use the full size of the container
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+    renderer.domElement.style.position = 'absolute';
+    renderer.domElement.style.left = '0';
+    renderer.domElement.style.top = '0';
+    
     // Adjust camera position and field of view based on device
     const baseZ = C.CAMERA_Z; // Get base Z from constants
     const mobileThreshold = 768; // Threshold for mobile
@@ -63,24 +81,25 @@ export function setupSceneAndCamera(canvas, THREEInstance) {
     if (isMobile) {
       // Mobile optimization - adjust FOV for better object visibility
       camera.fov = 75; // Wider FOV on mobile
-      camera.position.z = baseZ * 1.5; // Move further back to show more of the object
       
-      // Slight top-down angle for better perspective on mobile
-      camera.position.y = -1.0;
+      // Position camera to see the whole object
+      camera.position.set(0, -0.5, baseZ * 1.5); // Centered with slight top-down view
       
-      // Apply scale to renderer for mobile
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Lower pixel ratio for mobile performance
+      // Apply scale to renderer for mobile performance
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       console.log("Mobile view optimizations applied");
     } else {
       // Desktop settings
       camera.fov = C.CAMERA_FOV; // Reset to default FOV
-      camera.position.z = baseZ;
-      camera.position.y = 0;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Higher quality for desktop
+      
+      // Position camera centrally
+      camera.position.set(0, 0, baseZ);
+      
+      // High quality for desktop, but not too high
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
     }
     
-    // Always center horizontally
-    camera.position.x = 0;
+    // Always force looking at center (important for Cloudflare environment)
     camera.lookAt(0, 0, 0);
 
     // Update camera and renderer

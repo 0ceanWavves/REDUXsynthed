@@ -4,10 +4,8 @@
 import { h } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
-// Remove direct Three.js import
-// import * as THREE from 'three';
-// Only import the centralized loader as a fallback
-import { loadThreeJS } from './three/utils/ThreeJSLoader.js';
+// Import from the centralized Three.js module
+import ThreeModule from '../utils/three.js';
 
 // Initialize the prism when loaded
 const initPrism = async () => {
@@ -173,18 +171,20 @@ export default function ThreeJsSceneWrapper() {
       try {
         console.log("Initializing Three.js scene in Preact component");
         
-        // Use window.THREE instead of direct import
-        let THREE_INSTANCE = window.THREE;
+        // Try to get Three.js instance from version guard first
+        let THREE_INSTANCE = typeof window !== 'undefined' && window.getThreeJS ? window.getThreeJS() : null;
         
-        // Try to get Three.js from the centralized loader if needed
-        if (!THREE_INSTANCE || Object.keys(THREE_INSTANCE).length === 0) {
-          console.log("window.THREE not available, using centralized loader");
-          THREE_INSTANCE = await loadThreeJS();
+        // If version guard doesn't have an instance yet, use centralized module
+        if (!THREE_INSTANCE) {
+          await ThreeModule.init();
+          THREE_INSTANCE = ThreeModule.THREE;
         }
         
         if (!THREE_INSTANCE) {
           throw new Error("Failed to load Three.js");
         }
+        
+        console.log(`Using Three.js v${THREE_INSTANCE.REVISION} in Preact component`);
         
         // Get reference to the container
         const container = containerRef.current;
