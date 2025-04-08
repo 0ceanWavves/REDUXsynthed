@@ -7,6 +7,9 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 // Import from the centralized Three.js module
 import ThreeModule from '../utils/three.js';
 
+// Import the Cloudflare detection utility
+import { isCloudflareEnvironment, applyCloudflareFixesIfNeeded } from '../utils/detectCloudflare.js';
+
 // Initialize the prism when loaded
 const initPrism = async () => {
   // Dynamically import the amorphous prism initialization module
@@ -33,12 +36,26 @@ export default function ThreeJsSceneWrapper() {
   // State for loading status
   const [isLoading, setIsLoading] = useState(true);
   const [loadingError, setLoadingError] = useState(null);
+  const [isCloudflare, setIsCloudflare] = useState(false);
   
   // References to Three.js objects that need to be tracked
   const rendererRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const animationFrameIdRef = useRef(null);
+  
+  // Check if we're in Cloudflare environment on component mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const cfEnv = isCloudflareEnvironment();
+      setIsCloudflare(cfEnv);
+      
+      if (cfEnv) {
+        console.log("Detected Cloudflare environment in ThreeJsSceneWrapper");
+        applyCloudflareFixesIfNeeded();
+      }
+    }
+  }, []);
   
   // Setup loading spinner
   useEffect(() => {
@@ -223,6 +240,24 @@ export default function ThreeJsSceneWrapper() {
         container.appendChild(renderer.domElement);
         rendererRef.current = renderer;
         
+        // Apply special positioning for Cloudflare environment
+        if (isCloudflare) {
+          console.log("Applying Cloudflare-specific canvas positioning");
+          renderer.domElement.style.position = 'absolute';
+          renderer.domElement.style.top = '50%';
+          renderer.domElement.style.left = '50%';
+          renderer.domElement.style.transform = 'translate(-50%, -50%)';
+          renderer.domElement.style.maxWidth = '100vw';
+          renderer.domElement.style.maxHeight = '100vh';
+          renderer.domElement.style.margin = '0';
+          renderer.domElement.style.willChange = 'transform';
+          
+          // Force camera to look at center
+          camera.lookAt(0, 0, 0);
+          camera.updateProjectionMatrix();
+          camera.updateMatrixWorld(true);
+        }
+        
         // Initialize the prism effects after the basic Three.js setup
         await initPrism();
         
@@ -251,6 +286,19 @@ export default function ThreeJsSceneWrapper() {
       
       // Update renderer size
       renderer.setSize(window.innerWidth, window.innerHeight);
+      
+      // Apply special positioning for Cloudflare environment
+      if (isCloudflare) {
+        renderer.domElement.style.position = 'absolute';
+        renderer.domElement.style.top = '50%';
+        renderer.domElement.style.left = '50%';
+        renderer.domElement.style.transform = 'translate(-50%, -50%)';
+        
+        // Force camera to look at center
+        camera.lookAt(0, 0, 0);
+        camera.updateProjectionMatrix();
+        camera.updateMatrixWorld(true);
+      }
     };
     
     // Animation loop
@@ -304,7 +352,7 @@ export default function ThreeJsSceneWrapper() {
         rendererRef.current = null;
       }
     };
-  }, []);
+  }, [isCloudflare]);
   
   return (
     <div>
@@ -331,8 +379,12 @@ export default function ThreeJsSceneWrapper() {
         </div>
       )}
       
-      {/* Three.js container */}
-      <div ref={containerRef} style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></div>
+      {/* Three.js container with special class for Cloudflare environment */}
+      <div 
+        ref={containerRef} 
+        className={`three-container ${isCloudflare ? 'cloudflare-environment' : ''}`}
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"
+      />
     </div>
   );
 }

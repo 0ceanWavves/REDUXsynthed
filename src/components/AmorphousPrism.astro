@@ -63,10 +63,9 @@ import './AmorphousPrismOverlay.css';
 
 <!-- Original loading screen REMOVED - Handled by MainLayout now -->
 
-<!-- REMOVED incorrect script import -->
-<!-- Import CSS for overlay is now done at the top of the file -->
-<!-- REMOVED Load Three.js fixes before any Three.js code -->
-<!-- <script is:inline src="/three-fix-loader.js"></script> -->
+<!-- CLOUDFLARE SPECIFIC FIXES - Only apply in Cloudflare environment -->
+<link rel="stylesheet" href="/cloudflare-center-fix.css">
+<script is:inline src="/cloudflare-position-fix.js"></script>
 
 <!-- Mobile interaction fix to prevent scroll issues -->
 <script is:inline src="/mobile-interaction-fix.js"></script>
@@ -240,6 +239,57 @@ import './AmorphousPrismOverlay.css';
       }
       
     }, 500); // Small initial delay after page load
+  });
+</script>
+
+<!-- Cloudflare deployment detection and fix for post-load rendering -->
+<script is:inline>
+  // Execute one extra check after all scripts have loaded
+  window.addEventListener('load', function() {
+    // Check if in Cloudflare environment
+    const isCloudflareEnv = window.location.hostname.includes('pages.dev') || 
+                           window.location.href.includes('pages.dev') ||
+                           !!document.querySelector('meta[name="cf-pages"]');
+    
+    if (isCloudflareEnv) {
+      console.log("🌩️ Detected Cloudflare environment on window.load, applying final fixes");
+      
+      // Force canvas centering with transform
+      const canvas = document.getElementById('morphing-poly-canvas');
+      if (canvas) {
+        canvas.style.position = 'absolute';
+        canvas.style.top = '50%';
+        canvas.style.left = '50%';
+        canvas.style.transform = 'translate(-50%, -50%)';
+        canvas.style.width = '100%';
+        canvas.style.height = '100%';
+        canvas.style.display = 'block';
+        
+        // Force a reflow
+        void canvas.offsetWidth;
+        
+        console.log("🌩️ Applied final canvas centering fix");
+      }
+      
+      // Force camera to look at center if we can access it via the exposer
+      if (window._threeExposer && window._threeExposer.camera) {
+        const camera = window._threeExposer.camera;
+        camera.position.set(0, 0, 5);
+        camera.lookAt(0, 0, 0);
+        camera.updateProjectionMatrix();
+        camera.updateMatrixWorld(true);
+        
+        console.log("🌩️ Applied final camera position fix");
+        
+        // Re-render if possible
+        if (window._threeExposer.renderer && window._threeExposer.scene) {
+          window._threeExposer.renderer.render(
+            window._threeExposer.scene,
+            window._threeExposer.camera
+          );
+        }
+      }
+    }
   });
 </script>
 
